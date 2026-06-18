@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .logout-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .logout-btn:hover { background: #b71c1c; }
+        .back-link { color: #1a237e; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .activate-form {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 5px solid #2e7d32;
+        }
+        .activate-form h3 { color: #1a237e; margin-bottom: 5px; }
+        .activate-form p { color: #666; font-size: 14px; margin-bottom: 15px; }
+        .activate-form .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .activate-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 250px;
+        }
+        .activate-form button {
+            padding: 12px 30px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .activate-form button:hover { background: #1b5e20; }
+        .msg { margin-top: 12px; padding: 10px 15px; border-radius: 6px; font-weight: bold; display: none; }
+        .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
+        .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
+        .msg.info { display: block; background: #bbdefb; color: #0d47a1; }
+
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .table-container h2 { color: #1a237e; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1a237e; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f5f5f5; }
+        .user-status { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .user-status.active { background: #4caf50; color: white; }
+        .user-status.inactive { background: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👥 USER MANAGEMENT</h1>
+            <button onclick="logout()" class="logout-btn">🚪 Toka</button>
+        </header>
+
+        <a href="index.html" class="back-link">← Rudi Dashboard</a>
+
+        <div class="activate-form">
+            <h3>🔓 Activate Staff</h3>
+            <p>Weka email ya staff unayetaka ku-activate</p>
+            <div class="input-group">
+                <input type="email" id="activateEmail" placeholder="Ingiza email ya staff">
+                <button onclick="activateByEmail()">✅ ACTIVATE</button>
+            </div>
+            <div id="activateMsg" class="msg"></div>
+        </div>
+
+        <div class="table-container">
+            <h2>Watumiaji Wote</h2>
+            <div id="usersList"><p style="text-align:center;padding:20px;">Loading...</p></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
+            window.location.href = 'login.html';
+        }
+
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = 'msg ' + type;
+        }
+
+        async function activateByEmail() {
+            const email = document.getElementById('activateEmail').value.trim();
+            const msg = document.getElementById('activateMsg');
+
+            if (!email) {
+                showMessage(msg, '❌ Tafadhali ingiza email!', 'error');
+                return;
+            }
+
+            showMessage(msg, '⏳ Ina-activate...', 'info');
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/users/activate_by_email?email=${encodeURIComponent(email)}`,
+                    { method: 'POST' }
+                );
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(msg, `✅ ${data.message}`, 'success');
+                    document.getElementById('activateEmail').value = '';
+                    loadUsers();
+                } else {
+                    showMessage(msg, `❌ ${data.detail || 'Activation failed!'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(msg, `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/users/all`);
+                if (!response.ok) throw new Error('Failed to load users');
+                const users = await response.json();
+                const container = document.getElementById('usersList');
+
+                if (!users || users.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna watumiaji</p>';
+                    return;
+                }
+
+                let html = `<table><thead><tr><th>#</th><th>Jina</th><th>Email</th><th>Role</th><th>Status</th></tr></thead><tbody>`;
+                users.forEach((u, i) => {
+                    const isActive = u.is_active === 1;
+                    html += `<tr>
+                        <td>${i+1}</td>
+                        <td><strong>${u.name}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${u.role}</td>
+                        <td><span class="user-status ${isActive ? 'active' : 'inactive'}">${isActive ? '✅ Active' : '❌ Inactive'}</span></td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `<p style="color:red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const input = document.getElementById('activateEmail');
+                if (document.activeElement === input) activateByEmail();
+            }
+        });
+
+        loadUsers();
+        setInterval(loadUsers, 10000);
+    </script>
+</body>
+</html>

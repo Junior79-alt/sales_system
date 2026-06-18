@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+        }
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            width: 380px;
+        }
+        .box h1 { text-align: center; color: #1a237e; }
+        .box input, .box select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .box button {
+            width: 100%;
+            padding: 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .box button:hover { background: #1b5e20; }
+        .box .link { text-align: center; margin-top: 15px; }
+        .box .link a { color: #1a237e; }
+        .msg { text-align: center; margin-top: 10px; font-weight: bold; }
+        .msg.error { color: #d32f2f; }
+        .msg.success { color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>📝 Jisajili</h1>
+        <input type="text" id="name" placeholder="Jina lako" value="Staff Msaidizi">
+        <input type="email" id="email" placeholder="Email" value="staff@test.com">
+        <input type="password" id="password" placeholder="Password (min 6)" value="staff123">
+        <input type="password" id="confirm" placeholder="Rudia Password" value="staff123">
+        <select id="role">
+            <option value="admin">Admin</option>
+            <option value="staff" selected>Staff</option>
+        </select>
+        <button onclick="register()">Jisajili</button>
+        <div id="msg" class="msg"></div>
+        <div class="link">Tuna akaunti? <a href="login.html">Ingia hapa</a></div>
+    </div>
+    <script>
+        const API_URL = window.location.origin;
+
+        async function register() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirm = document.getElementById('confirm').value.trim();
+            const role = document.getElementById('role').value;
+            const msg = document.getElementById('msg');
+
+            if (!name || !email || !password || !confirm) {
+                msg.textContent = '❌ Tafadhali jaza taarifa zote!';
+                msg.className = 'msg error';
+                return;
+            }
+            if (password !== confirm) {
+                msg.textContent = '❌ Password hazifanani!';
+                msg.className = 'msg error';
+                return;
+            }
+            if (password.length < 6) {
+                msg.textContent = '❌ Password iwe na angalau herufi 6!';
+                msg.className = 'msg error';
+                return;
+            }
+
+            msg.textContent = '⏳ Inaandikisha...';
+            msg.className = 'msg';
+
+            try {
+                const res = await fetch(
+                    `${API_URL}/users/register?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&role=${encodeURIComponent(role)}`,
+                    { method: 'POST' }
+                );
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    msg.textContent = '❌ ' + (data.detail || 'Registration failed!');
+                    msg.className = 'msg error';
+                    return;
+                }
+
+                msg.textContent = '✅ ' + data.message;
+                msg.className = 'msg success';
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+
+            } catch (e) {
+                msg.textContent = '❌ Error: ' + e.message;
+                msg.className = 'msg error';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') register();
+        });
+    </script>
+</body>
+</html>

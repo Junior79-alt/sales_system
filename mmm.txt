@@ -1,0 +1,1 @@
+http://localhost:8000/docs#/Sales/add_sale_sales__post
