@@ -7,16 +7,17 @@ import models
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import os
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
 # ============================================
-# EMAIL CONFIGURATION - GMAIL APP PASSWORD
+# EMAIL CONFIGURATION - Inasoma Environment Variables
 # ============================================
-SMTP_HOST = "smtp.gmail.com"
-SMTP_PORT = 587
-SMTP_USER = "wonderfulsirjohn@gmail.com"
-SMTP_PASSWORD = "ysck lojm jrqb stdp"
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SMTP_USER = os.getenv("SMTP_USER", "wonderfulsirjohn@gmail.com")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "oweq wzoz incl wkzv")
 
 def send_email(to_email: str, subject: str, body: str):
     """Tuma barua pepe kwa mtumiaji"""
