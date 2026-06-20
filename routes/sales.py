@@ -4,11 +4,44 @@ from database import get_db
 import crud
 from auth import get_current_user
 import models
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
 # ============================================
-# ADD SALE
+# EMAIL CONFIGURATION - GMAIL APP PASSWORD
+# ============================================
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "wonderfulsirjohn@gmail.com"
+SMTP_PASSWORD = "ysck lojm jrqb stdp"
+
+def send_email(to_email: str, subject: str, body: str):
+    """Tuma barua pepe kwa mtumiaji"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+        print(f"✅ Email imetumwa kwa {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Email error: {e}")
+        return False
+
+# ============================================
+# ADD SALE - Inatuma email
 # ============================================
 
 @router.post("/")
@@ -22,7 +55,7 @@ def add_sale(
     if current_user.is_active != 1:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account not active. Please contact admin."
+            detail="Account not active."
         )
     
     if quantity <= 0:
@@ -39,6 +72,23 @@ def add_sale(
     
     sale = crud.create_sale(db, product_name, quantity, price, current_user.id)
     
+    # ===== EMAIL: Mauzo yamehifadhiwa =====
+    subject = "✅ Mauzo Yamehifadhiwa - Sales System"
+    body = f"""
+Habari {current_user.name},
+
+Mauzo yako yamehifadhiwa kwa mafanikio!
+
+📊 Maelezo:
+   🏷️ Bidhaa: {product_name}
+   🔢 Idadi: {quantity}
+   💰 Bei: {price} TSh
+   💵 Jumla: {sale.total_amount} TSh
+
+Asante!
+"""
+    send_email(current_user.email, subject, body)
+    
     return {
         "message": "Sale added successfully",
         "sale_id": sale.id,
@@ -46,7 +96,7 @@ def add_sale(
     }
 
 # ============================================
-# GET ALL SALES (Admin = yote, Staff = yake tu)
+# GET ALL SALES
 # ============================================
 
 @router.get("/")
@@ -59,39 +109,6 @@ def get_sales(
     else:
         sales = crud.get_sales_by_user(db, current_user.id)
     
-    return sales
-
-# ============================================
-# GET SALES BY STAFF ID (Admin pekee)
-# ============================================
-
-@router.get("/staff/{staff_id}")
-def get_sales_by_staff(
-    staff_id: int,
-    current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Pata mauzo ya staff fulani kwa ID yake.
-    - Admin pekee ndiye anayeweza kutumia endpoint hii.
-    """
-    # Hakikisha user ni Admin
-    if current_user.role.lower() != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can view sales by staff"
-        )
-    
-    # Hakikisha staff yupo
-    staff = crud.get_user_by_id(db, staff_id)
-    if not staff:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Staff not found"
-        )
-    
-    # Pata mauzo ya staff huyo
-    sales = crud.get_sales_by_user(db, staff_id)
     return sales
 
 # ============================================
@@ -114,7 +131,7 @@ def get_sale(
     if current_user.role.lower() != "admin" and sale.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to view this sale"
+            detail="Not authorized"
         )
     
     return sale
@@ -139,7 +156,7 @@ def delete_sale(
     if current_user.role.lower() != "admin" and sale.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this sale"
+            detail="Not authorized"
         )
     
     crud.delete_sale(db, sale_id)

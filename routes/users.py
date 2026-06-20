@@ -3,14 +3,53 @@ from sqlalchemy.orm import Session
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from database import get_db
 import crud
-from auth import verify_password, create_access_token, get_current_user
+from auth import verify_password, create_access_token, get_current_user, hash_password
 import models
+import secrets
+import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 router = APIRouter(prefix="/users", tags=["Users"])
 security = HTTPBasic()
 
 # ============================================
-# REGISTER - Admin anakuwa Active moja kwa moja
+# EMAIL CONFIGURATION - GMAIL APP PASSWORD
+# ============================================
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "wonderfulsirjohn@gmail.com"
+SMTP_PASSWORD = "oweq wzoz incl wkzv"
+
+def send_email(to_email: str, subject: str, body: str):
+    """Tuma barua pepe kwa mtumiaji"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+        print(f"✅ Email imetumwa kwa {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Email error: {e}")
+        return False
+
+def generate_temporary_password(length: int = 8):
+    chars = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
+
+# ============================================
+# REGISTER - Inatuma email kwa staff mpya
 # ============================================
 
 @router.post("/register")
@@ -19,11 +58,29 @@ def register(name: str, email: str, password: str, role: str = "staff", db: Sess
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Admin anakuwa active moja kwa moja (is_active = 1)
-    # Staff anakuwa inactive (is_active = 0)
     is_active = 1 if role.lower() == "admin" else 0
-    
     user = crud.create_user(db, name, email, password, role, is_active=is_active)
+    
+    # ===== EMAIL: Staff mpya =====
+    if role.lower() == "staff":
+        subject = "✅ Akaunti Yako Imewekwa - Sales System"
+        body = f"""
+Habari {name},
+
+Akaunti yako imeundwa kwenye mfumo wa Sales System.
+
+🔑 Maelezo yako:
+   Email: {email}
+   Password: {password}
+
+⚠️ Badilisha password yako baada ya kuingia.
+
+Akaunti yako inasubiri ku-ACTIVATE na Admin.
+
+Asante,
+Sales System Team
+"""
+        send_email(email, subject, body)
     
     if role.lower() == "admin":
         return {
@@ -39,7 +96,7 @@ def register(name: str, email: str, password: str, role: str = "staff", db: Sess
         }
 
 # ============================================
-# LOGIN - Inaangalia kama user ni active
+# LOGIN
 # ============================================
 
 @router.post("/login")
@@ -61,52 +118,34 @@ def login(credentials: HTTPBasicCredentials = Depends(security), db: Session = D
     }
 
 # ============================================
-# ADMIN: Activate user by email (Bila Token!)
+# GET CURRENT USER
 # ============================================
 
-@router.post("/activate_by_email")
-def activate_by_email(email: str, db: Session = Depends(get_db)):
-    """
-    Activate user by email - Hakuna token required!
-    Inatumika tu kwenye dashboard ya Admin.
-    """
-    user = db.query(models.User).filter(models.User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Admin haja ya ku-activate
-    if user.role.lower() == "admin":
-        raise HTTPException(status_code=400, detail="Admin already active")
-    
-    # Ikiwa tayari active
-    if user.is_active == 1:
-        return {
-            "message": f"User {user.name} is already active!",
-            "email": user.email,
-            "is_active": user.is_active
-        }
-    
-    # Activate user
-    user.is_active = 1
-    db.commit()
-    db.refresh(user)
-    
+@router.get("/me")
+def get_me(current_user: models.User = Depends(get_current_user)):
     return {
-        "message": f"User {user.name} activated successfully!",
-        "email": user.email,
-        "is_active": user.is_active
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "role": current_user.role,
+        "is_active": current_user.is_active
     }
 
 # ============================================
-# ADMIN: Get all users (Bila Token!)
+# ADMIN: Get all users
 # ============================================
 
 @router.get("/all")
-def get_all_users(db: Session = Depends(get_db)):
-    """
-    Get all users - Hakuna token required!
-    Inatumika tu kwenye dashboard ya Admin.
-    """
+def get_all_users(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. Admin only."
+        )
+    
     users = db.query(models.User).all()
     return [
         {
@@ -121,15 +160,314 @@ def get_all_users(db: Session = Depends(get_db)):
     ]
 
 # ============================================
-# GET CURRENT USER (Inahitaji token)
+# ADMIN: Activate user by email - Inatuma email
 # ============================================
 
-@router.get("/me")
-def get_me(current_user: models.User = Depends(get_current_user)):
+@router.post("/activate_by_email")
+def activate_by_email(email: str, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.role.lower() == "admin":
+        raise HTTPException(status_code=400, detail="Admin already active")
+    
+    if user.is_active == 1:
+        return {
+            "message": f"User {user.name} is already active!",
+            "email": user.email,
+            "is_active": user.is_active
+        }
+    
+    user.is_active = 1
+    db.commit()
+    db.refresh(user)
+    
+    # ===== EMAIL: Activation =====
+    subject = "✅ Akaunti Yako IME-ACTIVATED - Sales System"
+    body = f"""
+Habari {user.name},
+
+Akaunti yako kwenye mfumo wa Sales System ime-ACTIVATED!
+
+🔑 Sasa unaweza kuingia.
+
+Asante,
+Sales System Team
+"""
+    send_email(email, subject, body)
+    
     return {
-        "id": current_user.id,
-        "name": current_user.name,
-        "email": current_user.email,
-        "role": current_user.role,
-        "is_active": current_user.is_active
+        "message": f"User {user.name} activated successfully!",
+        "email": user.email,
+        "is_active": user.is_active
+    }
+
+# ============================================
+# ADMIN: Activate user by ID - Inatuma email
+# ============================================
+
+@router.put("/activate/{user_id}")
+def activate_user(
+    user_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. Admin only."
+        )
+    
+    user = crud.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot activate yourself"
+        )
+    
+    if user.role.lower() == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admin is already active"
+        )
+    
+    user.is_active = 1
+    db.commit()
+    db.refresh(user)
+    
+    # ===== EMAIL: Activation =====
+    subject = "✅ Akaunti Yako IME-ACTIVATED - Sales System"
+    body = f"""
+Habari {user.name},
+
+Akaunti yako ime-ACTIVATED!
+
+🔑 Sasa unaweza kuingia.
+
+Asante,
+Sales System Team
+"""
+    send_email(user.email, subject, body)
+    
+    return {
+        "message": f"User {user.name} activated successfully!",
+        "user_id": user.id,
+        "email": user.email,
+        "is_active": user.is_active
+    }
+
+# ============================================
+# ADMIN: Deactivate user - Inatuma email
+# ============================================
+
+@router.put("/deactivate/{user_id}")
+def deactivate_user(
+    user_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. Admin only."
+        )
+    
+    user = crud.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot deactivate yourself"
+        )
+    
+    if user.role.lower() == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot deactivate admin"
+        )
+    
+    user.is_active = 0
+    db.commit()
+    db.refresh(user)
+    
+    # ===== EMAIL: Deactivation =====
+    subject = "⛔ Akaunti Yako IME-DEACTIVATED - Sales System"
+    body = f"""
+Habari {user.name},
+
+Akaunti yako ime-DEACTIVATED.
+
+Huwezi kuingia mpaka Admin aku-activate.
+
+Asante,
+Sales System Team
+"""
+    send_email(user.email, subject, body)
+    
+    return {
+        "message": f"User {user.name} deactivated successfully!",
+        "user_id": user.id,
+        "email": user.email,
+        "is_active": user.is_active
+    }
+
+# ============================================
+# ADMIN: Delete user
+# ============================================
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized. Admin only."
+        )
+    
+    user = crud.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete yourself"
+        )
+    
+    if user.role.lower() == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete admin"
+        )
+    
+    db.delete(user)
+    db.commit()
+    
+    return {
+        "message": f"User {user.name} deleted successfully!",
+        "user_id": user.id,
+        "email": user.email
+    }
+
+# ============================================
+# FORGOT PASSWORD - Inatuma email
+# ============================================
+
+@router.post("/forgot_password")
+def forgot_password(email: str, db: Session = Depends(get_db)):
+    user = crud.get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Email haijapatikana!"
+        )
+    
+    if user.is_active != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akaunti yako haija-active."
+        )
+    
+    temp_password = generate_temporary_password(8)
+    hashed_temp = hash_password(temp_password)
+    user.password = hashed_temp
+    db.commit()
+    
+    # ===== EMAIL: Password ya kianzio =====
+    subject = "🔑 Password ya Kianzio - Sales System"
+    body = f"""
+Habari {user.name},
+
+Umeomba kuweka upya password yako.
+
+🔑 Password yako ya kianzio ni: {temp_password}
+
+Ingia kwa password hii, kisha ubadilishe password yako.
+
+Asante,
+Sales System Team
+"""
+    
+    send_email(email, subject, body)
+    
+    return {
+        "message": "✅ Password ya kianzio imetumwa!",
+        "email": email,
+        "temp_password": temp_password
+    }
+
+# ============================================
+# RESET PASSWORD - Inatuma email
+# ============================================
+
+@router.post("/reset_password")
+def reset_password(
+    email: str,
+    old_password: str,
+    new_password: str,
+    db: Session = Depends(get_db)
+):
+    user = crud.get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.is_active != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account not active"
+        )
+    
+    if not verify_password(old_password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Password ya kianzio si sahihi!"
+        )
+    
+    if len(new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password mpya iwe na angalau herufi 6!"
+        )
+    
+    user.password = hash_password(new_password)
+    db.commit()
+    
+    # ===== EMAIL: Password imebadilishwa =====
+    subject = "✅ Password Yako Imebadilishwa - Sales System"
+    body = f"""
+Habari {user.name},
+
+Password yako imebadilishwa kwa mafanikio!
+
+🔑 Password mpya: {new_password}
+
+Asante,
+Sales System Team
+"""
+    send_email(user.email, subject, body)
+    
+    return {
+        "message": "✅ Password yako imebadilishwa!",
+        "email": user.email
     }

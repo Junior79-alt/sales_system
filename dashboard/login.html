@@ -12,24 +12,40 @@
             justify-content: center;
             align-items: center;
             background: linear-gradient(135deg, #1a237e, #0d47a1);
+            padding: 20px;
         }
         .login-box {
             background: white;
-            padding: 40px;
+            padding: 40px 35px;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-            width: 380px;
+            width: 100%;
+            max-width: 400px;
         }
-        .login-box h1 { text-align: center; color: #1a237e; margin-bottom: 5px; }
-        .login-box .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
+        .login-box h1 {
+            text-align: center;
+            color: #1a237e;
+            margin-bottom: 5px;
+            font-size: 28px;
+        }
+        .login-box .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
         .login-box input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 15px;
             margin: 8px 0;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
+        }
+        .login-box input:focus {
+            border-color: #1a237e;
+            outline: none;
         }
         .login-box button {
             width: 100%;
@@ -41,43 +57,251 @@
             font-size: 18px;
             cursor: pointer;
             margin-top: 10px;
+            font-weight: 600;
         }
-        .login-box button:hover { background: #0d47a1; }
-        .login-box .register-link { text-align: center; margin-top: 15px; font-size: 14px; }
-        .login-box .register-link a { color: #1a237e; text-decoration: none; font-weight: bold; }
-        .login-box .register-link a:hover { text-decoration: underline; }
-        .login-box .msg { text-align: center; margin-top: 10px; font-size: 14px; min-height: 20px; font-weight: bold; }
-        .login-box .msg.error { color: #d32f2f; }
-        .login-box .msg.success { color: #2e7d32; }
-        .login-box .demo-info {
-            margin-top: 20px;
-            padding: 12px;
-            background: #f5f5f5;
-            border-radius: 8px;
+        .login-box button:hover {
+            background: #0d47a1;
+        }
+        .login-box .register-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .login-box .register-link a {
+            color: #1a237e;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .login-box .register-link a:hover {
+            text-decoration: underline;
+        }
+        .login-box .forgot-link {
+            text-align: right;
+            margin-top: 5px;
             font-size: 13px;
-            color: #555;
         }
-        .login-box .demo-info strong { color: #1a237e; }
+        .login-box .forgot-link a {
+            color: #888;
+            text-decoration: none;
+        }
+        .login-box .forgot-link a:hover {
+            color: #1a237e;
+            text-decoration: underline;
+        }
+        .login-box .msg {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+            font-weight: bold;
+        }
+        .login-box .msg.error {
+            color: #d32f2f;
+        }
+        .login-box .msg.success {
+            color: #2e7d32;
+        }
+        .login-box .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0 15px 0;
+        }
+        .login-box .divider hr {
+            flex: 1;
+            border: none;
+            border-top: 1px solid #eee;
+        }
+        .login-box .divider span {
+            padding: 0 15px;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        /* ===== FORGOT FORM ===== */
+        .forgot-form {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .forgot-form.active {
+            display: block;
+        }
+        .forgot-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .forgot-form input:focus {
+            border-color: #1a237e;
+            outline: none;
+        }
+        .forgot-form button {
+            width: 100%;
+            padding: 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        .forgot-form button:hover {
+            background: #1b5e20;
+        }
+        .forgot-form .back-link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .forgot-form .back-link a {
+            color: #1a237e;
+            text-decoration: none;
+        }
+        .forgot-form .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== RESET FORM ===== */
+        .reset-form {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .reset-form.active {
+            display: block;
+        }
+        .reset-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .reset-form input:focus {
+            border-color: #1a237e;
+            outline: none;
+        }
+        .reset-form button {
+            width: 100%;
+            padding: 12px;
+            background: #1a237e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        .reset-form button:hover {
+            background: #0d47a1;
+        }
+        .reset-form .back-link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .reset-form .back-link a {
+            color: #1a237e;
+            text-decoration: none;
+        }
+        .reset-form .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 25px 20px;
+                max-width: 100%;
+                margin: 10px;
+                border-radius: 12px;
+            }
+            .login-box h1 { font-size: 22px; }
+            .login-box input { padding: 10px 12px; font-size: 14px; }
+            .login-box button { font-size: 16px; padding: 10px; }
+            .forgot-form input { padding: 10px 12px; font-size: 14px; }
+            .forgot-form button { font-size: 14px; padding: 10px; }
+            .reset-form input { padding: 10px 12px; font-size: 14px; }
+            .reset-form button { font-size: 14px; padding: 10px; }
+        }
     </style>
 </head>
 <body>
+
     <div class="login-box">
         <h1>🔐 Ingia</h1>
         <p class="subtitle">Ingia kwenye mfumo wako</p>
-        <input type="email" id="email" placeholder="Email" value="admin3@test.com">
-        <input type="password" id="password" placeholder="Password" value="Admin123">
-        <button onclick="login()">Ingia</button>
-        <div id="msg" class="msg"></div>
-        <div class="register-link">Huna akaunti? <a href="register.html">Jisajili hapa</a></div>
-        <div class="demo-info">
-            <strong>Demo Account:</strong><br>
-            Email: admin3@test.com<br>
-            Password: Admin123
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+            <input type="email" id="email" placeholder="Email" value="admin@test.com">
+            <input type="password" id="password" placeholder="Password" value="admin123">
+            
+            <div class="forgot-link">
+                <a href="#" onclick="showForgotForm()">🔑 Nimeisahau password?</a>
+            </div>
+
+            <button onclick="login()">Ingia</button>
+
+            <div id="msg" class="msg"></div>
+
+            <div class="divider">
+                <hr>
+                <span>au</span>
+                <hr>
+            </div>
+
+            <div class="register-link">
+                Huna akaunti? <a href="register.html">Jisajili hapa</a>
+            </div>
+        </div>
+
+        <!-- FORGOT PASSWORD FORM -->
+        <div id="forgotForm" class="forgot-form">
+            <h3 style="color:#1a237e; text-align:center; margin-bottom:5px;">🔑 Forget Password</h3>
+            <p style="text-align:center; color:#888; font-size:13px; margin-bottom:15px;">
+                Ingiza email yako, tutakutumia password ya kianzio
+            </p>
+            <input type="email" id="forgotEmail" placeholder="Ingiza email yako">
+            <button onclick="forgotPassword()">📨 Tuma</button>
+            <div id="forgotMsg" class="msg"></div>
+            <div class="back-link">
+                <a href="#" onclick="hideForgotForm()">← Rudi kwenye Login</a>
+            </div>
+        </div>
+
+        <!-- RESET PASSWORD FORM -->
+        <div id="resetForm" class="reset-form">
+            <h3 style="color:#1a237e; text-align:center; margin-bottom:5px;">🔐 Weka Password Mpya</h3>
+            <p style="text-align:center; color:#888; font-size:13px; margin-bottom:15px;">
+                Ingia kwa password ya kianzio, kisha weka password mpya
+            </p>
+            <input type="email" id="resetEmail" placeholder="Email yako">
+            <input type="password" id="resetOldPassword" placeholder="Password ya kianzio">
+            <input type="password" id="resetNewPassword" placeholder="Password mpya (min 6)">
+            <input type="password" id="resetConfirmPassword" placeholder="Rudia password mpya">
+            <button onclick="resetPassword()">💾 Badilisha Password</button>
+            <div id="resetMsg" class="msg"></div>
+            <div class="back-link">
+                <a href="#" onclick="hideResetForm()">← Rudi kwenye Login</a>
+            </div>
         </div>
     </div>
+
     <script>
         const API_URL = window.location.origin;
 
+        // ===== LOGIN =====
         async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
@@ -108,17 +332,15 @@
                     return;
                 }
 
-                // Hifadhi data zote
                 localStorage.setItem('token', data.access_token);
                 localStorage.setItem('userEmail', email);
-                localStorage.setItem('userRole', data.role || 'staff');
+                localStorage.setItem('userRole', data.role);
 
                 msg.textContent = '✅ Inaingiza...';
                 msg.className = 'msg success';
 
                 setTimeout(() => {
-                    const role = (data.role || 'staff').toLowerCase();
-                    if (role === 'admin') {
+                    if (data.role && data.role.toLowerCase() === 'admin') {
                         window.location.href = 'index.html';
                     } else {
                         window.location.href = 'staff.html';
@@ -131,14 +353,160 @@
             }
         }
 
+        // ===== FORGOT PASSWORD =====
+        async function forgotPassword() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            const msg = document.getElementById('forgotMsg');
+
+            if (!email) {
+                msg.textContent = '❌ Tafadhali ingiza email yako!';
+                msg.className = 'msg error';
+                return;
+            }
+
+            msg.textContent = '⏳ Inatuma...';
+            msg.className = 'msg';
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/users/forgot_password?email=${encodeURIComponent(email)}`,
+                    { method: 'POST' }
+                );
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    msg.textContent = '✅ ' + data.message;
+                    msg.className = 'msg success';
+                    
+                    setTimeout(() => {
+                        document.getElementById('forgotForm').classList.remove('active');
+                        document.getElementById('resetForm').classList.add('active');
+                        document.getElementById('resetEmail').value = email;
+                        document.getElementById('forgotMsg').textContent = '';
+                        document.getElementById('forgotMsg').className = 'msg';
+                    }, 1500);
+                } else {
+                    msg.textContent = '❌ ' + (data.detail || 'Email haijapatikana!');
+                    msg.className = 'msg error';
+                }
+            } catch (error) {
+                msg.textContent = '❌ Error: ' + error.message;
+                msg.className = 'msg error';
+            }
+        }
+
+        // ===== RESET PASSWORD =====
+        async function resetPassword() {
+            const email = document.getElementById('resetEmail').value.trim();
+            const oldPassword = document.getElementById('resetOldPassword').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value.trim();
+            const confirmPassword = document.getElementById('resetConfirmPassword').value.trim();
+            const msg = document.getElementById('resetMsg');
+
+            if (!email || !oldPassword || !newPassword || !confirmPassword) {
+                msg.textContent = '❌ Tafadhali jaza taarifa zote!';
+                msg.className = 'msg error';
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                msg.textContent = '❌ Password mpya hazifanani!';
+                msg.className = 'msg error';
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                msg.textContent = '❌ Password mpya iwe na angalau herufi 6!';
+                msg.className = 'msg error';
+                return;
+            }
+
+            msg.textContent = '⏳ Inabadilisha...';
+            msg.className = 'msg';
+
+            try {
+                const params = new URLSearchParams();
+                params.append('email', email);
+                params.append('old_password', oldPassword);
+                params.append('new_password', newPassword);
+
+                const response = await fetch(`${API_URL}/users/reset_password?${params.toString()}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    msg.textContent = '✅ ' + data.message;
+                    msg.className = 'msg success';
+
+                    setTimeout(() => {
+                        hideResetForm();
+                        document.getElementById('email').value = email;
+                        document.getElementById('password').value = newPassword;
+                        document.getElementById('msg').textContent = '✅ Password imebadilishwa! Sasa ingia.';
+                        document.getElementById('msg').className = 'msg success';
+                    }, 1500);
+                } else {
+                    msg.textContent = '❌ ' + (data.detail || 'Failed to reset password!');
+                    msg.className = 'msg error';
+                }
+            } catch (error) {
+                console.error('Reset error:', error);
+                msg.textContent = '❌ Error: ' + error.message;
+                msg.className = 'msg error';
+            }
+        }
+
+        // ===== SHOW / HIDE FORMS =====
+        function showForgotForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forgotForm').classList.add('active');
+            document.getElementById('resetForm').classList.remove('active');
+            document.getElementById('forgotMsg').textContent = '';
+            document.getElementById('forgotMsg').className = 'msg';
+            document.getElementById('resetMsg').textContent = '';
+            document.getElementById('resetMsg').className = 'msg';
+        }
+
+        function hideForgotForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('forgotForm').classList.remove('active');
+            document.getElementById('resetForm').classList.remove('active');
+            document.getElementById('forgotMsg').textContent = '';
+            document.getElementById('forgotMsg').className = 'msg';
+            document.getElementById('resetMsg').textContent = '';
+            document.getElementById('resetMsg').className = 'msg';
+        }
+
+        function hideResetForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('resetForm').classList.remove('active');
+            document.getElementById('resetMsg').textContent = '';
+            document.getElementById('resetMsg').className = 'msg';
+        }
+
+        // ===== ENTER KEY =====
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') login();
+            if (e.key === 'Enter') {
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm.style.display !== 'none') {
+                    login();
+                } else if (document.getElementById('forgotForm').classList.contains('active')) {
+                    forgotPassword();
+                } else if (document.getElementById('resetForm').classList.contains('active')) {
+                    resetPassword();
+                }
+            }
         });
 
-        // Kama tayari ameingia
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('userRole');
-        if (token) {
+        // ===== AUTO REDIRECT =====
+        if (localStorage.getItem('token')) {
+            const role = localStorage.getItem('userRole');
             if (role && role.toLowerCase() === 'admin') {
                 window.location.href = 'index.html';
             } else {

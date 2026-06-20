@@ -13,15 +13,12 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 def hash_password(password: str):
-    """Hash password kwa bcrypt"""
-    # Hash kwa SHA256 kwanza (kuepuka error ya urefu)
     sha256_hash = hashlib.sha256(password.encode()).hexdigest()
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(sha256_hash.encode(), salt)
     return hashed.decode()
 
 def verify_password(plain_password, hashed_password):
-    """Verify password"""
     sha256_hash = hashlib.sha256(plain_password.encode()).hexdigest()
     return bcrypt.checkpw(sha256_hash.encode(), hashed_password.encode())
 

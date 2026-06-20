@@ -12,14 +12,15 @@
         header {
             background: #1a237e;
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
             border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 10px;
         }
-        header h1 { font-size: 24px; }
+        header h1 { font-size: 20px; }
         .logout-btn {
             background: #d32f2f;
             color: white;
@@ -38,44 +39,6 @@
         }
         .back-link:hover { text-decoration: underline; }
 
-        .filter-section {
-            background: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .filter-section label {
-            font-weight: bold;
-            color: #1a237e;
-            font-size: 16px;
-        }
-        .filter-section select {
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            min-width: 250px;
-        }
-        .filter-section button {
-            padding: 10px 25px;
-            background: #1a237e;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .filter-section button:hover { background: #0d47a1; }
-        .filter-section .clear-btn {
-            background: #666;
-        }
-        .filter-section .clear-btn:hover { background: #444; }
-
         .stats {
             display: flex;
             gap: 20px;
@@ -90,41 +53,137 @@
         }
         .stats span { font-weight: bold; color: #1a237e; }
 
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        .sales-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #1a237e; color: white; padding: 12px; text-align: left; }
-        td { padding: 10px 12px; border-bottom: 1px solid #eee; }
-        tr:hover { background: #f5f5f5; }
 
-        .delete-btn {
-            background: #d32f2f;
-            color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        .delete-btn:hover { background: #b71c1c; }
-        .staff-label {
-            background: #e8eaf6;
-            padding: 2px 10px;
+        .sale-card {
+            background: white;
             border-radius: 12px;
-            font-size: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #1a237e;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .sale-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .sale-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sale-card .card-header .product-name {
+            font-size: 18px;
+            font-weight: bold;
             color: #1a237e;
         }
 
+        .sale-card .card-header .product-id {
+            font-size: 12px;
+            color: #999;
+            background: #f5f5f5;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        .sale-card .card-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sale-card .card-body .info-item {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .sale-card .card-body .info-item .label {
+            font-size: 11px;
+            color: #888;
+            display: block;
+        }
+
+        .sale-card .card-body .info-item .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a237e;
+        }
+
+        .sale-card .card-body .info-item .value.amount {
+            color: #2e7d32;
+        }
+
+        .sale-card .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #888;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sale-card .card-footer .staff-badge {
+            background: #e8eaf6;
+            padding: 2px 12px;
+            border-radius: 12px;
+            color: #1a237e;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .sale-card .card-footer .delete-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .sale-card .card-footer .delete-btn:hover {
+            background: #b71c1c;
+        }
+
+        .no-sales {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
         @media (max-width: 768px) {
-            header { flex-direction: column; text-align: center; gap: 10px; }
+            body { padding: 10px; }
+            header { flex-direction: column; text-align: center; }
             .stats { flex-direction: column; }
             .stats div { text-align: center; }
-            .filter-section { flex-direction: column; align-items: stretch; }
-            .filter-section select { min-width: auto; width: 100%; }
+            .sales-cards-grid { grid-template-columns: 1fr; }
+            .sale-card .card-body { grid-template-columns: 1fr 1fr; }
+            .sale-card .card-footer { flex-direction: column; text-align: center; }
+        }
+
+        @media (max-width: 480px) {
+            .sale-card .card-body { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .sale-card .card-body .info-item { padding: 6px; }
+            .sale-card .card-body .info-item .value { font-size: 14px; }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sales-cards-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -137,24 +196,14 @@
 
         <a href="index.html" class="back-link">← Rudi Dashboard</a>
 
-        <!-- FILTER BY STAFF -->
-        <div class="filter-section">
-            <label for="staffFilter">👥 Chagua Staff:</label>
-            <select id="staffFilter">
-                <option value="all">✅ Mauzo Yote</option>
-            </select>
-            <button onclick="filterSales()">🔍 Angalia</button>
-            <button onclick="clearFilter()" class="clear-btn">🔄 Ondoa Filter</button>
-        </div>
-
         <div class="stats">
             <div>💰 Jumla: <span id="totalAll">0 TSh</span></div>
             <div>📦 Bidhaa: <span id="totalProducts">0</span></div>
             <div>📋 Mauzo: <span id="totalSales">0</span></div>
         </div>
 
-        <div class="table-container">
-            <div id="salesList"><p style="text-align:center;padding:20px;">Loading...</p></div>
+        <div id="salesList" class="sales-cards-grid">
+            <p class="no-sales">Loading...</p>
         </div>
     </div>
 
@@ -166,9 +215,6 @@
             window.location.href = 'login.html';
         }
 
-        let allStaff = [];
-        let currentFilter = 'all';
-
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('userEmail');
@@ -176,46 +222,8 @@
             window.location.href = 'login.html';
         }
 
-        // ===== FETCH STAFF =====
-        async function fetchAllStaff() {
-            try {
-                const res = await fetch(`${API_URL}/users/all`);
-                if (!res.ok) throw new Error('Failed');
-                const users = await res.json();
-                allStaff = users.filter(u => u.role.toLowerCase() === 'staff');
-                populateStaffDropdown();
-            } catch (e) {
-                console.error('Fetch staff error:', e);
-            }
-        }
-
-        function populateStaffDropdown() {
-            const select = document.getElementById('staffFilter');
-            select.innerHTML = '<option value="all">✅ Mauzo Yote</option>';
-            allStaff.forEach(staff => {
-                const option = document.createElement('option');
-                option.value = staff.id;
-                option.textContent = `${staff.name} (${staff.email})`;
-                select.appendChild(option);
-            });
-        }
-
-        // ===== FILTER =====
-        function filterSales() {
-            currentFilter = document.getElementById('staffFilter').value;
-            loadAllSales(currentFilter);
-        }
-
-        function clearFilter() {
-            document.getElementById('staffFilter').value = 'all';
-            currentFilter = 'all';
-            loadAllSales('all');
-        }
-
-        // ===== DELETE SALE =====
         async function deleteSale(saleId) {
-            const confirmDelete = confirm('⚠️ Je, una uhakika unataka kufuta mauzo haya? Hatua hii haiwezi kurekebishwa!');
-            if (!confirmDelete) return;
+            if (!confirm('⚠️ Je, una uhakika unataka kufuta mauzo haya? Hatua hii haiwezi kurekebishwa!')) return;
 
             try {
                 const response = await fetch(`${API_URL}/sales/${saleId}`, {
@@ -227,7 +235,7 @@
 
                 if (response.ok) {
                     alert('✅ Mauzo yamefutwa!');
-                    loadAllSales(currentFilter);
+                    loadAllSales();
                 } else {
                     alert('❌ ' + (data.detail || 'Failed to delete sale!'));
                 }
@@ -237,15 +245,9 @@
             }
         }
 
-        // ===== LOAD SALES =====
-        async function loadAllSales(filter = 'all') {
+        async function loadAllSales() {
             try {
-                let url = `${API_URL}/sales/`;
-                if (filter && filter !== 'all') {
-                    url = `${API_URL}/sales/staff/${filter}`;
-                }
-
-                const res = await fetch(url, {
+                const res = await fetch(`${API_URL}/sales/`, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
 
@@ -265,66 +267,55 @@
                 document.getElementById('totalSales').textContent = sales.length;
 
                 if (!sales || sales.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna mauzo</p>';
+                    container.innerHTML = '<p class="no-sales">📭 Hakuna mauzo</p>';
                     return;
                 }
 
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Bidhaa</th>
-                                <th>Idadi</th>
-                                <th>Bei</th>
-                                <th>Jumla</th>
-                                <th>Staff</th>
-                                <th>Tarehe</th>
-                                <th>Kitendo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
+                let html = '';
                 sales.forEach((s, i) => {
-                    const staffName = allStaff.find(st => st.id === s.user_id);
+                    const date = s.date ? new Date(s.date).toLocaleString('sw-TZ') : '-';
+                    const total = (s.total_amount || 0).toLocaleString();
+                    const price = (s.price || 0).toLocaleString();
+
                     html += `
-                        <tr>
-                            <td>${i+1}</td>
-                            <td><strong>${s.product_name || '-'}</strong></td>
-                            <td>${s.quantity || 0}</td>
-                            <td>${(s.price || 0).toLocaleString()} TSh</td>
-                            <td><strong>${(s.total_amount || 0).toLocaleString()} TSh</strong></td>
-                            <td><span class="staff-label">${staffName ? staffName.name : s.user_id}</span></td>
-                            <td>${s.date ? new Date(s.date).toLocaleString('sw-TZ') : '-'}</td>
-                            <td>
+                        <div class="sale-card" style="border-left-color: ${i % 2 === 0 ? '#1a237e' : '#2e7d32'};">
+                            <div class="card-header">
+                                <span class="product-name">${s.product_name || '-'}</span>
+                                <span class="product-id">#${i + 1}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="info-item">
+                                    <span class="label">📦 Idadi</span>
+                                    <span class="value">${s.quantity || 0}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">💰 Bei</span>
+                                    <span class="value">${price} TSh</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">💵 Jumla</span>
+                                    <span class="value amount">${total} TSh</span>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <span class="staff-badge">👤 Staff #${s.user_id || '-'}</span>
+                                <span>${date}</span>
                                 <button onclick="deleteSale(${s.id})" class="delete-btn">🗑️ Futa</button>
-                            </td>
-                        </tr>
+                            </div>
+                        </div>
                     `;
                 });
 
-                html += '</tbody></table>';
                 container.innerHTML = html;
 
             } catch (e) {
                 console.error('Load sales error:', e);
-                document.getElementById('salesList').innerHTML = '<p style="color:red;">❌ Error: ' + e.message + '</p>';
+                document.getElementById('salesList').innerHTML = '<p class="no-sales" style="color:red;">❌ Error: ' + e.message + '</p>';
             }
         }
 
-        // ===== INIT =====
-        async function init() {
-            await fetchAllStaff();
-            await loadAllSales('all');
-
-            document.getElementById('staffFilter').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') filterSales();
-            });
-        }
-
-        init();
-        setInterval(() => loadAllSales(currentFilter), 30000);
+        loadAllSales();
+        setInterval(loadAllSales, 30000);
     </script>
 </body>
 </html>
