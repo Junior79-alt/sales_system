@@ -7,40 +7,69 @@ from auth import verify_password, create_access_token, get_current_user, hash_pa
 import models
 import secrets
 import string
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import os
+import requests
+import json
 
 router = APIRouter(prefix="/users", tags=["Users"])
 security = HTTPBasic()
 
 # ============================================
-# EMAIL CONFIGURATION - Inasoma Environment Variables
+# SENDGRID EMAIL CONFIGURATION
 # ============================================
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-SMTP_USER = os.getenv("SMTP_USER", "wonderfulsirjohn@gmail.com")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "oweq wzoz incl wkzv")
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "wonderfulsirjohn@gmail.com")
 
 def send_email(to_email: str, subject: str, body: str):
-    """Tuma barua pepe kwa mtumiaji"""
+    """Tuma barua pepe kwa mtumiaji kutumia SendGrid"""
+    if not SENDGRID_API_KEY:
+        print("❌ SENDGRID_API_KEY haijapatikana!")
+        return False
+    
     try:
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_USER
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-
-        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        url = "https://api.sendgrid.com/v3/mail/send"
+        html_body = body.replace('\n', '<br>')
         
-        print(f"✅ Email imetumwa kwa {to_email}")
-        return True
+        data = {
+            "personalizations": [
+                {
+                    "to": [{"email": to_email}],
+                    "subject": subject
+                }
+            ],
+            "from": {"email": SENDGRID_FROM_EMAIL},
+            "content": [
+                {
+                    "type": "text/html",
+                    "value": f"""
+                    <html>
+                        <body style="font-family: Arial, sans-serif; padding: 20px;">
+                            <h2 style="color: #1a237e;">📊 Sales System</h2>
+                            <hr>
+                            <p style="font-size: 16px;">{html_body}</p>
+                            <hr>
+                            <p style="color: #888; font-size: 12px;">© 2026 Sales System. All rights reserved.</p>
+                        </body>
+                    </html>
+                    """
+                }
+            ]
+        }
         
+        headers = {
+            "Authorization": f"Bearer {SENDGRID_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.post(url, json=data, headers=headers)
+        
+        if response.status_code == 202:
+            print(f"✅ Email imetumwa kwa {to_email} via SendGrid")
+            return True
+        else:
+            print(f"❌ SendGrid error: {response.status_code} - {response.text}")
+            return False
+            
     except Exception as e:
         print(f"❌ Email error: {e}")
         return False
