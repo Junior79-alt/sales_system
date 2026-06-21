@@ -4,9 +4,6 @@ from datetime import datetime
 from config import Config
 
 def send_email(to_email: str, subject: str, body: str, html_body: str = None):
-    """
-    Tuma barua pepe kwa mtumiaji kutumia SendGrid
-    """
     if not Config.is_email_enabled():
         print("⚠️ SendGrid API Key haijapatikana! Email haitatumwa.")
         print(f"   To: {to_email}")
@@ -83,8 +80,6 @@ def send_email(to_email: str, subject: str, body: str, html_body: str = None):
     except Exception as e:
         print(f"❌ SendGrid error: {e}")
         return False
-
-# ===== EMAIL FUNCTIONS =====
 
 def send_registration_email(email: str, name: str, password: str, staff_type: str):
     subject = "✅ Akaunti Yako Imewekwa - Sales System"
