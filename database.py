@@ -3,7 +3,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Unda folder ya db ikiwa haipo
 db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db')
 os.makedirs(db_dir, exist_ok=True)
 

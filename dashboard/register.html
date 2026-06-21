@@ -21,7 +21,6 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.3);
             width: 100%;
             max-width: 400px;
-            transition: all 0.3s ease;
         }
         .register-box h1 {
             text-align: center;
@@ -35,7 +34,7 @@
             margin-bottom: 25px;
             font-size: 14px;
         }
-        .register-box input {
+        .register-box input, .register-box select {
             width: 100%;
             padding: 12px 15px;
             margin: 8px 0;
@@ -43,9 +42,8 @@
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
-            transition: border-color 0.3s;
         }
-        .register-box input:focus {
+        .register-box input:focus, .register-box select:focus {
             border-color: #1a237e;
             outline: none;
         }
@@ -103,59 +101,24 @@
         .register-box .info-box strong {
             color: #1a237e;
         }
-
-        /* ===== RESPONSIVE ===== */
+        .register-box .admin-info {
+            background: #fff3e0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #555;
+            text-align: center;
+            border: 1px solid #ffcc80;
+        }
+        .register-box .admin-info strong {
+            color: #e65100;
+        }
         @media (max-width: 480px) {
-            .register-box {
-                padding: 25px 20px;
-                max-width: 100%;
-                margin: 10px;
-                border-radius: 12px;
-            }
-            .register-box h1 {
-                font-size: 22px;
-            }
-            .register-box input {
-                padding: 10px 12px;
-                font-size: 14px;
-            }
-            .register-box button {
-                font-size: 16px;
-                padding: 10px;
-            }
-            .register-box .subtitle {
-                font-size: 13px;
-            }
-            .register-box .info-box {
-                font-size: 12px;
-                padding: 10px;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .register-box {
-                padding: 20px 15px;
-            }
-            .register-box h1 {
-                font-size: 20px;
-            }
-            .register-box .login-link {
-                font-size: 13px;
-            }
-        }
-
-        @media (min-width: 600px) and (max-width: 1024px) {
-            .register-box {
-                max-width: 450px;
-                padding: 45px 40px;
-            }
-        }
-
-        @media (min-width: 1025px) {
-            .register-box {
-                max-width: 420px;
-                padding: 50px 45px;
-            }
+            .register-box { padding: 25px 20px; max-width: 100%; margin: 10px; border-radius: 12px; }
+            .register-box h1 { font-size: 22px; }
+            .register-box input { padding: 10px 12px; font-size: 14px; }
+            .register-box button { font-size: 16px; padding: 10px; }
         }
     </style>
 </head>
@@ -163,13 +126,17 @@
 
     <div class="register-box">
         <h1>📝 Jisajili</h1>
-        <p class="subtitle">Unda akaunti yako mpya</p>
+        <p class="subtitle">Unda akaunti yako kama Staff</p>
 
-        <!-- FORM - HAKUNA CHAGUO LA ADMIN -->
-        <input type="text" id="name" placeholder="Jina lako" value="Staff Msaidizi">
-        <input type="email" id="email" placeholder="Email" value="staff@test.com">
-        <input type="password" id="password" placeholder="Password (min 6)" value="staff123">
-        <input type="password" id="confirm" placeholder="Rudia Password" value="staff123">
+        <input type="text" id="name" placeholder="Jina lako">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password (min 6)">
+        <input type="password" id="confirm" placeholder="Rudia Password">
+        
+        <select id="staffType">
+            <option value="shop">🏪 Shop Staff - Anauza bidhaa</option>
+            <option value="agent">🤖 Agent Staff - Anaweka cash/float</option>
+        </select>
 
         <button onclick="register()">Jisajili</button>
 
@@ -179,9 +146,15 @@
             Tuna akaunti? <a href="login.html">Ingia hapa</a>
         </div>
 
+        <div class="admin-info">
+            👑 <strong>Admin:</strong> Admin3@test.com | Password: 123
+        </div>
+
         <div class="info-box">
-            <strong>ℹ️ Kumbuka:</strong> Baada ya kujisajili, subiri Admin aku-activate.
-            Admin pekee ndiye anaweza kujisajili moja kwa moja.
+            <strong>ℹ️ Kumbuka:</strong>
+            <br>🤖 <strong>Agent Staff:</strong> Anaweka cash, float, ongezeko
+            <br>🏪 <strong>Shop Staff:</strong> Anaongeza mauzo
+            <br>👑 <strong>Admin:</strong> Ana-activate staff, anaona data zote
         </div>
     </div>
 
@@ -193,6 +166,7 @@
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const confirm = document.getElementById('confirm').value.trim();
+            const staffType = document.getElementById('staffType').value;
             const msg = document.getElementById('msg');
 
             if (!name || !email || !password || !confirm) {
@@ -213,13 +187,18 @@
                 return;
             }
 
+            if (email.toLowerCase() === 'admin3@test.com') {
+                msg.textContent = '❌ Email hii ni ya Admin! Tafadhali tumia email nyingine.';
+                msg.className = 'msg error';
+                return;
+            }
+
             msg.textContent = '⏳ Inaandikisha...';
             msg.className = 'msg';
 
             try {
-                // Role ni staff tu - hakuna chaguo la admin
                 const response = await fetch(
-                    `${API_URL}/users/register?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&role=staff`,
+                    `${API_URL}/users/register?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&staff_type=${staffType}`,
                     { method: 'POST' }
                 );
 
@@ -244,20 +223,23 @@
             }
         }
 
-        // ===== ENTER KEY =====
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 register();
             }
         });
 
-        // ===== AUTO REDIRECT IF LOGGED IN =====
         if (localStorage.getItem('token')) {
             const role = localStorage.getItem('userRole');
             if (role && role.toLowerCase() === 'admin') {
                 window.location.href = 'index.html';
             } else {
-                window.location.href = 'staff.html';
+                const staffType = localStorage.getItem('staffType');
+                if (staffType === 'agent') {
+                    window.location.href = 'agent_dashboard.html';
+                } else {
+                    window.location.href = 'shop_dashboard.html';
+                }
             }
         }
     </script>

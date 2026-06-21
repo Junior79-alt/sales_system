@@ -2,14 +2,15 @@ from sqlalchemy.orm import Session
 import models
 from auth import hash_password
 
-def create_user(db: Session, name: str, email: str, password: str, role: str = "staff", is_active: int = 0):
+def create_user(db: Session, name: str, email: str, password: str, role: str = "staff", is_active: int = 0, staff_type: str = "shop"):
     hashed_pw = hash_password(password)
     db_user = models.User(
         name=name,
         email=email,
         password=hashed_pw,
         role=role,
-        is_active=is_active
+        is_active=is_active,
+        staff_type=staff_type
     )
     db.add(db_user)
     db.commit()
@@ -21,6 +22,32 @@ def get_user_by_email(db: Session, email: str):
 
 def get_user_by_id(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
+
+def get_all_users(db: Session):
+    return db.query(models.User).all()
+
+def delete_user(db: Session, user_id: int):
+    user = get_user_by_id(db, user_id)
+    if user:
+        db.delete(user)
+        db.commit()
+    return user
+
+def activate_user(db: Session, user_id: int):
+    user = get_user_by_id(db, user_id)
+    if user:
+        user.is_active = 1
+        db.commit()
+        db.refresh(user)
+    return user
+
+def deactivate_user(db: Session, user_id: int):
+    user = get_user_by_id(db, user_id)
+    if user:
+        user.is_active = 0
+        db.commit()
+        db.refresh(user)
+    return user
 
 def create_sale(db: Session, product_name: str, quantity: int, price: float, user_id: int):
     total = quantity * price

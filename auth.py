@@ -43,4 +43,6 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
+    if user.is_active != 1:
+        raise HTTPException(status_code=403, detail="Account not active")
     return user

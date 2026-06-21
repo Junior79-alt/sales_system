@@ -6,13 +6,11 @@
     <title>Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ===== RESET & BASE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f4f7fc; display: flex; min-height: 100vh; }
+        body { background: #f0f2f5; display: flex; min-height: 100vh; }
 
-        /* ===== SIDEBAR ===== */
         .sidebar {
-            width: 260px;
+            width: 270px;
             background: linear-gradient(180deg, #0f1a3a, #1a2a5e);
             color: white;
             height: 100vh;
@@ -25,9 +23,7 @@
             padding-top: 20px;
             transform: translateX(-100%);
         }
-
         .sidebar.open { transform: translateX(0); }
-
         .sidebar-brand {
             display: flex;
             align-items: center;
@@ -35,19 +31,9 @@
             border-bottom: 1px solid rgba(255,255,255,0.08);
             margin-bottom: 20px;
         }
-
-        .sidebar-brand h2 {
-            font-size: 20px;
-            margin-left: 10px;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 0 10px;
-        }
-
+        .sidebar-brand h2 { font-size: 20px; margin-left: 10px; }
+        .sidebar-nav { list-style: none; padding: 0 10px; }
         .sidebar-nav li { margin-bottom: 3px; }
-
         .sidebar-nav li a {
             display: flex;
             align-items: center;
@@ -60,39 +46,13 @@
             gap: 12px;
             cursor: pointer;
         }
+        .sidebar-nav li a:hover { background: rgba(255,255,255,0.08); color: white; }
+        .sidebar-nav li a.active { background: rgba(255,255,255,0.12); color: white; }
+        .sidebar-nav li a .icon { font-size: 18px; width: 28px; text-align: center; }
+        .sidebar-nav .logout-link { margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px; }
+        .sidebar-nav .logout-link a { color: #ff8a80; }
+        .sidebar-nav .logout-link a:hover { background: #d32f2f; color: white; }
 
-        .sidebar-nav li a:hover {
-            background: rgba(255,255,255,0.08);
-            color: white;
-        }
-
-        .sidebar-nav li a.active {
-            background: rgba(255,255,255,0.12);
-            color: white;
-        }
-
-        .sidebar-nav li a .icon {
-            font-size: 18px;
-            width: 28px;
-            text-align: center;
-        }
-
-        .sidebar-nav .logout-link {
-            margin-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding-top: 15px;
-        }
-
-        .sidebar-nav .logout-link a {
-            color: #ff8a80;
-        }
-
-        .sidebar-nav .logout-link a:hover {
-            background: #d32f2f;
-            color: white;
-        }
-
-        /* ===== HAMBURGER ===== */
         .hamburger {
             display: block;
             background: none;
@@ -109,23 +69,10 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
         .hamburger:hover { background: #f0f2f5; }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            z-index: 999;
-        }
-
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
         .overlay.active { display: block; }
 
-        /* ===== MAIN CONTENT ===== */
         .main-content {
             margin-left: 0;
             flex: 1;
@@ -134,16 +81,9 @@
             min-height: 100vh;
             transition: margin-left 0.3s ease;
         }
+        .sidebar.open ~ .main-content { margin-left: 260px; }
+        @media (max-width: 768px) { .main-content { padding: 15px; padding-top: 70px; } }
 
-        .sidebar.open ~ .main-content {
-            margin-left: 260px;
-        }
-
-        @media (max-width: 768px) {
-            .main-content { padding: 15px; padding-top: 70px; }
-        }
-
-        /* ===== TOP HEADER ===== */
         .top-header {
             display: flex;
             justify-content: space-between;
@@ -156,26 +96,15 @@
             border-radius: 12px;
             color: white;
         }
+        .top-header .header-left h1 { font-size: 24px; color: white; margin: 0; }
+        .top-header .user-info span { font-weight: 500; color: rgba(255,255,255,0.9); }
 
-        .top-header .header-left h1 {
-            font-size: 24px;
-            color: white;
-            margin: 0;
-        }
-
-        .top-header .user-info span {
-            font-weight: 500;
-            color: rgba(255,255,255,0.9);
-        }
-
-        /* ===== STATS CARDS ===== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 30px;
         }
-
         .stat-card {
             background: white;
             padding: 20px 24px;
@@ -183,160 +112,49 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             transition: transform 0.2s;
         }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card .stat-label { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+        .stat-card .stat-value { font-size: 28px; font-weight: 700; color: #0f1a3a; margin-top: 5px; }
+        .stat-card .stat-value.profit { color: #2e7d32; }
+        .stat-card .stat-value.loss { color: #d32f2f; }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
+        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .charts-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .chart-box { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .chart-box .chart-title { font-size: 15px; font-weight: 600; color: #0f1a3a; margin-bottom: 15px; }
+        .chart-box canvas { width: 100% !important; height: 220px !important; max-height: 220px; }
 
-        .stat-card .stat-label {
-            font-size: 13px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-        }
+        .agent-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .agent-container h2 { color: #1a237e; font-size: 20px; margin-bottom: 20px; }
 
-        .stat-card .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0f1a3a;
-            margin-top: 5px;
-        }
+        .shop-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .shop-container h2 { color: #1a237e; font-size: 20px; margin-bottom: 20px; }
 
-        .stat-card .stat-value.positive {
-            color: #2e7d32;
-        }
+        .users-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto; }
+        .users-container h2 { color: #1a237e; font-size: 18px; margin-bottom: 15px; }
 
-        /* ===== CHARTS ===== */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .charts-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .chart-box {
-            background: white;
-            padding: 20px;
-            border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .chart-box .chart-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #0f1a3a;
-            margin-bottom: 15px;
-        }
-
-        .chart-box canvas {
-            width: 100% !important;
-            height: 220px !important;
-            max-height: 220px;
-        }
-
-        /* ===== USERS TABLE ===== */
-        .users-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow-x: auto;
-        }
-
-        .users-container h2 {
-            color: #1a237e;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .activate-form {
-            background: #e8eaf6;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
+        .activate-form { background: #e8eaf6; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
         .activate-form h3 { width: 100%; color: #1a237e; font-size: 16px; }
         .activate-form p { width: 100%; font-size: 13px; color: #555; }
-        .activate-form input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            min-width: 200px;
-        }
-        .activate-form button {
-            padding: 10px 25px;
-            background: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
+        .activate-form input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; min-width: 200px; }
+        .activate-form button { padding: 10px 25px; background: #2e7d32; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
         .activate-form button:hover { background: #1b5e20; }
 
-        .msg {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            display: none;
-            font-size: 14px;
-        }
+        .msg { width: 100%; padding: 10px; border-radius: 6px; font-weight: bold; display: none; font-size: 14px; }
         .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
         .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
         .msg.info { display: block; background: #bbdefb; color: #0d47a1; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            min-width: 600px;
-        }
-        th {
-            background: #1a237e;
-            color: white;
-            padding: 10px 12px;
-            text-align: left;
-            white-space: nowrap;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+        th { background: #1a237e; color: white; padding: 10px 12px; text-align: left; white-space: nowrap; }
         td { padding: 8px 12px; border-bottom: 1px solid #eee; }
         tr:hover { background: #f5f5f5; }
 
-        .user-status {
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
+        .user-status { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
         .user-status.active { background: #4caf50; color: white; }
         .user-status.inactive { background: #f44336; color: white; }
 
-        .action-btn {
-            padding: 4px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            margin: 2px;
-            white-space: nowrap;
-        }
+        .action-btn { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; white-space: nowrap; }
         .action-btn.activate { background: #4caf50; color: white; }
         .action-btn.activate:hover { background: #388e3c; }
         .action-btn.deactivate { background: #ff9800; color: white; }
@@ -344,10 +162,99 @@
         .action-btn.delete { background: #d32f2f; color: white; }
         .action-btn.delete:hover { background: #b71c1c; }
 
-        /* ===== RESPONSIVE ===== */
+        .sales-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .sale-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid #1a237e; transition: transform 0.2s, box-shadow 0.2s; }
+        .sale-card:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .sale-card .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .sale-card .card-header .product-name { font-size: 18px; font-weight: bold; color: #1a237e; }
+        .sale-card .card-header .product-id { font-size: 12px; color: #999; background: #f5f5f5; padding: 2px 10px; border-radius: 12px; }
+        .sale-card .card-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .sale-card .card-body .info-item { text-align: center; padding: 8px; background: #f8f9fa; border-radius: 8px; }
+        .sale-card .card-body .info-item .label { font-size: 11px; color: #888; display: block; }
+        .sale-card .card-body .info-item .value { font-size: 16px; font-weight: bold; color: #1a237e; }
+        .sale-card .card-body .info-item .value.amount { color: #2e7d32; }
+        .sale-card .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #eee; font-size: 12px; color: #888; flex-wrap: wrap; gap: 8px; }
+        .sale-card .card-footer .staff-badge { background: #e8eaf6; padding: 2px 12px; border-radius: 12px; color: #1a237e; font-weight: bold; font-size: 12px; }
+        .sale-card .card-footer .delete-btn { background: #d32f2f; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .sale-card .card-footer .delete-btn:hover { background: #b71c1c; }
+        .no-sales { text-align: center; padding: 40px; color: #999; font-size: 16px; }
+
+        .agent-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .agent-stat-card {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid #1a237e;
+        }
+        .agent-stat-card .label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .agent-stat-card .value { font-size: 20px; font-weight: 700; color: #1a237e; margin-top: 5px; }
+        .agent-stat-card .value.profit { color: #2e7d32; }
+        .agent-stat-card .value.loss { color: #d32f2f; }
+
+        .shop-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .shop-stat-card {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+        }
+        .shop-stat-card .label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .shop-stat-card .value { font-size: 20px; font-weight: 700; color: #2e7d32; margin-top: 5px; }
+
+        .agent-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1a237e;
+        }
+        .agent-item .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .agent-item .agent-header h4 { color: #1a237e; }
+        .agent-item .agent-stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .agent-item .agent-stats-row .profit { color: #2e7d32; font-weight: bold; }
+        .agent-item .agent-stats-row .loss { color: #d32f2f; font-weight: bold; }
+
+        .shop-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2e7d32;
+        }
+        .shop-item .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .shop-item .shop-header h4 { color: #2e7d32; }
+
         @media (max-width: 1024px) {
             .charts-grid { grid-template-columns: 1fr; }
             .charts-grid-2 { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 768px) {
@@ -360,6 +267,10 @@
             .activate-form button { width: 100%; }
             table { font-size: 12px; min-width: 500px; }
             th, td { padding: 6px 8px; }
+            .sales-cards-grid { grid-template-columns: 1fr; }
+            .sale-card .card-body { grid-template-columns: 1fr 1fr; }
+            .agent-stats-grid { grid-template-columns: 1fr 1fr; }
+            .shop-stats-grid { grid-template-columns: 1fr 1fr; }
         }
 
         @media (max-width: 480px) {
@@ -370,63 +281,49 @@
             .chart-box canvas { height: 160px !important; max-height: 160px; }
             table { font-size: 11px; min-width: 400px; }
             th, td { padding: 4px 6px; }
+            .sale-card .card-body { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .sale-card .card-body .info-item { padding: 6px; }
+            .sale-card .card-body .info-item .value { font-size: 14px; }
+            .sale-card .card-footer { flex-direction: column; text-align: center; }
+            .agent-stats-grid { grid-template-columns: 1fr; }
+            .shop-stats-grid { grid-template-columns: 1fr; }
         }
 
         @media (min-width: 769px) and (max-width: 1024px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .sales-cards-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
-    <!-- HAMBURGER -->
     <button class="hamburger" onclick="toggleSidebar()">☰</button>
-
-    <!-- OVERLAY -->
     <div class="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- ===== SIDEBAR ===== -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <span style="font-size:28px;">📊</span>
             <h2>Admin</h2>
         </div>
-
         <ul class="sidebar-nav">
-            <li><a href="#" class="active" onclick="showPage('dashboard')">
-                <span class="icon">🏠</span> Nyumbani
-            </a></li>
-            <li><a href="#" onclick="showPage('users')">
-                <span class="icon">👥</span> Watumiaji
-            </a></li>
-            <li><a href="#" onclick="showPage('sales')">
-                <span class="icon">📋</span> Mauzo Yote
-            </a></li>
-            <li class="logout-link"><a href="#" onclick="logout()">
-                <span class="icon">🚪</span> Toka
-            </a></li>
+            <li><a href="#" class="active" onclick="showPage('dashboard')"><span class="icon">🏠</span> Nyumbani</a></li>
+            <li><a href="#" onclick="showPage('users')"><span class="icon">👥</span> Watumiaji</a></li>
+            <li><a href="#" onclick="showPage('sales')"><span class="icon">📋</span> Mauzo Yote</a></li>
+            <li><a href="#" onclick="showPage('agent')"><span class="icon">🤖</span> Agent System</a></li>
+            <li><a href="#" onclick="showPage('shop')"><span class="icon">🏪</span> Shop System</a></li>
+            <li class="logout-link"><a href="#" onclick="logout()"><span class="icon">🚪</span> Toka</a></li>
         </ul>
     </nav>
 
-    <!-- ===== MAIN CONTENT ===== -->
     <div class="main-content">
 
-        <!-- TOP HEADER -->
         <div class="top-header">
-            <div class="header-left">
-                <h1>📊 ADMIN DASHBOARD</h1>
-            </div>
-            <div class="user-info">
-                <span id="adminName">Admin</span>
-            </div>
+            <div class="header-left"><h1 id="pageTitle">📊 ADMIN DASHBOARD</h1></div>
+            <div class="user-info"><span id="adminName">Admin</span></div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- ===== PAGE: DASHBOARD (HOME) ===== -->
-        <!-- ========================================== -->
+        <!-- PAGE: DASHBOARD -->
         <div id="page-dashboard" class="page-content">
-
-            <!-- STATS CARDS -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">💰 Jumla ya Mauzo</div>
@@ -440,26 +337,19 @@
                     <div class="stat-label">📋 Idadi ya Mauzo</div>
                     <div class="stat-value" id="totalSalesCount">0</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-label">🤖 Jumla ya Faida (Agent)</div>
+                    <div class="stat-value" id="totalAgentProfit">0 TSh</div>
+                </div>
             </div>
 
-            <!-- SALES TREND (Line Chart) -->
             <div class="charts-grid">
-                <div class="chart-box">
-                    <div class="chart-title">📈 Sales Trend</div>
-                    <canvas id="salesTrendChart"></canvas>
-                </div>
-                <div class="chart-box">
-                    <div class="chart-title">📍 Sales By Staff</div>
-                    <canvas id="salesLocationChart"></canvas>
-                </div>
+                <div class="chart-box"><div class="chart-title">📈 Sales Trend</div><canvas id="salesTrendChart"></canvas></div>
+                <div class="chart-box"><div class="chart-title">📍 Sales By Staff</div><canvas id="salesLocationChart"></canvas></div>
             </div>
 
-            <!-- SALES BY CATEGORY (Pie Chart) -->
             <div class="charts-grid-2">
-                <div class="chart-box">
-                    <div class="chart-title">🧩 Sales By Category</div>
-                    <canvas id="salesCategoryChart"></canvas>
-                </div>
+                <div class="chart-box"><div class="chart-title">🧩 Sales By Category</div><canvas id="salesCategoryChart"></canvas></div>
                 <div class="chart-box" style="display:flex; align-items:center; justify-content:center; min-height:200px;">
                     <div style="text-align:center; color:#888;">
                         <span style="font-size:48px;">📊</span>
@@ -468,12 +358,9 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <!-- ========================================== -->
-        <!-- ===== PAGE: USERS ===== -->
-        <!-- ========================================== -->
+        <!-- PAGE: USERS -->
         <div id="page-users" class="page-content" style="display:none;">
             <div class="users-container">
                 <div class="activate-form">
@@ -483,35 +370,22 @@
                     <button onclick="activateByEmail()">✅ ACTIVATE</button>
                     <div id="activateMsg" class="msg"></div>
                 </div>
-
                 <h2>👥 Watumiaji Wote</h2>
                 <div id="usersList"><p style="text-align:center;padding:20px;">Loading...</p></div>
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- ===== PAGE: SALES (TABLE) ===== -->
-        <!-- ========================================== -->
+        <!-- PAGE: SALES -->
         <div id="page-sales" class="page-content" style="display:none;">
             <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow-x:auto;">
                 <h2 style="color:#1a237e; font-size:18px; margin-bottom:15px;">📋 Mauzo Yote</h2>
-
-                <!-- Stats za juu -->
                 <div style="display:flex; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
-                    <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">
-                        💰 Jumla: <strong id="totalAll">0 TSh</strong>
-                    </div>
-                    <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">
-                        📦 Bidhaa: <strong id="totalProductsAll">0</strong>
-                    </div>
-                    <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">
-                        📋 Mauzo: <strong id="totalSalesAll">0</strong>
-                    </div>
+                    <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">💰 Jumla: <strong id="totalAll">0 TSh</strong></div>
+                    <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">📦 Bidhaa: <strong id="totalProductsAll">0</strong></div>
+                    <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">📋 Mauzo: <strong id="totalSalesAll">0</strong></div>
                 </div>
-
-                <!-- Jedwali la mauzo -->
                 <div id="allSalesTableWrapper">
-                    <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:600px;">
+                    <table>
                         <thead>
                             <tr style="background:#1a237e; color:white;">
                                 <th style="padding:10px 12px; text-align:left;">#</th>
@@ -525,44 +399,85 @@
                             </tr>
                         </thead>
                         <tbody id="salesTableBody">
-                            <tr>
-                                <td colspan="8" style="text-align:center; padding:30px; color:#999;">Loading...</td>
-                            </tr>
+                            <tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <!-- PAGE: AGENT SYSTEM -->
+        <div id="page-agent" class="page-content" style="display:none;">
+            <div class="agent-container">
+                <h2>🤖 Agent System - Data za Agent Staff</h2>
+                
+                <div class="agent-stats-grid">
+                    <div class="agent-stat-card">
+                        <div class="label">💰 Jumla Cash</div>
+                        <div class="value" id="adminTotalCash">0 TSh</div>
+                    </div>
+                    <div class="agent-stat-card" style="border-left-color: #7B1FA2;">
+                        <div class="label">🟣 Jumla Voda</div>
+                        <div class="value" style="color:#7B1FA2;" id="adminTotalVoda">0 TSh</div>
+                    </div>
+                    <div class="agent-stat-card" style="border-left-color: #D32F2F;">
+                        <div class="label">🔴 Jumla Airtel</div>
+                        <div class="value" style="color:#D32F2F;" id="adminTotalAirtel">0 TSh</div>
+                    </div>
+                    <div class="agent-stat-card" style="border-left-color: #1976D2;">
+                        <div class="label">🔵 Jumla Tigo</div>
+                        <div class="value" style="color:#1976D2;" id="adminTotalTigo">0 TSh</div>
+                    </div>
+                    <div class="agent-stat-card" style="border-left-color: #0d47a1;">
+                        <div class="label">💰 Mtaji Mwanzo</div>
+                        <div class="value" style="color:#0d47a1;" id="adminTotalInitial">0 TSh</div>
+                    </div>
+                    <div class="agent-stat-card" style="border-left-color: #e65100;">
+                        <div class="label">💰 Mtaji Sasa</div>
+                        <div class="value" style="color:#e65100;" id="adminTotalCurrent">0 TSh</div>
+                    </div>
+                    <div class="agent-stat-card" style="border-left-color: #2e7d32;">
+                        <div class="label">📈 Jumla Faida</div>
+                        <div class="value" id="adminTotalProfit">0 TSh</div>
+                    </div>
+                </div>
+
+                <div id="agentStaffList">
+                    <p style="text-align:center;color:#999;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: SHOP SYSTEM -->
+        <div id="page-shop" class="page-content" style="display:none;">
+            <div class="shop-container">
+                <h2>🏪 Shop System - Data za Shop Staff</h2>
+                <div class="shop-stats-grid">
+                    <div class="shop-stat-card"><div class="label">💰 Jumla Mauzo</div><div class="value" id="adminShopTotal">0 TSh</div></div>
+                    <div class="shop-stat-card"><div class="label">📦 Jumla Bidhaa</div><div class="value" id="adminShopQty">0</div></div>
+                    <div class="shop-stat-card"><div class="label">📋 Idadi ya Mauzo</div><div class="value" id="adminShopCount">0</div></div>
+                </div>
+                <div id="shopStaffList"><p style="text-align:center;color:#999;">Loading...</p></div>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // ============================================
-        // GLOBAL VARIABLES
-        // ============================================
         const API_URL = window.location.origin;
         const token = localStorage.getItem('token');
 
-        if (!token) {
-            window.location.href = 'login.html';
-        }
+        if (!token) { window.location.href = 'login.html'; }
 
-        // ============================================
-        // SIDEBAR FUNCTIONS
-        // ============================================
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.querySelector('.overlay').classList.toggle('active');
         }
-
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('open');
             document.querySelector('.overlay').classList.remove('active');
         }
 
-        // ============================================
-        // PAGE NAVIGATION
-        // ============================================
         function showPage(page) {
             document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
             const target = document.getElementById('page-' + page);
@@ -570,358 +485,147 @@
 
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
             const navLinks = document.querySelectorAll('.sidebar-nav a');
-            const pageMap = { 'dashboard': 0, 'users': 1, 'sales': 2 };
+            const pageMap = { 'dashboard': 0, 'users': 1, 'sales': 2, 'agent': 3, 'shop': 4 };
             if (pageMap[page] !== undefined && navLinks[pageMap[page]]) {
                 navLinks[pageMap[page]].classList.add('active');
             }
-
             if (window.innerWidth <= 768) closeSidebar();
+
+            const titles = {
+                'dashboard': '📊 ADMIN DASHBOARD',
+                'users': '👥 Watumiaji',
+                'sales': '📋 Mauzo Yote',
+                'agent': '🤖 Agent System',
+                'shop': '🏪 Shop System'
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || page;
 
             if (page === 'dashboard') loadDashboardData();
             if (page === 'users') loadUsers();
             if (page === 'sales') loadAllSalesFull();
+            if (page === 'agent') loadAgentData();
+            if (page === 'shop') loadShopData();
         }
 
-        // ============================================
-        // LOGOUT
-        // ============================================
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userRole');
+            localStorage.removeItem('staffType');
             window.location.href = 'login.html';
         }
 
-        // ============================================
-        // FETCH SALES
-        // ============================================
         async function fetchSales() {
             try {
-                const res = await fetch(`${API_URL}/sales/`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
+                const res = await fetch(`${API_URL}/sales/`, { headers: { 'Authorization': 'Bearer ' + token } });
                 if (!res.ok) throw new Error('Failed');
                 return await res.json();
-            } catch (e) {
-                console.error('Fetch sales error:', e);
-                return [];
-            }
+            } catch (e) { return []; }
         }
 
-        // ============================================
-        // DELETE SALE
-        // ============================================
         async function deleteSale(saleId) {
-            if (!confirm('⚠️ Je, una uhakika unataka kufuta mauzo haya? Hatua hii haiwezi kurekebishwa!')) return;
+            if (!confirm('⚠️ Je, una uhakika unataka kufuta mauzo haya?')) return;
             try {
                 const response = await fetch(`${API_URL}/sales/${saleId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const data = await response.json();
-                if (response.ok) {
-                    alert('✅ Mauzo yamefutwa!');
-                    showPage('dashboard');
-                } else {
-                    alert('❌ ' + (data.detail || 'Failed to delete sale!'));
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                alert('❌ Error: ' + error.message);
-            }
+                if (response.ok) { alert('✅ Mauzo yamefutwa!'); showPage('dashboard'); }
+                else { alert('❌ ' + (data.detail || 'Failed to delete sale!')); }
+            } catch (error) { alert('❌ Error: ' + error.message); }
         }
 
-        // ============================================
-        // LOAD DASHBOARD DATA
-        // ============================================
         async function loadDashboardData() {
             const sales = await fetchSales();
-
-            let totalAmount = 0;
-            let totalQty = 0;
-
-            sales.forEach(s => {
-                totalAmount += s.total_amount || 0;
-                totalQty += s.quantity || 0;
-            });
-
+            let totalAmount = 0, totalQty = 0;
+            sales.forEach(s => { totalAmount += s.total_amount || 0; totalQty += s.quantity || 0; });
             document.getElementById('totalSales').textContent = totalAmount.toLocaleString() + ' TSh';
             document.getElementById('totalProducts').textContent = totalQty;
             document.getElementById('totalSalesCount').textContent = sales.length;
 
             try {
-                const res = await fetch(`${API_URL}/users/all`);
-                if (res.ok) {
-                    const users = await res.json();
-                    document.getElementById('totalUsers').textContent = users.length;
+                const agentRes = await fetch(`${API_URL}/agent/all`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (agentRes.ok) {
+                    const agentData = await agentRes.json();
+                    let totalProfit = 0;
+                    agentData.forEach(agent => {
+                        totalProfit += agent.total_profit || 0;
+                    });
+                    const profitEl = document.getElementById('totalAgentProfit');
+                    profitEl.textContent = totalProfit.toLocaleString() + ' TSh';
+                    if (totalProfit >= 0) {
+                        profitEl.className = 'stat-value profit';
+                    } else {
+                        profitEl.className = 'stat-value loss';
+                    }
                 }
             } catch (e) {}
 
             try {
-                const res = await fetch(`${API_URL}/users/me`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (res.ok) {
-                    const user = await res.json();
-                    document.getElementById('adminName').textContent = user.email;
-                }
+                const res = await fetch(`${API_URL}/users/me`, { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) { const user = await res.json(); document.getElementById('adminName').textContent = user.email; }
             } catch (e) {}
 
-            // ===== 1. SALES TREND (Line Chart) =====
+            // Charts
             const ctx1 = document.getElementById('salesTrendChart').getContext('2d');
-
             const byDate = {};
-            sales.forEach(s => {
-                const d = s.date ? s.date.split('T')[0] : 'Unknown';
-                byDate[d] = (byDate[d] || 0) + (s.total_amount || 0);
-            });
-
+            sales.forEach(s => { const d = s.date ? s.date.split('T')[0] : 'Unknown'; byDate[d] = (byDate[d] || 0) + (s.total_amount || 0); });
             const labels = Object.keys(byDate).sort();
             const data = labels.map(l => byDate[l]);
-
             const gradient = ctx1.createLinearGradient(0, 0, 0, 220);
             gradient.addColorStop(0, 'rgba(26, 35, 126, 0.25)');
             gradient.addColorStop(1, 'rgba(26, 35, 126, 0.0)');
-
             if (window.trendChart) window.trendChart.destroy();
-
             window.trendChart = new Chart(ctx1, {
                 type: 'line',
-                data: {
-                    labels: labels.length ? labels : ['Hakuna Data'],
-                    datasets: [{
-                        label: 'Mauzo (TSh)',
-                        data: data.length ? data : [0],
-                        borderColor: '#1a237e',
-                        backgroundColor: gradient,
-                        borderWidth: 2.5,
-                        pointBackgroundColor: '#1a237e',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(26,35,126,0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            cornerRadius: 8,
-                            padding: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    return 'TSh ' + context.parsed.y.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
-                            ticks: {
-                                callback: function(value) { return value.toLocaleString(); },
-                                font: { size: 10 }
-                            }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 9 }, maxRotation: 45, minRotation: 0 }
-                        }
-                    },
-                    animation: { duration: 1200, easing: 'easeOutQuart' }
-                }
+                data: { labels: labels.length ? labels : ['Hakuna Data'], datasets: [{ label: 'Mauzo (TSh)', data: data.length ? data : [0], borderColor: '#1a237e', backgroundColor: gradient, borderWidth: 2.5, pointBackgroundColor: '#1a237e', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 7, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(26,35,126,0.9)', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 8, padding: 10, callbacks: { label: function(context) { return 'TSh ' + context.parsed.y.toLocaleString(); } } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, ticks: { callback: function(value) { return value.toLocaleString(); }, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45, minRotation: 0 } } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
             });
 
-            // ===== 2. SALES BY STAFF (Bar Chart) =====
             const ctx2 = document.getElementById('salesLocationChart').getContext('2d');
-
             const byStaff = {};
-            sales.forEach(s => {
-                const staff = s.user_id || 'Unknown';
-                byStaff[staff] = (byStaff[staff] || 0) + (s.total_amount || 0);
-            });
-
+            sales.forEach(s => { const staff = s.user_id || 'Unknown'; byStaff[staff] = (byStaff[staff] || 0) + (s.total_amount || 0); });
             const staffLabels = Object.keys(byStaff).map(id => 'Staff ' + id);
             const staffData = Object.values(byStaff);
-
             if (window.locationChart) window.locationChart.destroy();
-
             window.locationChart = new Chart(ctx2, {
                 type: 'bar',
-                data: {
-                    labels: staffLabels.length ? staffLabels : ['Hakuna'],
-                    datasets: [{
-                        label: 'Mauzo',
-                        data: staffData.length ? staffData : [0],
-                        backgroundColor: 'rgba(26, 35, 126, 0.6)',
-                        borderColor: '#1a237e',
-                        borderWidth: 1.5,
-                        borderRadius: 4,
-                        barPercentage: 0.6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(26,35,126,0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            cornerRadius: 8,
-                            padding: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    return 'TSh ' + context.parsed.y.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
-                            ticks: {
-                                callback: function(value) { return value.toLocaleString(); },
-                                font: { size: 10 }
-                            }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 9 }, maxRotation: 45, minRotation: 0 }
-                        }
-                    },
-                    animation: { duration: 1000, easing: 'easeOutQuart' }
-                }
+                data: { labels: staffLabels.length ? staffLabels : ['Hakuna'], datasets: [{ label: 'Mauzo', data: staffData.length ? staffData : [0], backgroundColor: 'rgba(26, 35, 126, 0.6)', borderColor: '#1a237e', borderWidth: 1.5, borderRadius: 4, barPercentage: 0.6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(26,35,126,0.9)', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 8, padding: 10, callbacks: { label: function(context) { return 'TSh ' + context.parsed.y.toLocaleString(); } } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, ticks: { callback: function(value) { return value.toLocaleString(); }, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45, minRotation: 0 } } }, animation: { duration: 1000, easing: 'easeOutQuart' } }
             });
 
-            // ===== 3. SALES BY CATEGORY (Pie Chart) =====
             const ctx3 = document.getElementById('salesCategoryChart').getContext('2d');
-
             const byCategory = {};
-            sales.forEach(s => {
-                const cat = s.product_name || 'Unknown';
-                byCategory[cat] = (byCategory[cat] || 0) + (s.total_amount || 0);
-            });
-
+            sales.forEach(s => { const cat = s.product_name || 'Unknown'; byCategory[cat] = (byCategory[cat] || 0) + (s.total_amount || 0); });
             const catLabels = Object.keys(byCategory);
             const catData = Object.values(byCategory);
             const colors = ['#1a237e', '#0d47a1', '#1565c0', '#1976d2', '#1e88e5', '#42a5f5', '#64b5f6'];
-
             if (window.categoryChart) window.categoryChart.destroy();
-
             window.categoryChart = new Chart(ctx3, {
                 type: 'pie',
-                data: {
-                    labels: catLabels.length ? catLabels : ['Hakuna Data'],
-                    datasets: [{
-                        data: catData.length ? catData : [1],
-                        backgroundColor: colors.slice(0, catLabels.length || 1),
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 10,
-                                font: { size: 10 },
-                                boxWidth: 12,
-                                boxHeight: 12
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(26,35,126,0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            cornerRadius: 8,
-                            padding: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return context.label + ': ' + context.parsed.toLocaleString() + ' TSh (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    }
-                }
+                data: { labels: catLabels.length ? catLabels : ['Hakuna Data'], datasets: [{ data: catData.length ? catData : [1], backgroundColor: colors.slice(0, catLabels.length || 1), borderColor: '#fff', borderWidth: 2 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 10 }, boxWidth: 12, boxHeight: 12 } }, tooltip: { backgroundColor: 'rgba(26,35,126,0.9)', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 8, padding: 10, callbacks: { label: function(context) { const total = context.dataset.data.reduce((a, b) => a + b, 0); const percentage = ((context.parsed / total) * 100).toFixed(1); return context.label + ': ' + context.parsed.toLocaleString() + ' TSh (' + percentage + '%)'; } } } } }
             });
         }
 
-        // ============================================
-        // USERS PAGE
-        // ============================================
         async function loadUsers() {
             try {
-                const response = await fetch(`${API_URL}/users/all`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!response.ok) {
-                    document.getElementById('usersList').innerHTML = '<p style="color:red;">❌ Error loading users</p>';
-                    return;
-                }
+                const response = await fetch(`${API_URL}/users/all`, { headers: { 'Authorization': 'Bearer ' + token } });
+                if (!response.ok) { document.getElementById('usersList').innerHTML = '<p style="color:red;">❌ Error loading users</p>'; return; }
                 const users = await response.json();
                 const container = document.getElementById('usersList');
-                if (!users || users.length === 0) {
-                    container.innerHTML = '<p class="no-sales">Hakuna watumiaji</p>';
-                    return;
-                }
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Jina</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Vitendo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                if (!users || users.length === 0) { container.innerHTML = '<p class="no-sales">Hakuna watumiaji</p>'; return; }
+                let html = `<table><thead><tr><th>#</th><th>Jina</th><th>Email</th><th>Role</th><th>Aina</th><th>Status</th><th>Vitendo</th></tr></thead><tbody>`;
                 users.forEach((u, i) => {
                     const isActive = u.is_active === 1;
-                    html += `
-                        <tr>
-                            <td>${i + 1}</td>
-                            <td><strong>${u.name}</strong></td>
-                            <td>${u.email}</td>
-                            <td>${u.role}</td>
-                            <td>
-                                <span class="user-status ${isActive ? 'active' : 'inactive'}">
-                                    ${isActive ? '✅ Active' : '❌ Inactive'}
-                                </span>
-                            </td>
-                            <td>
-                                ${!isActive && u.role.toLowerCase() !== 'admin' ? `
-                                    <button class="action-btn activate" onclick="activateByEmail()">✅ Activate</button>
-                                ` : ''}
-                                ${isActive && u.role.toLowerCase() !== 'admin' ? `
-                                    <button class="action-btn deactivate" onclick="deactivateUser(${u.id})">⏸️ Deactivate</button>
-                                ` : ''}
-                                ${u.role.toLowerCase() !== 'admin' ? `
-                                    <button class="action-btn delete" onclick="deleteUser(${u.id}, '${u.name}')">🗑️ Futa</button>
-                                ` : `
-                                    <span style="color:#999;font-size:12px;">Haiwezi</span>
-                                `}
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr><td>${i + 1}</td><td><strong>${u.name}</strong></td><td>${u.email}</td><td>${u.role}</td><td>${u.staff_type || 'shop'}</td>
+                        <td><span class="user-status ${isActive ? 'active' : 'inactive'}">${isActive ? '✅ Active' : '❌ Inactive'}</span></td>
+                        <td>${!isActive && u.role.toLowerCase() !== 'admin' ? `<button class="action-btn activate" onclick="activateByEmail()">✅ Activate</button>` : ''}
+                        ${isActive && u.role.toLowerCase() !== 'admin' ? `<button class="action-btn deactivate" onclick="deactivateUser(${u.id})">⏸️ Deactivate</button>` : ''}
+                        ${u.role.toLowerCase() !== 'admin' ? `<button class="action-btn delete" onclick="deleteUser(${u.id}, '${u.name}')">🗑️ Futa</button>` : `<span style="color:#999;font-size:12px;">Haiwezi</span>`}</td></tr>`;
                 });
                 html += '</tbody></table>';
                 container.innerHTML = html;
@@ -930,30 +634,17 @@
             }
         }
 
-        // ===== ACTIVATE BY EMAIL =====
         async function activateByEmail() {
             const email = document.getElementById('activateEmail').value.trim();
             const msg = document.getElementById('activateMsg');
-            if (!email) {
-                showMessage(msg, '❌ Tafadhali ingiza email!', 'error');
-                return;
-            }
+            if (!email) { showMessage(msg, '❌ Tafadhali ingiza email!', 'error'); return; }
             showMessage(msg, '⏳ Ina-activate...', 'info');
             try {
-                const response = await fetch(
-                    `${API_URL}/users/activate_by_email?email=${encodeURIComponent(email)}`, { method: 'POST' }
-                );
+                const response = await fetch(`${API_URL}/users/activate_by_email?email=${encodeURIComponent(email)}`, { method: 'POST' });
                 const data = await response.json();
-                if (response.ok) {
-                    showMessage(msg, `✅ ${data.message}`, 'success');
-                    document.getElementById('activateEmail').value = '';
-                    loadUsers();
-                } else {
-                    showMessage(msg, `❌ ${data.detail || 'Activation failed!'}`, 'error');
-                }
-            } catch (error) {
-                showMessage(msg, `❌ Error: ${error.message}`, 'error');
-            }
+                if (response.ok) { showMessage(msg, `✅ ${data.message}`, 'success'); document.getElementById('activateEmail').value = ''; loadUsers(); }
+                else { showMessage(msg, `❌ ${data.detail || 'Activation failed!'}`, 'error'); }
+            } catch (error) { showMessage(msg, `❌ Error: ${error.message}`, 'error'); }
         }
 
         function showMessage(element, text, type) {
@@ -961,155 +652,310 @@
             element.className = 'msg ' + type;
         }
 
-        // ===== DELETE USER (Futa kabisa) =====
         async function deleteUser(userId, userName) {
-            if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA user "${userName}" kabisa? Hatua hii haiwezi kurekebishwa!`)) {
-                return;
-            }
-
+            if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA user "${userName}" kabisa?`)) return;
             try {
-                const response = await fetch(`${API_URL}/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
+                const response = await fetch(`${API_URL}/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
                 const data = await response.json();
-
-                if (response.ok) {
-                    alert(`✅ User "${userName}" amefutwa!`);
-                    loadUsers();
-                } else {
-                    alert(`❌ ${data.detail || 'Failed to delete user!'}`);
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                alert(`❌ Error: ${error.message}`);
-            }
+                if (response.ok) { alert(`✅ User "${userName}" amefutwa!`); loadUsers(); }
+                else { alert(`❌ ${data.detail || 'Failed to delete user!'}`); }
+            } catch (error) { alert(`❌ Error: ${error.message}`); }
         }
 
-        // ===== DEACTIVATE USER =====
         async function deactivateUser(id) {
             if (!confirm('Je, una uhakika unataka ku-DEACTIVATE user huyu?')) return;
-
             try {
-                const response = await fetch(`${API_URL}/users/deactivate/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
+                const response = await fetch(`${API_URL}/users/deactivate/${id}`, { method: 'PUT', headers: { 'Authorization': 'Bearer ' + token } });
                 const data = await response.json();
-
-                if (response.ok) {
-                    alert('⏸️ User deactivated!');
-                    loadUsers();
-                } else {
-                    alert(`❌ ${data.detail || 'Failed to deactivate user!'}`);
-                }
-            } catch (error) {
-                console.error('Deactivate error:', error);
-                alert(`❌ Error: ${error.message}`);
-            }
+                if (response.ok) { alert('⏸️ User deactivated!'); loadUsers(); }
+                else { alert(`❌ ${data.detail || 'Failed to deactivate user!'}`); }
+            } catch (error) { alert(`❌ Error: ${error.message}`); }
         }
 
-        // ============================================
-        // LOAD ALL SALES - JEDWALI LA KAWAIDA
-        // ============================================
         async function loadAllSalesFull() {
             try {
-                const res = await fetch(`${API_URL}/sales/`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-
+                const res = await fetch(`${API_URL}/sales/`, { headers: { 'Authorization': 'Bearer ' + token } });
                 if (!res.ok) throw new Error('Failed to fetch sales');
-
                 const sales = await res.json();
                 const tbody = document.getElementById('salesTableBody');
-
                 let totalAmount = 0, totalQty = 0;
-                sales.forEach(s => {
-                    totalAmount += s.total_amount || 0;
-                    totalQty += s.quantity || 0;
-                });
-
+                sales.forEach(s => { totalAmount += s.total_amount || 0; totalQty += s.quantity || 0; });
                 document.getElementById('totalAll').textContent = totalAmount.toLocaleString() + ' TSh';
                 document.getElementById('totalProductsAll').textContent = totalQty;
                 document.getElementById('totalSalesAll').textContent = sales.length;
-
-                if (!sales || sales.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">📭 Hakuna mauzo</td></tr>`;
-                    return;
-                }
-
+                if (!sales || sales.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">📭 Hakuna mauzo</td></tr>`; return; }
                 let html = '';
                 sales.forEach((s, i) => {
                     const date = s.date ? new Date(s.date).toLocaleString('sw-TZ') : '-';
                     const total = (s.total_amount || 0).toLocaleString();
                     const price = (s.price || 0).toLocaleString();
-
-                    html += `
-                        <tr style="border-bottom:1px solid #eee;">
-                            <td style="padding:8px 12px;">${i + 1}</td>
-                            <td style="padding:8px 12px;"><strong>${s.product_name || '-'}</strong></td>
-                            <td style="padding:8px 12px;">${s.quantity || 0}</td>
-                            <td style="padding:8px 12px;">${price} TSh</td>
-                            <td style="padding:8px 12px; font-weight:bold; color:#2e7d32;">${total} TSh</td>
-                            <td style="padding:8px 12px;">
-                                <span style="background:#e8eaf6; padding:2px 10px; border-radius:12px; color:#1a237e; font-size:11px;">
-                                    👤 Staff #${s.user_id || '-'}
-                                </span>
-                            </td>
-                            <td style="padding:8px 12px; font-size:12px;">${date}</td>
-                            <td style="padding:8px 12px;">
-                                <button onclick="deleteSale(${s.id})" style="background:#d32f2f; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px;">
-                                    🗑️ Futa
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 12px;">${i + 1}</td>
+                        <td style="padding:8px 12px;"><strong>${s.product_name || '-'}</strong></td>
+                        <td style="padding:8px 12px;">${s.quantity || 0}</td>
+                        <td style="padding:8px 12px;">${price} TSh</td>
+                        <td style="padding:8px 12px; font-weight:bold; color:#2e7d32;">${total} TSh</td>
+                        <td style="padding:8px 12px;"><span style="background:#e8eaf6; padding:2px 10px; border-radius:12px; color:#1a237e; font-size:11px;">👤 Staff #${s.user_id || '-'}</span></td>
+                        <td style="padding:8px 12px; font-size:12px;">${date}</td>
+                        <td style="padding:8px 12px;"><button onclick="deleteSale(${s.id})" style="background:#d32f2f; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️ Futa</button></td></tr>`;
                 });
-
                 tbody.innerHTML = html;
-
             } catch (error) {
-                console.error('Load all sales error:', error);
-                document.getElementById('salesTableBody').innerHTML =
-                    `<tr><td colspan="8" style="text-align:center; padding:30px; color:red;">❌ Error: ${error.message}</td></tr>`;
+                document.getElementById('salesTableBody').innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:red;">❌ Error: ${error.message}</td></tr>`;
             }
         }
 
-        // ============================================
-        // ENTER KEY
-        // ============================================
+        // ===== LOAD AGENT DATA =====
+        async function loadAgentData() {
+            try {
+                const res = await fetch(`${API_URL}/agent/all`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!res.ok) throw new Error('Failed to load agent data');
+
+                const agentData = await res.json();
+
+                let totalCash = 0, totalVoda = 0, totalAirtel = 0, totalTigo = 0;
+                let totalInitial = 0, totalCurrent = 0, totalProfit = 0;
+
+                agentData.forEach(agent => {
+                    totalCash += agent.total_cash || 0;
+                    totalVoda += agent.total_float_voda || 0;
+                    totalAirtel += agent.total_float_airtel || 0;
+                    totalTigo += agent.total_float_tigo || 0;
+                    totalInitial += agent.initial_capital || 0;
+                    totalCurrent += agent.current_capital || 0;
+                    totalProfit += agent.total_profit || 0;
+                });
+
+                document.getElementById('adminTotalCash').textContent = totalCash.toLocaleString() + ' TSh';
+                document.getElementById('adminTotalVoda').textContent = totalVoda.toLocaleString() + ' TSh';
+                document.getElementById('adminTotalAirtel').textContent = totalAirtel.toLocaleString() + ' TSh';
+                document.getElementById('adminTotalTigo').textContent = totalTigo.toLocaleString() + ' TSh';
+                document.getElementById('adminTotalInitial').textContent = totalInitial.toLocaleString() + ' TSh';
+                document.getElementById('adminTotalCurrent').textContent = totalCurrent.toLocaleString() + ' TSh';
+
+                const profitEl = document.getElementById('adminTotalProfit');
+                profitEl.textContent = totalProfit.toLocaleString() + ' TSh';
+                if (totalProfit >= 0) {
+                    profitEl.className = 'value profit';
+                } else {
+                    profitEl.className = 'value loss';
+                }
+
+                const container = document.getElementById('agentStaffList');
+                if (!agentData || agentData.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna data kutoka kwa Agent Staff</p>';
+                    return;
+                }
+
+                let html = '';
+                agentData.forEach((agent, index) => {
+                    const profitClass = (agent.total_profit || 0) >= 0 ? 'profit' : 'loss';
+                    
+                    html += `
+                        <div class="agent-item">
+                            <div class="agent-header">
+                                <h4>👤 ${agent.staff_name} <span style="font-size:12px; color:#888; font-weight:normal;">(ID: ${agent.staff_id})</span></h4>
+                                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                                    <span style="font-size:12px; color:#0d47a1;">💰 Mtaji Mwanzo: ${(agent.initial_capital || 0).toLocaleString()} TSh</span>
+                                    <span style="font-size:12px; color:#e65100;">💰 Mtaji Sasa: ${(agent.current_capital || 0).toLocaleString()} TSh</span>
+                                    <span style="font-size:12px; color:#2e7d32;">📈 Faida: ${(agent.total_profit || 0).toLocaleString()} TSh</span>
+                                </div>
+                            </div>
+                            <div class="agent-stats-row">
+                                <div><strong>💰 Cash:</strong> ${(agent.total_cash || 0).toLocaleString()} TSh</div>
+                                <div style="color:#7B1FA2;"><strong>🟣 Voda:</strong> ${(agent.total_float_voda || 0).toLocaleString()} TSh</div>
+                                <div style="color:#D32F2F;"><strong>🔴 Airtel:</strong> ${(agent.total_float_airtel || 0).toLocaleString()} TSh</div>
+                                <div style="color:#1976D2;"><strong>🔵 Tigo:</strong> ${(agent.total_float_tigo || 0).toLocaleString()} TSh</div>
+                            </div>
+                            
+                            <details style="margin-top:10px;">
+                                <summary style="cursor:pointer; color:#1a237e; font-weight:600; padding:8px 12px; background:#e8eaf6; border-radius:6px;">
+                                    📋 Onyesha Historia za Siku (${agent.history ? agent.history.length : 0})
+                                </summary>
+                                <div style="margin-top:10px; overflow-x:auto;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                        <thead>
+                                            <tr style="background:#1a237e; color:white;">
+                                                <th style="padding:6px 10px; text-align:left;">#</th>
+                                                <th style="padding:6px 10px; text-align:left;">Tarehe</th>
+                                                <th style="padding:6px 10px; text-align:left;">Cash</th>
+                                                <th style="padding:6px 10px; text-align:left;">Voda</th>
+                                                <th style="padding:6px 10px; text-align:left;">Airtel</th>
+                                                <th style="padding:6px 10px; text-align:left;">Tigo</th>
+                                                <th style="padding:6px 10px; text-align:left;">Jumla Float</th>
+                                                <th style="padding:6px 10px; text-align:left;">Jumla</th>
+                                                <th style="padding:6px 10px; text-align:left;">Faida</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                    `;
+                    if (agent.history) {
+                        const historyByDate = {};
+                        agent.history.forEach(item => {
+                            const dateKey = item.date.split(' ')[0];
+                            if (!historyByDate[dateKey]) {
+                                historyByDate[dateKey] = [];
+                            }
+                            historyByDate[dateKey].push(item);
+                        });
+
+                        const sortedDates = Object.keys(historyByDate).sort();
+                        let count = 0;
+                        sortedDates.forEach(dateKey => {
+                            const items = historyByDate[dateKey];
+                            const totalDailyProfit = items.reduce((sum, i) => sum + (i.daily_profit || 0), 0);
+                            
+                            html += `
+                                <tr style="background:#e3f2fd; font-weight:bold;">
+                                    <td colspan="9" style="padding:8px 10px; color:#0d47a1;">
+                                        📅 ${dateKey} 
+                                        <span style="color:#2e7d32; margin-left:15px;">Faida ya Siku: ${totalDailyProfit.toLocaleString()} TSh</span>
+                                    </td>
+                                </tr>
+                            `;
+                            
+                            items.forEach((item, idx) => {
+                                count++;
+                                const totalFloat = item.float_voda + item.float_airtel + item.float_tigo;
+                                const profitCls = (item.daily_profit || 0) >= 0 ? 'style="color:#2e7d32;font-weight:bold;"' : 'style="color:#d32f2f;font-weight:bold;"';
+                                html += `
+                                    <tr style="border-bottom:1px solid #eee;">
+                                        <td style="padding:6px 10px;">${count}</td>
+                                        <td style="padding:6px 10px;">${item.date}</td>
+                                        <td style="padding:6px 10px;">${(item.cash || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:6px 10px; color:#7B1FA2;">${(item.float_voda || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:6px 10px; color:#D32F2F;">${(item.float_airtel || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:6px 10px; color:#1976D2;">${(item.float_tigo || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:6px 10px; font-weight:bold;">${totalFloat.toLocaleString()} TSh</td>
+                                        <td style="padding:6px 10px; font-weight:bold; color:#1a237e;">${(item.daily_total || 0).toLocaleString()} TSh</td>
+                                        <td ${profitCls}>${(item.daily_profit || 0).toLocaleString()} TSh</td>
+                                    </tr>
+                                `;
+                            });
+                        });
+                    }
+                    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Load agent data error:', error);
+                document.getElementById('agentStaffList').innerHTML = '<p style="color:red;">❌ Error loading data</p>';
+            }
+        }
+
+        // ===== LOAD SHOP DATA =====
+        async function loadShopData() {
+            try {
+                const res = await fetch(`${API_URL}/agent/shop_data`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!res.ok) throw new Error('Failed to load shop data');
+
+                const shopData = await res.json();
+
+                let totalSales = 0, totalQty = 0, totalCount = 0;
+                shopData.forEach(shop => {
+                    totalSales += shop.total_sales || 0;
+                    totalQty += shop.total_quantity || 0;
+                    totalCount += shop.sales_count || 0;
+                });
+
+                document.getElementById('adminShopTotal').textContent = totalSales.toLocaleString() + ' TSh';
+                document.getElementById('adminShopQty').textContent = totalQty;
+                document.getElementById('adminShopCount').textContent = totalCount;
+
+                const container = document.getElementById('shopStaffList');
+                if (!shopData || shopData.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna data kutoka kwa Shop Staff</p>';
+                    return;
+                }
+
+                let html = '';
+                shopData.forEach((shop, index) => {
+                    html += `
+                        <div class="shop-item">
+                            <div class="shop-header">
+                                <h4>👤 ${shop.staff_name} <span style="font-size:12px; color:#888; font-weight:normal;">(ID: ${shop.staff_id})</span></h4>
+                                <span style="font-size:12px; color:#888;">Mauzo: ${(shop.total_sales || 0).toLocaleString()} TSh</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:10px;">
+                                <div><strong>💰 Mauzo:</strong> ${(shop.total_sales || 0).toLocaleString()} TSh</div>
+                                <div><strong>📦 Bidhaa:</strong> ${shop.total_quantity || 0}</div>
+                                <div><strong>📋 Idadi:</strong> ${shop.sales_count || 0}</div>
+                            </div>
+                            <details>
+                                <summary style="cursor:pointer; color:#2e7d32; font-weight:600;">📋 Mauzo (${shop.sales ? shop.sales.length : 0})</summary>
+                                <div style="margin-top:10px; overflow-x:auto;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                        <thead>
+                                            <tr style="background:#e8f5e9;">
+                                                <th style="padding:6px 10px; text-align:left;">#</th>
+                                                <th style="padding:6px 10px; text-align:left;">Bidhaa</th>
+                                                <th style="padding:6px 10px; text-align:left;">Idadi</th>
+                                                <th style="padding:6px 10px; text-align:left;">Bei</th>
+                                                <th style="padding:6px 10px; text-align:left;">Jumla</th>
+                                                <th style="padding:6px 10px; text-align:left;">Tarehe</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+                    if (shop.sales) {
+                        shop.sales.forEach((s, idx) => {
+                            html += `
+                                <tr style="border-bottom:1px solid #eee;">
+                                    <td style="padding:6px 10px;">${idx + 1}</td>
+                                    <td style="padding:6px 10px;">${s.product_name}</td>
+                                    <td style="padding:6px 10px;">${s.quantity}</td>
+                                    <td style="padding:6px 10px;">${(s.price || 0).toLocaleString()} TSh</td>
+                                    <td style="padding:6px 10px; font-weight:bold; color:#2e7d32;">${(s.total_amount || 0).toLocaleString()} TSh</td>
+                                    <td style="padding:6px 10px;">${s.date}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Load shop data error:', error);
+                document.getElementById('shopStaffList').innerHTML = '<p style="color:red;">❌ Error loading data</p>';
+            }
+        }
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const input = document.getElementById('activateEmail');
-                if (input && document.activeElement === input) {
-                    activateByEmail();
-                }
+                if (input && document.activeElement === input) { activateByEmail(); }
             }
         });
 
-        // ============================================
-        // INIT
-        // ============================================
         showPage('dashboard');
 
         setInterval(() => {
-            if (document.getElementById('page-dashboard').style.display !== 'none') {
-                loadDashboardData();
-            }
-            if (document.getElementById('page-users').style.display !== 'none') {
-                loadUsers();
-            }
-            if (document.getElementById('page-sales').style.display !== 'none') {
-                loadAllSalesFull();
-            }
+            if (document.getElementById('page-dashboard').style.display !== 'none') loadDashboardData();
+            if (document.getElementById('page-users').style.display !== 'none') loadUsers();
+            if (document.getElementById('page-sales').style.display !== 'none') loadAllSalesFull();
+            if (document.getElementById('page-agent').style.display !== 'none') loadAgentData();
+            if (document.getElementById('page-shop').style.display !== 'none') loadShopData();
         }, 30000);
     </script>
 </body>
