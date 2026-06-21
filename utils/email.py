@@ -1,64 +1,26 @@
 import os
 import requests
-from datetime import datetime
 from config import Config
 
-def send_email(to_email: str, subject: str, body: str, html_body: str = None):
-    if not Config.is_email_enabled():
-        print("⚠️ SendGrid API Key haijapatikana! Email haitatumwa.")
+def send_email(to_email, subject, body):
+    """Tuma barua pepe kwa SendGrid"""
+    if not Config.SENDGRID_API_KEY:
+        print("⚠️ SendGrid API Key haijapatikana!")
         print(f"   To: {to_email}")
         print(f"   Subject: {subject}")
-        print(f"   Body: {body}")
+        print(f"   Body: {body[:200]}...")
         return False
     
     try:
         url = "https://api.sendgrid.com/v3/mail/send"
         
-        if html_body is None:
-            html_body = body.replace('\n', '<br>')
-        
-        html_content = f"""
-        <html>
-            <head>
-                <style>
-                    body {{ font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }}
-                    .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-                    .header {{ background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 20px; border-radius: 12px 12px 0 0; text-align: center; margin: -30px -30px 20px -30px; }}
-                    .header h2 {{ margin: 0; font-size: 24px; }}
-                    .content {{ color: #333; line-height: 1.6; }}
-                    .footer {{ text-align: center; color: #888; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h2>📊 {Config.APP_NAME}</h2>
-                    </div>
-                    <div class="content">
-                        {html_body}
-                    </div>
-                    <div class="footer">
-                        <p>© {datetime.utcnow().year} {Config.APP_NAME}. All rights reserved.</p>
-                    </div>
-                </div>
-            </body>
-        </html>
-        """
+        # Simple email without complex HTML
+        html_body = body.replace('\n', '<br>')
         
         data = {
-            "personalizations": [
-                {
-                    "to": [{"email": to_email}],
-                    "subject": subject
-                }
-            ],
+            "personalizations": [{"to": [{"email": to_email}], "subject": subject}],
             "from": {"email": Config.SENDGRID_FROM_EMAIL},
-            "content": [
-                {
-                    "type": "text/html",
-                    "value": html_content
-                }
-            ]
+            "content": [{"type": "text/html", "value": f"<h2>📊 Sales System</h2><hr>{html_body}<hr><p style='color:#888;font-size:12px;'>© 2026 Sales System</p>"}]
         }
         
         headers = {
@@ -66,27 +28,27 @@ def send_email(to_email: str, subject: str, body: str, html_body: str = None):
             "Content-Type": "application/json"
         }
         
-        print(f"📧 Inatuma email kwa {to_email}...")
+        print(f"📧 Sending email to {to_email}...")
         response = requests.post(url, json=data, headers=headers)
         
         if response.status_code == 202:
-            print(f"✅ Email imetumwa kwa {to_email} via SendGrid")
+            print(f"✅ Email sent to {to_email}")
             return True
         else:
             print(f"❌ SendGrid error: {response.status_code}")
-            print(f"   Response: {response.text[:200]}")
             return False
             
     except Exception as e:
-        print(f"❌ SendGrid error: {e}")
+        print(f"❌ Error: {e}")
         return False
 
-def send_registration_email(email: str, name: str, password: str, staff_type: str):
-    subject = "✅ Akaunti Yako Imewekwa - Sales System"
-    body = f"""
-Habari {name},
+# ===== EMAIL FUNCTIONS =====
 
-Akaunti yako imeundwa kwenye mfumo wa {Config.APP_NAME}.
+def send_registration_email(email, name, password, staff_type):
+    subject = "✅ Akaunti Yako Imewekwa"
+    body = f"""Habari {name},
+
+Akaunti yako imeundwa kwenye Sales System.
 
 🔑 Maelezo yako:
    📧 Email: {email}
@@ -98,16 +60,14 @@ Akaunti yako imeundwa kwenye mfumo wa {Config.APP_NAME}.
 Akaunti yako inasubiri ku-ACTIVATE na Admin.
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
 
-def send_activation_email(email: str, name: str, staff_type: str):
-    subject = "✅ Akaunti Yako IME-ACTIVATED - Sales System"
-    body = f"""
-Habari {name},
+def send_activation_email(email, name, staff_type):
+    subject = "✅ Akaunti Yako IME-ACTIVATED"
+    body = f"""Habari {name},
 
-Akaunti yako kwenye mfumo wa {Config.APP_NAME} ime-ACTIVATED! 🎉
+Akaunti yako kwenye Sales System ime-ACTIVATED! 🎉
 
 🔑 Sasa unaweza kuingia.
    📌 Aina: {staff_type.upper()}
@@ -115,28 +75,24 @@ Akaunti yako kwenye mfumo wa {Config.APP_NAME} ime-ACTIVATED! 🎉
 🔗 Ingia hapa: {Config.APP_URL}/dashboard/login.html
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
 
-def send_deactivation_email(email: str, name: str):
-    subject = "⛔ Akaunti Yako IME-DEACTIVATED - Sales System"
-    body = f"""
-Habari {name},
+def send_deactivation_email(email, name):
+    subject = "⛔ Akaunti Yako IME-DEACTIVATED"
+    body = f"""Habari {name},
 
-Akaunti yako kwenye mfumo wa {Config.APP_NAME} ime-DEACTIVATED.
+Akaunti yako kwenye Sales System ime-DEACTIVATED.
 
 Huwezi kuingia mpaka Admin aku-activate tena.
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
 
-def send_sale_email(email: str, name: str, product_name: str, quantity: int, price: float, total: float):
-    subject = "✅ Mauzo Yamehifadhiwa - Sales System"
-    body = f"""
-Habari {name},
+def send_sale_email(email, name, product_name, quantity, price, total):
+    subject = "✅ Mauzo Yamehifadhiwa"
+    body = f"""Habari {name},
 
 Mauzo yako yamehifadhiwa kwa mafanikio! 📊
 
@@ -147,14 +103,12 @@ Mauzo yako yamehifadhiwa kwa mafanikio! 📊
    💵 Jumla: {total:,.0f} TSh
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
 
-def send_agent_data_email(email: str, name: str, cash: float, float_voda: float, float_airtel: float, float_tigo: float, total: float):
-    subject = "✅ Data ya Agent Imehifadhiwa - Sales System"
-    body = f"""
-Habari {name},
+def send_agent_data_email(email, name, cash, float_voda, float_airtel, float_tigo, total):
+    subject = "✅ Data ya Agent Imehifadhiwa"
+    body = f"""Habari {name},
 
 Data yako ya Agent imehifadhiwa kwa mafanikio! 🤖
 
@@ -166,14 +120,12 @@ Data yako ya Agent imehifadhiwa kwa mafanikio! 🤖
    📊 Jumla: {total:,.0f} TSh
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
 
-def send_forgot_password_email(email: str, name: str, temp_password: str):
-    subject = "🔑 Password ya Kianzio - Sales System"
-    body = f"""
-Habari {name},
+def send_forgot_password_email(email, name, temp_password):
+    subject = "🔑 Password ya Kianzio"
+    body = f"""Habari {name},
 
 Umeomba kuweka upya password yako.
 
@@ -184,14 +136,12 @@ Umeomba kuweka upya password yako.
 ⚠️ Badilisha password yako mara baada ya kuingia.
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
 
-def send_reset_password_email(email: str, name: str):
-    subject = "✅ Password Yako Imebadilishwa - Sales System"
-    body = f"""
-Habari {name},
+def send_reset_password_email(email, name):
+    subject = "✅ Password Yako Imebadilishwa"
+    body = f"""Habari {name},
 
 Password yako imebadilishwa kwa mafanikio! 🔐
 
@@ -200,6 +150,5 @@ Sasa unaweza kuingia kwa password mpya.
 🔗 Ingia hapa: {Config.APP_URL}/dashboard/login.html
 
 Asante,
-{Config.APP_NAME} Team
-"""
+Sales System Team"""
     return send_email(email, subject, body)
