@@ -357,7 +357,7 @@ def get_shop_data(
     return result
 
 # ============================================
-# ADMIN: DELETE AGENT DATA
+# ADMIN: DELETE AGENT DATA (UPDATED - WITH CAPITAL RECALCULATION)
 # ============================================
 @router.delete("/delete/{data_id}")
 def delete_agent_data(
@@ -383,17 +383,54 @@ def delete_agent_data(
             detail="Agent data not found!"
         )
     
+    # Hifadhi staff_id kabla ya kufuta
+    staff_id = agent_data.staff_id
+    
     # Futa data
     db.delete(agent_data)
     db.commit()
+    
+    # ===== HESABU UPYA MTAJI NA FAIDA =====
+    # Pata data zote zilizobaki za staff huyu
+    remaining_data = db.query(models.AgentData).filter(
+        models.AgentData.staff_id == staff_id
+    ).order_by(models.AgentData.date.asc()).all()
+    
+    # Pata capital ya staff
+    capital = db.query(models.AgentCapital).filter(
+        models.AgentCapital.staff_id == staff_id
+    ).first()
+    
+    if capital and remaining_data:
+        # Hesabu jumla ya cash na float zote
+        total_cash = sum(d.cash for d in remaining_data)
+        total_float = sum(d.float_voda + d.float_airtel + d.float_tigo for d in remaining_data)
+        total_spent = total_cash + total_float
+        
+        # Sasisha current_capital
+        capital.current_capital = total_spent
+        
+        # Hesabu faida upya
+        # Faida = Jumla ya matumizi yote - Mtaji wa mwanzo
+        capital.total_profit = total_spent - capital.initial_capital
+        
+        db.commit()
+        db.refresh(capital)
+    elif capital and not remaining_data:
+        # Kama hakuna data iliyobaki, rudisha mtaji kwa initial
+        capital.current_capital = capital.initial_capital
+        capital.total_profit = 0
+        db.commit()
+        db.refresh(capital)
     
     return {
         "message": f"✅ Agent data ID {data_id} deleted successfully!",
         "deleted_id": data_id
     }
 
+
 # ============================================
-# ADMIN: DELETE ALL AGENT DATA FOR A STAFF
+# ADMIN: DELETE ALL AGENT DATA FOR A STAFF (UPDATED)
 # ============================================
 @router.delete("/delete_by_staff/{staff_id}")
 def delete_agent_data_by_staff(
@@ -426,6 +463,17 @@ def delete_agent_data_by_staff(
     for data in agent_data:
         db.delete(data)
     db.commit()
+    
+    # ===== RUDISHA MTAJI KWA INITIAL =====
+    capital = db.query(models.AgentCapital).filter(
+        models.AgentCapital.staff_id == staff_id
+    ).first()
+    
+    if capital:
+        capital.current_capital = capital.initial_capital
+        capital.total_profit = 0
+        db.commit()
+        db.refresh(capital)
     
     return {
         "message": f"✅ {count} agent data records deleted for staff ID {staff_id}!",
