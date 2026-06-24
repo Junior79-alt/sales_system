@@ -209,19 +209,7 @@
         }
         .glass-card .register-link a:hover { text-decoration: underline; text-shadow: 0 0 30px rgba(255, 255, 255, 0.2); }
 
-        .glass-card .admin-hint {
-            background: rgba(255, 255, 255, 0.04);
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(5px);
-        }
-        .glass-card .admin-hint strong { color: #ffffff; font-weight: 600; }
-        .glass-card .admin-hint .highlight { color: #ffd93d; font-weight: 600; }
+        /* ===== NO ADMIN HINT HERE! ===== */
 
         .forgot-form {
             display: none;
@@ -335,7 +323,6 @@
             .glass-card .logo span { font-size: 48px; }
             .glass-card input { padding: 13px 16px; font-size: 15px; border-radius: 12px; }
             .glass-card .login-btn { font-size: 17px; padding: 13px; border-radius: 12px; }
-            .glass-card .admin-hint { font-size: 12px; padding: 10px 14px; }
             .forgot-form input { padding: 13px 16px; font-size: 15px; border-radius: 12px; }
             .forgot-form button { padding: 13px; font-size: 15px; border-radius: 12px; }
             .reset-form input { padding: 13px 16px; font-size: 15px; border-radius: 12px; }
@@ -369,12 +356,13 @@
             <h1>Karibu</h1>
             <p class="subtitle">Ingia kwenye mfumo wako</p>
 
+            <!-- LOGIN FORM -->
             <div id="loginForm">
-                <input type="email" id="email" placeholder="📧 Email yako" value="Admin3@test.com">
-                <input type="password" id="password" placeholder="🔑 Password" value="123">
+                <input type="email" id="email" placeholder="📧 Email yako">
+                <input type="password" id="password" placeholder="🔑 Password">
                 
                 <div class="forgot-link">
-                    <a href="#" onclick="showForgotForm()">🔑 Nimesahau password?</a>
+                    <a href="#" onclick="showForgotForm()">🔑 Nimeisahau password?</a>
                 </div>
 
                 <button onclick="login()" class="login-btn">🚀 INGIA</button>
@@ -390,9 +378,9 @@
                 <div class="register-link">
                     Huna akaunti? <a href="register.html">Jisajili hapa</a>
                 </div>
-
             </div>
 
+            <!-- FORGOT PASSWORD FORM -->
             <div id="forgotForm" class="forgot-form">
                 <h3>🔑 Reset Password</h3>
                 <p>Ingiza email yako, tutakutumia password ya kianzio</p>
@@ -404,6 +392,7 @@
                 </div>
             </div>
 
+            <!-- RESET PASSWORD FORM -->
             <div id="resetForm" class="reset-form">
                 <h3>🔐 Weka Password Mpya</h3>
                 <p>Ingia kwa password ya kianzio, kisha weka password mpya</p>
@@ -423,6 +412,7 @@
     <script>
         const API_URL = window.location.origin;
 
+        // ===== LOGIN =====
         async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
@@ -482,6 +472,7 @@
             }
         }
 
+        // ===== FORGOT PASSWORD =====
         async function forgotPassword() {
             const email = document.getElementById('forgotEmail').value.trim();
             const msg = document.getElementById('forgotMsg');
@@ -524,6 +515,7 @@
             }
         }
 
+        // ===== RESET PASSWORD =====
         async function resetPassword() {
             const email = document.getElementById('resetEmail').value.trim();
             const oldPassword = document.getElementById('resetOldPassword').value.trim();
@@ -589,6 +581,7 @@
             }
         }
 
+        // ===== SHOW / HIDE FORMS =====
         function showForgotForm() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('forgotForm').classList.add('active');
@@ -616,6 +609,7 @@
             document.getElementById('resetMsg').className = 'msg';
         }
 
+        // ===== ENTER KEY =====
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const loginForm = document.getElementById('loginForm');
@@ -629,6 +623,7 @@
             }
         });
 
+        // ===== AUTO REDIRECT =====
         if (localStorage.getItem('token')) {
             const role = localStorage.getItem('userRole');
             const staffType = localStorage.getItem('staffType');
