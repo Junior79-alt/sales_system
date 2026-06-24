@@ -406,7 +406,7 @@
             </div>
         </div>
 
-        <!-- PAGE: AGENT SYSTEM -->
+        <!-- ===== PAGE: AGENT SYSTEM ===== -->
         <div id="page-agent" class="page-content" style="display:none;">
             <div class="agent-container">
                 <h2>🤖 Agent System - Data za Agent Staff</h2>
@@ -704,7 +704,7 @@
             }
         }
 
-        // ===== LOAD AGENT DATA =====
+        // ===== LOAD AGENT DATA (Admin) =====
         async function loadAgentData() {
             try {
                 const res = await fetch(`${API_URL}/agent/all`, {
@@ -757,10 +757,14 @@
                         <div class="agent-item">
                             <div class="agent-header">
                                 <h4>👤 ${agent.staff_name} <span style="font-size:12px; color:#888; font-weight:normal;">(ID: ${agent.staff_id})</span></h4>
-                                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                                <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
                                     <span style="font-size:12px; color:#0d47a1;">💰 Mtaji Mwanzo: ${(agent.initial_capital || 0).toLocaleString()} TSh</span>
                                     <span style="font-size:12px; color:#e65100;">💰 Mtaji Sasa: ${(agent.current_capital || 0).toLocaleString()} TSh</span>
                                     <span style="font-size:12px; color:#2e7d32;">📈 Faida: ${(agent.total_profit || 0).toLocaleString()} TSh</span>
+                                    <button onclick="deleteAllAgentData(${agent.staff_id}, '${agent.staff_name}')" 
+                                            style="background:#d32f2f; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:12px;">
+                                        🗑️ Futa Data Zote
+                                    </button>
                                 </div>
                             </div>
                             <div class="agent-stats-row">
@@ -787,6 +791,7 @@
                                                 <th style="padding:6px 10px; text-align:left;">Jumla Float</th>
                                                 <th style="padding:6px 10px; text-align:left;">Jumla</th>
                                                 <th style="padding:6px 10px; text-align:left;">Faida</th>
+                                                <th style="padding:6px 10px; text-align:left;">Kitendo</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -813,6 +818,12 @@
                                         📅 ${dateKey} 
                                         <span style="color:#2e7d32; margin-left:15px;">Faida ya Siku: ${totalDailyProfit.toLocaleString()} TSh</span>
                                     </td>
+                                    <td style="padding:8px 10px; text-align:center;">
+                                        <button onclick="deleteAgentDataByDate(${agent.staff_id}, '${dateKey}')" 
+                                                style="background:#d32f2f; color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:10px;">
+                                            🗑️ Futa Siku
+                                        </button>
+                                    </td>
                                 </tr>
                             `;
                             
@@ -831,6 +842,12 @@
                                         <td style="padding:6px 10px; font-weight:bold;">${totalFloat.toLocaleString()} TSh</td>
                                         <td style="padding:6px 10px; font-weight:bold; color:#1a237e;">${(item.daily_total || 0).toLocaleString()} TSh</td>
                                         <td ${profitCls}>${(item.daily_profit || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:6px 10px; text-align:center;">
+                                            <button onclick="deleteSingleAgentData(${item.id})" 
+                                                    style="background:#d32f2f; color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:10px;">
+                                                🗑️ Futa
+                                            </button>
+                                        </td>
                                     </tr>
                                 `;
                             });
@@ -938,6 +955,113 @@
             } catch (error) {
                 console.error('Load shop data error:', error);
                 document.getElementById('shopStaffList').innerHTML = '<p style="color:red;">❌ Error loading data</p>';
+            }
+        }
+
+        // =========================================================
+        // DELETE FUNCTIONS FOR AGENT DATA (Admin Only)
+        // =========================================================
+
+        // ===== DELETE SINGLE AGENT DATA =====
+        async function deleteSingleAgentData(dataId) {
+            if (!confirm('⚠️ Je, una uhakika unataka kufuta data hii? Hatua hii haiwezi kurekebishwa!')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/agent/delete/${dataId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    loadAgentData(); // Refresh the list
+                } else {
+                    alert('❌ ' + (data.detail || 'Failed to delete!'));
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ===== DELETE ALL AGENT DATA FOR A STAFF =====
+        async function deleteAllAgentData(staffId, staffName) {
+            if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA data zote za ${staffName}? Hatua hii haiwezi kurekebishwa!`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/agent/delete_by_staff/${staffId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    loadAgentData(); // Refresh the list
+                } else {
+                    alert('❌ ' + (data.detail || 'Failed to delete!'));
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ===== DELETE AGENT DATA BY DATE =====
+        async function deleteAgentDataByDate(staffId, dateKey) {
+            if (!confirm(`⚠️ Je, una uhakika unataka kufuta data zote za tarehe ${dateKey}? Hatua hii haiwezi kurekebishwa!`)) return;
+            
+            try {
+                // First get all data for this staff
+                const res = await fetch(`${API_URL}/agent/all`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (!res.ok) throw new Error('Failed to load data');
+                
+                const allData = await res.json();
+                const staffData = allData.find(a => a.staff_id === staffId);
+                
+                if (!staffData) {
+                    alert('❌ Staff not found!');
+                    return;
+                }
+                
+                // Find data entries with this date
+                const entriesToDelete = staffData.history.filter(item => item.date.startsWith(dateKey));
+                
+                if (entriesToDelete.length === 0) {
+                    alert('❌ Hakuna data ya tarehe hii!');
+                    return;
+                }
+                
+                let deletedCount = 0;
+                for (const entry of entriesToDelete) {
+                    const response = await fetch(`${API_URL}/agent/delete/${entry.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        deletedCount++;
+                    }
+                }
+                
+                alert(`✅ ${deletedCount} data imefutwa kwa tarehe ${dateKey}!`);
+                loadAgentData(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Delete by date error:', error);
+                alert('❌ Error: ' + error.message);
             }
         }
 

@@ -4,12 +4,11 @@ from database import get_db
 import models
 from auth import get_current_user
 from datetime import datetime, timedelta
-from utils.email import send_agent_data_email
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
 
 # ============================================
-# SET CAPITAL
+# SET CAPITAL (Mtaji wa Mwanzo)
 # ============================================
 @router.post("/set_capital")
 def set_capital(
@@ -144,17 +143,6 @@ def add_agent_data(
     
     db.commit()
     db.refresh(capital)
-    
-    # ===== SEND EMAIL: Agent Data Added =====
-    send_agent_data_email(
-        current_user.email,
-        current_user.name,
-        cash,
-        float_voda,
-        float_airtel,
-        float_tigo,
-        daily_total
-    )
     
     return {
         "message": "✅ Data imehifadhiwa!",
@@ -367,3 +355,80 @@ def get_shop_data(
         })
     
     return result
+
+# ============================================
+# ADMIN: DELETE AGENT DATA
+# ============================================
+@router.delete("/delete/{data_id}")
+def delete_agent_data(
+    data_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Hakikisha ni Admin
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admin can delete agent data!"
+        )
+    
+    # Tafuta data ya agent
+    agent_data = db.query(models.AgentData).filter(
+        models.AgentData.id == data_id
+    ).first()
+    
+    if not agent_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Agent data not found!"
+        )
+    
+    # Futa data
+    db.delete(agent_data)
+    db.commit()
+    
+    return {
+        "message": f"✅ Agent data ID {data_id} deleted successfully!",
+        "deleted_id": data_id
+    }
+
+# ============================================
+# ADMIN: DELETE ALL AGENT DATA FOR A STAFF
+# ============================================
+@router.delete("/delete_by_staff/{staff_id}")
+def delete_agent_data_by_staff(
+    staff_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Hakikisha ni Admin
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admin can delete agent data!"
+        )
+    
+    # Tafuta data zote za staff
+    agent_data = db.query(models.AgentData).filter(
+        models.AgentData.staff_id == staff_id
+    ).all()
+    
+    if not agent_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No agent data found for this staff!"
+        )
+    
+    # Hesabu idadi
+    count = len(agent_data)
+    
+    # Futa data zote
+    for data in agent_data:
+        db.delete(data)
+    db.commit()
+    
+    return {
+        "message": f"✅ {count} agent data records deleted for staff ID {staff_id}!",
+        "staff_id": staff_id,
+        "deleted_count": count
+    }
