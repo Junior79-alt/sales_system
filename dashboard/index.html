@@ -757,12 +757,16 @@
                         <div class="agent-item">
                             <div class="agent-header">
                                 <h4>👤 ${agent.staff_name} <span style="font-size:12px; color:#888; font-weight:normal;">(ID: ${agent.staff_id})</span></h4>
-                                <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
+                                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                                     <span style="font-size:12px; color:#0d47a1;">💰 Mtaji Mwanzo: ${(agent.initial_capital || 0).toLocaleString()} TSh</span>
                                     <span style="font-size:12px; color:#e65100;">💰 Mtaji Sasa: ${(agent.current_capital || 0).toLocaleString()} TSh</span>
                                     <span style="font-size:12px; color:#2e7d32;">📈 Faida: ${(agent.total_profit || 0).toLocaleString()} TSh</span>
+                                    <button onclick="deleteCapitalOnly(${agent.staff_id}, '${agent.staff_name}')" 
+                                            style="background:#ff9800; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px;">
+                                        💰 Futa Mtaji
+                                    </button>
                                     <button onclick="deleteAllAgentData(${agent.staff_id}, '${agent.staff_name}')" 
-                                            style="background:#d32f2f; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:12px;">
+                                            style="background:#d32f2f; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px;">
                                         🗑️ Futa Data Zote
                                     </button>
                                 </div>
@@ -990,7 +994,7 @@
 
         // ===== DELETE ALL AGENT DATA FOR A STAFF =====
         async function deleteAllAgentData(staffId, staffName) {
-            if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA data zote za ${staffName}? Hatua hii haiwezi kurekebishwa!`)) return;
+            if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA data zote na mtaji wa ${staffName}? Hatua hii haiwezi kurekebishwa!`)) return;
             
             try {
                 const response = await fetch(`${API_URL}/agent/delete_by_staff/${staffId}`, {
@@ -1061,6 +1065,32 @@
                 
             } catch (error) {
                 console.error('Delete by date error:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ===== DELETE CAPITAL ONLY =====
+        async function deleteCapitalOnly(staffId, staffName) {
+            if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA mtaji wa ${staffName}? Hatua hii itafuta mtaji wa mwanzo na wa sasa. Agent atalazimika kuweka mtaji mpya!`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/agent/delete_capital/${staffId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    loadAgentData(); // Refresh the list
+                } else {
+                    alert('❌ ' + (data.detail || 'Failed to delete capital!'));
+                }
+            } catch (error) {
+                console.error('Delete capital error:', error);
                 alert('❌ Error: ' + error.message);
             }
         }

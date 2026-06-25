@@ -357,7 +357,7 @@ def get_shop_data(
     return result
 
 # ============================================
-# ADMIN: DELETE AGENT DATA (UPDATED - WITH CAPITAL RECALCULATION)
+# ADMIN: DELETE AGENT DATA (Single)
 # ============================================
 @router.delete("/delete/{data_id}")
 def delete_agent_data(
@@ -365,14 +365,12 @@ def delete_agent_data(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Hakikisha ni Admin
     if current_user.role.lower() != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only Admin can delete agent data!"
         )
     
-    # Tafuta data ya agent
     agent_data = db.query(models.AgentData).filter(
         models.AgentData.id == data_id
     ).first()
@@ -383,43 +381,32 @@ def delete_agent_data(
             detail="Agent data not found!"
         )
     
-    # Hifadhi staff_id kabla ya kufuta
     staff_id = agent_data.staff_id
     
-    # Futa data
     db.delete(agent_data)
     db.commit()
     
-    # ===== HESABU UPYA MTAJI NA FAIDA =====
-    # Pata data zote zilizobaki za staff huyu
+    # Recalculate capital
     remaining_data = db.query(models.AgentData).filter(
         models.AgentData.staff_id == staff_id
     ).order_by(models.AgentData.date.asc()).all()
     
-    # Pata capital ya staff
     capital = db.query(models.AgentCapital).filter(
         models.AgentCapital.staff_id == staff_id
     ).first()
     
-    if capital and remaining_data:
-        # Hesabu jumla ya cash na float zote
-        total_cash = sum(d.cash for d in remaining_data)
-        total_float = sum(d.float_voda + d.float_airtel + d.float_tigo for d in remaining_data)
-        total_spent = total_cash + total_float
+    if capital:
+        if remaining_data:
+            total_cash = sum(d.cash for d in remaining_data)
+            total_float = sum(d.float_voda + d.float_airtel + d.float_tigo for d in remaining_data)
+            total_spent = total_cash + total_float
+            
+            capital.current_capital = total_spent
+            capital.total_profit = total_spent - capital.initial_capital
+        else:
+            capital.current_capital = capital.initial_capital
+            capital.total_profit = 0
         
-        # Sasisha current_capital
-        capital.current_capital = total_spent
-        
-        # Hesabu faida upya
-        # Faida = Jumla ya matumizi yote - Mtaji wa mwanzo
-        capital.total_profit = total_spent - capital.initial_capital
-        
-        db.commit()
-        db.refresh(capital)
-    elif capital and not remaining_data:
-        # Kama hakuna data iliyobaki, rudisha mtaji kwa initial
-        capital.current_capital = capital.initial_capital
-        capital.total_profit = 0
         db.commit()
         db.refresh(capital)
     
@@ -428,9 +415,8 @@ def delete_agent_data(
         "deleted_id": data_id
     }
 
-
 # ============================================
-# ADMIN: DELETE ALL AGENT DATA FOR A STAFF (UPDATED)
+# ADMIN: DELETE ALL AGENT DATA FOR A STAFF
 # ============================================
 @router.delete("/delete_by_staff/{staff_id}")
 def delete_agent_data_by_staff(
@@ -438,14 +424,12 @@ def delete_agent_data_by_staff(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Hakikisha ni Admin
     if current_user.role.lower() != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only Admin can delete agent data!"
         )
     
-    # Tafuta data zote za staff
     agent_data = db.query(models.AgentData).filter(
         models.AgentData.staff_id == staff_id
     ).all()
@@ -456,27 +440,65 @@ def delete_agent_data_by_staff(
             detail="No agent data found for this staff!"
         )
     
-    # Hesabu idadi
     count = len(agent_data)
     
-    # Futa data zote
     for data in agent_data:
         db.delete(data)
     db.commit()
     
-    # ===== RUDISHA MTAJI KWA INITIAL =====
+    # Delete capital completely
     capital = db.query(models.AgentCapital).filter(
         models.AgentCapital.staff_id == staff_id
     ).first()
     
     if capital:
-        capital.current_capital = capital.initial_capital
-        capital.total_profit = 0
+        db.delete(capital)
         db.commit()
-        db.refresh(capital)
     
     return {
-        "message": f"✅ {count} agent data records deleted for staff ID {staff_id}!",
+        "message": f"✅ {count} agent data records AND capital deleted for staff ID {staff_id}!",
         "staff_id": staff_id,
         "deleted_count": count
+    }
+
+# ============================================
+# ADMIN: DELETE INITIAL CAPITAL ONLY
+# ============================================
+@router.delete("/delete_capital/{staff_id}")
+def delete_initial_capital(
+    staff_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Hakikisha ni Admin
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admin can delete capital!"
+        )
+    
+    # Tafuta capital ya staff
+    capital = db.query(models.AgentCapital).filter(
+        models.AgentCapital.staff_id == staff_id
+    ).first()
+    
+    if not capital:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Capital not found for this staff!"
+        )
+    
+    # Hifadhi data kabla ya kufuta
+    staff_name = capital.staff.name if capital.staff else "Unknown"
+    initial_capital = capital.initial_capital
+    
+    # Futa capital
+    db.delete(capital)
+    db.commit()
+    
+    return {
+        "message": f"✅ Initial capital of {initial_capital:,.0f} TSh deleted for {staff_name}!",
+        "staff_id": staff_id,
+        "staff_name": staff_name,
+        "deleted_capital": initial_capital
     }
