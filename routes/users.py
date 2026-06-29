@@ -40,7 +40,6 @@ def register(
 
     user = crud.create_user(db, name, email, password, role="staff", is_active=0, staff_type=staff_type)
     
-    # ===== SEND EMAIL: Registration =====
     send_registration_email(email, name, password, staff_type)
     
     return {
@@ -120,7 +119,6 @@ def activate_by_email(email: str, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     
-    # ===== SEND EMAIL: Activation =====
     send_activation_email(email, user.name, user.staff_type)
     
     return {
@@ -151,7 +149,6 @@ def deactivate_user(
     db.commit()
     db.refresh(user)
     
-    # ===== SEND EMAIL: Deactivation =====
     send_deactivation_email(user.email, user.name)
     
     return {"message": f"User {user.name} deactivated successfully!"}
@@ -190,7 +187,6 @@ def forgot_password(email: str, db: Session = Depends(get_db)):
     user.password = hashed_temp
     db.commit()
     
-    # ===== SEND EMAIL: Forgot Password =====
     send_forgot_password_email(email, user.name, temp_password)
     
     return {"message": "✅ Password ya kianzio imetumwa!", "email": email}
@@ -216,7 +212,6 @@ def reset_password(
     user.password = hash_password(new_password)
     db.commit()
     
-    # ===== SEND EMAIL: Reset Password =====
     send_reset_password_email(email, user.name)
     
     return {"message": "✅ Password yako imebadilishwa!", "email": user.email}

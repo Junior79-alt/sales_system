@@ -18,10 +18,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            flex-wrap: wrap;
         }
         header h1 { font-size: 24px; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
         .logout-btn {
             background: #d32f2f;
             color: white;
@@ -32,10 +30,46 @@
         }
         .logout-btn:hover { background: #b71c1c; }
 
-        .stats-grid {
+        .agent-form {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .agent-form h2 { color: #1a237e; margin-bottom: 15px; }
+        .agent-form .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .agent-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 150px;
+        }
+        .agent-form button {
+            padding: 12px 30px;
+            background: #1a237e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .agent-form button:hover { background: #0d47a1; }
+        .agent-form .msg { margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; }
+        .agent-form .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
+        .agent-form .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
+
+        .agent-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 30px;
         }
         .stat-card {
@@ -47,61 +81,84 @@
         .stat-card h3 { font-size: 14px; color: #666; margin-bottom: 5px; }
         .stat-card p { font-size: 24px; font-weight: bold; color: #1a237e; }
 
-        .add-sale-form {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .add-sale-form h2 { color: #1a237e; margin-bottom: 15px; }
-        .add-sale-form .form-row {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .add-sale-form input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            min-width: 150px;
-        }
-        .add-sale-form button {
-            padding: 12px 30px;
-            background: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .add-sale-form button:hover { background: #1b5e20; }
-        .add-sale-form .msg { margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; }
-        .add-sale-form .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
-        .add-sale-form .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
-        .add-sale-form .msg.info { display: block; background: #bbdefb; color: #0d47a1; }
-
         .table-container {
             background: white;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
         }
         .table-container h2 { color: #1a237e; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #1a237e; color: white; padding: 12px; text-align: left; }
-        td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+        th { background: #1a237e; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 8px 12px; border-bottom: 1px solid #eee; }
         tr:hover { background: #f5f5f5; }
 
+        .sales-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .sale-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #1a237e;
+        }
+        .sale-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .sale-card .card-header .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a237e;
+        }
+        .sale-card .card-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .sale-card .card-body .info-item {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .sale-card .card-body .info-item .label {
+            font-size: 11px;
+            color: #888;
+            display: block;
+        }
+        .sale-card .card-body .info-item .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a237e;
+        }
+        .sale-card .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #888;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         @media (max-width: 600px) {
-            .add-sale-form .form-row { flex-direction: column; }
-            .add-sale-form input { min-width: auto; width: 100%; }
-            .add-sale-form button { width: 100%; }
-            header { flex-direction: column; text-align: center; }
-            .header-right { flex-wrap: wrap; justify-content: center; }
+            .agent-form .form-row { flex-direction: column; }
+            .agent-form input { min-width: auto; width: 100%; }
+            .agent-form button { width: 100%; }
+            .agent-stats { grid-template-columns: 1fr 1fr; }
+            .sales-cards-grid { grid-template-columns: 1fr; }
+            .sale-card .card-body { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -109,44 +166,52 @@
     <div class="container">
         <header>
             <h1>📊 STAFF DASHBOARD</h1>
-            <div class="header-right">
-                <span id="staffName">Staff</span>
+            <div>
+                <span id="staffName" style="margin-right:15px;">Staff</span>
                 <button onclick="logout()" class="logout-btn">🚪 Toka</button>
             </div>
         </header>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>💰 Jumla ya Mauzo Yangu</h3>
-                <p id="myTotalSales">0 TSh</p>
-            </div>
-            <div class="stat-card">
-                <h3>📦 Bidhaa Zangu</h3>
-                <p id="myProductCount">0</p>
-            </div>
-            <div class="stat-card">
-                <h3>📋 Mauzo Yangu</h3>
-                <p id="mySaleCount">0</p>
-            </div>
-        </div>
-
-        <!-- Add Sale Form -->
-        <div class="add-sale-form">
-            <h2>➕ Ongeza Mauzo</h2>
+        <!-- Form ya kujaza data ya Agent -->
+        <div class="agent-form">
+            <h2>📝 Weka Data ya Agent</h2>
             <div class="form-row">
-                <input type="text" id="productName" placeholder="Jina la bidhaa (mfano: Kanga)">
-                <input type="number" id="quantity" placeholder="Idadi">
-                <input type="number" id="price" placeholder="Bei (TSh)">
-                <button onclick="addSale()">💾 SAVE</button>
+                <input type="number" id="agentCash" placeholder="💰 Cash alioanza nayo">
+                <input type="number" id="agentFloat" placeholder="📱 Float (Mtandao)">
+                <input type="number" id="agentIncrease" placeholder="📈 Ongezeko">
+                <button onclick="submitAgentData()">💾 HIFADHI</button>
             </div>
-            <div id="saleMsg" class="msg"></div>
+            <div id="agentMsg" class="msg"></div>
         </div>
 
-        <!-- My Sales Table -->
+        <!-- Stats za agent -->
+        <div class="agent-stats">
+            <div class="stat-card">
+                <h3>💰 Jumla Cash</h3>
+                <p id="totalCash">0 TSh</p>
+            </div>
+            <div class="stat-card">
+                <h3>📱 Jumla Float</h3>
+                <p id="totalFloat">0 TSh</p>
+            </div>
+            <div class="stat-card">
+                <h3>📈 Jumla Ongezeko</h3>
+                <p id="totalIncrease">0 TSh</p>
+            </div>
+        </div>
+
+        <!-- Historia ya Agent -->
         <div class="table-container">
-            <h2>📋 Mauzo Yangu</h2>
-            <div id="mySalesList"><p style="text-align:center;padding:20px;">Loading...</p></div>
+            <h2>📋 Historia Yangu</h2>
+            <div id="historyList"><p style="text-align:center;padding:20px;color:#999;">Loading...</p></div>
+        </div>
+
+        <!-- Mauzo Yangu -->
+        <div class="table-container" style="margin-top:20px;">
+            <h2>📊 Mauzo Yangu</h2>
+            <div id="mySalesList" class="sales-cards-grid">
+                <p style="text-align:center;padding:20px;color:#999;">Loading...</p>
+            </div>
         </div>
     </div>
 
@@ -154,12 +219,10 @@
         const API_URL = window.location.origin;
         const token = localStorage.getItem('token');
 
-        // ===== CHECK LOGIN =====
         if (!token) {
             window.location.href = 'login.html';
         }
 
-        // ===== LOGOUT =====
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('userEmail');
@@ -167,48 +230,32 @@
             window.location.href = 'login.html';
         }
 
-        // ===== SHOW MESSAGE =====
         function showMessage(element, text, type) {
             element.textContent = text;
             element.className = 'msg ' + type;
         }
 
-        // ===== ADD SALE =====
-        async function addSale() {
-            const productName = document.getElementById('productName').value.trim();
-            const quantity = document.getElementById('quantity').value.trim();
-            const price = document.getElementById('price').value.trim();
-            const msg = document.getElementById('saleMsg');
+        // ===== SUBMIT AGENT DATA =====
+        async function submitAgentData() {
+            const cash = document.getElementById('agentCash').value.trim();
+            const float = document.getElementById('agentFloat').value.trim();
+            const increase = document.getElementById('agentIncrease').value.trim();
+            const msg = document.getElementById('agentMsg');
 
-            // Validate
-            if (!productName || !quantity || !price) {
-                showMessage(msg, '❌ Tafadhali jaza taarifa zote!', 'error');
+            if (!cash && !float && !increase) {
+                showMessage(msg, '❌ Tafadhali jaza angalau sehemu moja!', 'error');
                 return;
             }
 
-            const qty = parseInt(quantity);
-            const prc = parseFloat(price);
-
-            if (isNaN(qty) || qty <= 0) {
-                showMessage(msg, '❌ Idadi lazima iwe namba sahihi!', 'error');
-                return;
-            }
-            if (isNaN(prc) || prc <= 0) {
-                showMessage(msg, '❌ Bei lazima iwe namba sahihi!', 'error');
-                return;
-            }
-
-            showMessage(msg, '⏳ Inahifadhi...', 'info');
+            showMessage(msg, '⏳ Inahifadhi...', 'success');
 
             try {
-                // SEND TO BACKEND
                 const response = await fetch(
-                    `${API_URL}/sales/?product_name=${encodeURIComponent(productName)}&quantity=${qty}&price=${prc}`,
+                    `${API_URL}/agent/add?cash=${parseFloat(cash) || 0}&float_amount=${parseFloat(float) || 0}&increase=${parseFloat(increase) || 0}`,
                     {
                         method: 'POST',
                         headers: {
-                            'Authorization': 'Bearer ' + token,
-                            'Content-Type': 'application/json'
+                            'Authorization': 'Bearer ' + token
                         }
                     }
                 );
@@ -216,59 +263,38 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showMessage(msg, `✅ ${data.message} - Jumla: ${data.total_amount.toLocaleString()} TSh`, 'success');
-                    // Clear form
-                    document.getElementById('productName').value = '';
-                    document.getElementById('quantity').value = '';
-                    document.getElementById('price').value = '';
-                    // Reload data
-                    loadData();
+                    showMessage(msg, '✅ ' + data.message, 'success');
+                    document.getElementById('agentCash').value = '';
+                    document.getElementById('agentFloat').value = '';
+                    document.getElementById('agentIncrease').value = '';
+                    loadMyData();
                 } else {
-                    showMessage(msg, `❌ ${data.detail || 'Failed to save sale!'}`, 'error');
+                    showMessage(msg, '❌ ' + (data.detail || 'Failed!'), 'error');
                 }
             } catch (error) {
-                console.error('Add sale error:', error);
-                showMessage(msg, `❌ Error: ${error.message}`, 'error');
+                showMessage(msg, '❌ Error: ' + error.message, 'error');
             }
         }
 
-        // ===== LOAD DATA =====
-        async function loadData() {
+        // ===== LOAD MY AGENT DATA =====
+        async function loadMyData() {
             try {
-                // Get sales for this staff
-                const salesRes = await fetch(`${API_URL}/sales/`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
+                const res = await fetch(`${API_URL}/agent/my_data`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
 
-                if (!salesRes.ok) {
-                    if (salesRes.status === 401 || salesRes.status === 403) {
-                        localStorage.removeItem('token');
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    throw new Error('Failed to load sales');
-                }
+                if (!res.ok) throw new Error('Failed to load data');
 
-                const sales = await salesRes.json();
-                const container = document.getElementById('mySalesList');
+                const data = await res.json();
 
-                // Calculate stats
-                let totalAmount = 0;
-                let totalProducts = 0;
-                sales.forEach(s => {
-                    totalAmount += s.total_amount || 0;
-                    totalProducts += s.quantity || 0;
-                });
+                document.getElementById('totalCash').textContent = data.total_cash.toLocaleString() + ' TSh';
+                document.getElementById('totalFloat').textContent = data.total_float.toLocaleString() + ' TSh';
+                document.getElementById('totalIncrease').textContent = data.total_increase.toLocaleString() + ' TSh';
+                document.getElementById('staffName').textContent = data.staff_name || 'Staff';
 
-                document.getElementById('myTotalSales').textContent = totalAmount.toLocaleString() + ' TSh';
-                document.getElementById('myProductCount').textContent = totalProducts;
-                document.getElementById('mySaleCount').textContent = sales.length;
-
-                // Render table
-                if (!sales || sales.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna mauzo yako</p>';
+                const container = document.getElementById('historyList');
+                if (!data.history || data.history.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna historia</p>';
                     return;
                 }
 
@@ -277,25 +303,23 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Bidhaa</th>
-                                <th>Idadi</th>
-                                <th>Bei</th>
-                                <th>Jumla</th>
                                 <th>Tarehe</th>
+                                <th>Cash</th>
+                                <th>Float</th>
+                                <th>Ongezeko</th>
                             </tr>
                         </thead>
                         <tbody>
                 `;
 
-                sales.forEach((s, i) => {
+                data.history.forEach((item, index) => {
                     html += `
                         <tr>
-                            <td>${i + 1}</td>
-                            <td><strong>${s.product_name || '-'}</strong></td>
-                            <td>${s.quantity || 0}</td>
-                            <td>${(s.price || 0).toLocaleString()} TSh</td>
-                            <td><strong>${(s.total_amount || 0).toLocaleString()} TSh</strong></td>
-                            <td>${s.date ? new Date(s.date).toLocaleString('sw-TZ') : '-'}</td>
+                            <td>${index + 1}</td>
+                            <td>${item.date}</td>
+                            <td>${item.cash.toLocaleString()} TSh</td>
+                            <td>${item.float.toLocaleString()} TSh</td>
+                            <td>${(item.increase || 0).toLocaleString()} TSh</td>
                         </tr>
                     `;
                 });
@@ -303,41 +327,79 @@
                 html += '</tbody></table>';
                 container.innerHTML = html;
 
-                // Get user name
-                const userRes = await fetch(`${API_URL}/users/me`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-                if (userRes.ok) {
-                    const user = await userRes.json();
-                    document.getElementById('staffName').textContent = user.email;
-                }
-
             } catch (error) {
                 console.error('Load data error:', error);
-                document.getElementById('mySalesList').innerHTML = `<p style="color:red;">❌ Error: ${error.message}</p>`;
+                document.getElementById('historyList').innerHTML = '<p style="color:red;">❌ Error loading data</p>';
             }
         }
 
-        // ===== ENTER KEY =====
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const inputs = ['productName', 'quantity', 'price'];
-                for (let id of inputs) {
-                    if (document.activeElement === document.getElementById(id)) {
-                        addSale();
-                        return;
-                    }
+        // ===== LOAD MY SALES =====
+        async function loadMySales() {
+            try {
+                const res = await fetch(`${API_URL}/sales/`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!res.ok) throw new Error('Failed to load sales');
+
+                const sales = await res.json();
+                const container = document.getElementById('mySalesList');
+
+                if (!sales || sales.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna mauzo yako</p>';
+                    return;
                 }
+
+                let html = '';
+                sales.forEach((s, i) => {
+                    const date = s.date ? new Date(s.date).toLocaleString('sw-TZ') : '-';
+                    const total = (s.total_amount || 0).toLocaleString();
+                    const price = (s.price || 0).toLocaleString();
+
+                    html += `
+                        <div class="sale-card" style="border-left-color: ${i % 2 === 0 ? '#1a237e' : '#2e7d32'};">
+                            <div class="card-header">
+                                <span class="product-name">${s.product_name || '-'}</span>
+                                <span class="product-id" style="font-size:12px;color:#999;">#${i + 1}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="info-item">
+                                    <span class="label">📦 Idadi</span>
+                                    <span class="value">${s.quantity || 0}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">💰 Bei</span>
+                                    <span class="value">${price} TSh</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">💵 Jumla</span>
+                                    <span class="value amount" style="color:#2e7d32;">${total} TSh</span>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <span>${date}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Load sales error:', error);
+                document.getElementById('mySalesList').innerHTML = '<p style="color:red;">❌ Error loading sales</p>';
             }
-        });
+        }
 
-        // ===== INIT =====
-        loadData();
+        // ===== LOAD ON START =====
+        loadMyData();
+        loadMySales();
 
-        // ===== AUTO REFRESH =====
-        setInterval(loadData, 30000);
+        // Auto refresh every 30 seconds
+        setInterval(() => {
+            loadMyData();
+            loadMySales();
+        }, 30000);
     </script>
 </body>
 </html>

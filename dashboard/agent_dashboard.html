@@ -6,21 +6,22 @@
     <title>Agent Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f0f2f5; padding: 20px; }
+        body { background: #f0f2f5; padding: 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
 
+        /* ===== HEADER ===== */
         header {
             background: linear-gradient(135deg, #e65100, #bf360c);
             color: white;
-            padding: 20px 30px;
+            padding: 15px 20px;
             border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        header h1 { font-size: 24px; }
+        header h1 { font-size: 20px; }
         .logout-btn {
             background: #d32f2f;
             color: white;
@@ -28,223 +29,321 @@
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
         }
         .logout-btn:hover { background: #b71c1c; }
+        .user-info { color: white; margin-right: 15px; font-weight: 500; }
 
+        /* ===== CAPITAL FORM ===== */
         .capital-form {
             background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border: 2px solid #ffcc80;
         }
-        .capital-form h2 { color: #e65100; margin-bottom: 10px; }
-        .capital-form p { color: #555; margin-bottom: 15px; font-size: 14px; }
+        .capital-form h2 { color: #e65100; margin-bottom: 8px; font-size: 18px; }
+        .capital-form p { color: #555; margin-bottom: 12px; font-size: 13px; }
         .capital-form .form-row {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: center;
         }
         .capital-form input {
             flex: 1;
-            padding: 12px;
+            padding: 10px 14px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
-            min-width: 200px;
+            font-size: 15px;
+            min-width: 180px;
         }
         .capital-form button {
-            padding: 12px 30px;
+            padding: 10px 25px;
             background: #e65100;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             font-weight: bold;
         }
         .capital-form button:hover { background: #bf360c; }
-        .capital-form .msg { margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; }
+        .capital-form .msg { margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; font-size: 14px; }
         .capital-form .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
         .capital-form .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
 
-        .agent-form {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .agent-form h2 { color: #1a237e; margin-bottom: 15px; }
-
-        .agent-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .agent-form .form-row .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .agent-form .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .agent-form .form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 4px;
-        }
-
-        .agent-form input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 100%;
-        }
-
-        .agent-form input:focus {
-            border-color: #1a237e;
-            outline: none;
-        }
-
-        .agent-form input[readonly] {
-            background: #f5f5f5;
-            cursor: not-allowed;
-        }
-
-        .agent-form .btn-submit {
-            padding: 12px 30px;
-            background: #e65100;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            grid-column: 1 / -1;
-        }
-
-        .agent-form .btn-submit:hover { background: #bf360c; }
-
-        .agent-form .msg { margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; }
-        .agent-form .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
-        .agent-form .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
-
-        .float-voda { border-left: 4px solid #7B1FA2; }
-        .float-airtel { border-left: 4px solid #D32F2F; }
-        .float-tigo { border-left: 4px solid #1976D2; }
-
-        .agent-stats {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .stat-card h3 { font-size: 13px; color: #666; margin-bottom: 5px; }
-        .stat-card p { font-size: 20px; font-weight: bold; color: #1a237e; }
-        .stat-card p.profit { color: #2e7d32; }
-        .stat-card p.capital { color: #e65100; }
-        .stat-card p.initial { color: #0d47a1; }
-        .stat-card p.voda { color: #7B1FA2; }
-        .stat-card p.airtel { color: #D32F2F; }
-        .stat-card p.tigo { color: #1976D2; }
-
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow-x: auto;
-        }
-        .table-container h2 { color: #1a237e; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 800px; }
-        th { background: #1a237e; color: white; padding: 10px 12px; text-align: left; }
-        td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-        tr:hover { background: #f5f5f5; }
-
-        .user-info {
-            color: white;
-            margin-right: 15px;
-            font-weight: 500;
-        }
-
+        /* ===== INFO NOTES ===== */
         .info-note {
             background: #e3f2fd;
             padding: 10px 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #90caf9;
             font-size: 13px;
             color: #0d47a1;
             text-align: center;
         }
-        .info-note strong { color: #0d47a1; }
-
         .capital-info {
             background: #fff3e0;
             padding: 10px 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #ffcc80;
             font-size: 13px;
             color: #555;
             text-align: center;
         }
-        .capital-info strong { color: #e65100; }
 
-        @media (max-width: 1024px) {
-            .agent-stats { grid-template-columns: repeat(3, 1fr); }
+        /* ===== FLOAT CARD WITH DROPDOWN ===== */
+        .float-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        .float-card-header {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s;
+            user-select: none;
+        }
+        .float-card-header:hover {
+            background: linear-gradient(135deg, #1b5e20, #0d3d12);
+        }
+        .float-card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .float-card-header h3 span { font-size: 20px; }
+        .float-card-header .toggle-icon {
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+        .float-card-header .toggle-icon.open {
+            transform: rotate(180deg);
         }
 
+        .float-card-body {
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .float-card-body.open {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .float-card-body .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .float-card-body .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .float-card-body .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .float-card-body .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        .float-card-body .form-group label .icon { margin-right: 5px; }
+        .float-card-body .form-group input {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+        .float-card-body .form-group input:focus {
+            border-color: #2e7d32;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+        .float-card-body .form-group.float-voda input { border-left: 4px solid #7B1FA2; }
+        .float-card-body .form-group.float-airtel input { border-left: 4px solid #D32F2F; }
+        .float-card-body .form-group.float-tigo input { border-left: 4px solid #1976D2; }
+
+        .float-card-body .btn-submit {
+            padding: 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .float-card-body .btn-submit:hover { background: #1b5e20; }
+        .float-card-body .btn-submit:active { transform: scale(0.98); }
+
+        .float-card-body .msg {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+            font-size: 14px;
+            text-align: center;
+        }
+        .float-card-body .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
+        .float-card-body .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
+
+        /* ===== HISTORY CARD WITH DROPDOWN ===== */
+        .history-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        .history-card-header {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s;
+            user-select: none;
+        }
+        .history-card-header:hover {
+            background: linear-gradient(135deg, #0d47a1, #0a1a5e);
+        }
+        .history-card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .history-card-header h3 span { font-size: 20px; }
+        .history-card-header .toggle-icon {
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+        .history-card-header .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
+        .history-card-body {
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+            overflow-x: auto;
+        }
+        .history-card-body.open {
+            display: block;
+        }
+
+        .history-card-body table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 600px;
+        }
+        .history-card-body th {
+            background: #1a237e;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .history-card-body td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        .history-card-body tr:hover { background: #f5f5f5; }
+        .history-card-body .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .agent-form .form-row { grid-template-columns: 1fr; }
-            .agent-stats { grid-template-columns: 1fr 1fr; }
+            .float-card-body .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .float-card-body .form-group.full-width {
+                grid-column: 1;
+            }
             .capital-form .form-row { flex-direction: column; }
             .capital-form input { min-width: auto; width: 100%; }
             .capital-form button { width: 100%; }
-        }
-
-        @media (max-width: 600px) {
-            .agent-stats { grid-template-columns: 1fr 1fr; }
-            header { flex-direction: column; text-align: center; }
-            .header-right { margin-top: 10px; }
+            header { flex-direction: column; text-align: center; gap: 8px; }
+            .float-card-header h3 { font-size: 14px; }
+            .history-card-header h3 { font-size: 14px; }
+            .float-card-body { padding: 15px; }
+            .history-card-body { padding: 15px; }
+            .history-card-body table { font-size: 12px; min-width: 500px; }
+            .history-card-body th, .history-card-body td { padding: 6px 8px; }
         }
 
         @media (max-width: 480px) {
-            .agent-stats { grid-template-columns: 1fr; }
+            body { padding: 10px; }
+            header h1 { font-size: 17px; }
+            .float-card-header { padding: 12px 15px; }
+            .float-card-header h3 { font-size: 13px; }
+            .history-card-header { padding: 12px 15px; }
+            .history-card-header h3 { font-size: 13px; }
+            .history-card-body table { font-size: 11px; min-width: 400px; }
+            .history-card-body th, .history-card-body td { padding: 5px 6px; }
+            .float-card-body .form-group input { font-size: 14px; padding: 8px 12px; }
+        }
+
+        @media (max-width: 360px) {
+            .history-card-body table { font-size: 10px; min-width: 350px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- HEADER -->
         <header>
             <h1>🤖 AGENT DASHBOARD</h1>
-            <div class="header-right">
+            <div>
                 <span class="user-info" id="staffName">Agent</span>
                 <button onclick="logout()" class="logout-btn">🚪 Toka</button>
             </div>
         </header>
 
+        <!-- INFO NOTE -->
         <div class="info-note">
-            📊 <strong>Faida:</strong> = Jumla ya Cash + Float zote - <strong>Mtaji wa Sasa</strong>
-            <br>💰 <strong>Mtaji wa Mwanzo:</strong> Haubadiliki | <strong>Mtaji wa Sasa:</strong> Unabadilika kila siku
+            📊 <strong>Faida:</strong> Jumla ya Cash + Float - <strong>Mtaji wa Sasa</strong> &nbsp;|&nbsp;
+            💰 <strong>Mtaji Mwanzo:</strong> Haubadiliki &nbsp;|&nbsp; 📈 <strong>Mtaji Sasa:</strong> Unabadilika
         </div>
 
+        <!-- CAPITAL FORM -->
         <div id="capitalSection" class="capital-form">
             <h2>💰 Weka Mtaji (Capital)</h2>
             <p>Weka mtaji wako wa awali. Hii itakuwa <strong>Mtaji wa Mwanzo</strong> na haitabadilika.</p>
@@ -255,84 +354,52 @@
             <div id="capitalMsg" class="msg"></div>
         </div>
 
+        <!-- CAPITAL INFO -->
         <div id="capitalInfo" class="capital-info" style="display:none;">
-            💰 <strong>Mtaji wa Mwanzo:</strong> <span id="displayInitialCapital">0</span> TSh | 
-            📊 <strong>Mtaji wa Sasa:</strong> <span id="displayCurrentCapital">0</span> TSh | 
-            📈 <strong>Jumla ya Faida:</strong> <span id="displayProfit" style="color:#2e7d32; font-weight:bold;">0</span> TSh
+            💰 <strong>Mtaji Mwanzo:</strong> <span id="displayInitialCapital">0</span> TSh &nbsp;|&nbsp;
+            📊 <strong>Mtaji Sasa:</strong> <span id="displayCurrentCapital">0</span> TSh &nbsp;|&nbsp;
+            📈 <strong>Jumla Faida:</strong> <span id="displayProfit" style="color:#2e7d32; font-weight:bold;">0</span> TSh
         </div>
 
-        <div class="agent-form">
-            <h2>📝 Weka Data ya Agent</h2>
-            
-            <div class="form-row">
-                <div class="form-group full-width">
-                    <label>💰 Cash</label>
-                    <input type="number" id="agentCash" placeholder="Ingiza cash">
+        <!-- ===== FLOAT CARD WITH DROPDOWN ===== -->
+        <div class="float-card">
+            <div class="float-card-header" onclick="toggleFloatCard()">
+                <h3><span>📱</span> Weka Float za Mitandao</h3>
+                <span class="toggle-icon" id="floatToggleIcon">▼</span>
+            </div>
+            <div class="float-card-body" id="floatCardBody">
+                <div class="form-grid">
+                    <div class="form-group float-voda">
+                        <label><span class="icon">🟣</span> Vodacom</label>
+                        <input type="number" id="agentFloatVoda" placeholder="Float ya Voda">
+                    </div>
+                    <div class="form-group float-airtel">
+                        <label><span class="icon">🔴</span> Airtel</label>
+                        <input type="number" id="agentFloatAirtel" placeholder="Float ya Airtel">
+                    </div>
+                    <div class="form-group float-tigo">
+                        <label><span class="icon">🔵</span> Tigo</label>
+                        <input type="number" id="agentFloatTigo" placeholder="Float ya Tigo">
+                    </div>
+                    <div class="form-group full-width">
+                        <label><span class="icon">💰</span> Cash</label>
+                        <input type="number" id="agentCash" placeholder="Ingiza cash">
+                    </div>
                 </div>
-
-                <div class="form-group float-voda" style="padding-left:10px;">
-                    <label><span class="network-icon">🟣</span> Vodacom (Voda)</label>
-                    <input type="number" id="agentFloatVoda" placeholder="Float ya Voda">
-                </div>
-
-                <div class="form-group float-airtel" style="padding-left:10px;">
-                    <label><span class="network-icon">🔴</span> Airtel</label>
-                    <input type="number" id="agentFloatAirtel" placeholder="Float ya Airtel">
-                </div>
-
-                <div class="form-group float-tigo" style="padding-left:10px;">
-                    <label><span class="network-icon">🔵</span> Tigo</label>
-                    <input type="number" id="agentFloatTigo" placeholder="Float ya Tigo">
-                </div>
-
                 <button class="btn-submit" onclick="submitAgentData()">💾 HIFADHI</button>
-            </div>
-
-            <div id="agentMsg" class="msg"></div>
-        </div>
-
-        <div class="agent-stats">
-            <div class="stat-card" style="border-left: 4px solid #0d47a1;">
-                <h3>💰 Mtaji wa Mwanzo</h3>
-                <p class="initial" id="initialCapital">0 TSh</p>
-            </div>
-            <div class="stat-card" style="border-left: 4px solid #e65100;">
-                <h3>💰 Mtaji wa Sasa</h3>
-                <p class="capital" id="currentCapital">0 TSh</p>
-            </div>
-            <div class="stat-card" style="border-left: 4px solid #2e7d32;">
-                <h3>📈 Jumla ya Faida</h3>
-                <p class="profit" id="totalProfit">0 TSh</p>
-            </div>
-            <div class="stat-card">
-                <h3>💰 Jumla Cash</h3>
-                <p id="totalCash">0 TSh</p>
-            </div>
-            <div class="stat-card">
-                <h3>📊 Jumla Float</h3>
-                <p id="totalFloatAll">0 TSh</p>
-            </div>
-            <div class="stat-card float-voda">
-                <h3>🟣 Jumla Voda</h3>
-                <p class="voda" id="totalFloatVoda">0 TSh</p>
-            </div>
-            <div class="stat-card float-airtel">
-                <h3>🔴 Jumla Airtel</h3>
-                <p class="airtel" id="totalFloatAirtel">0 TSh</p>
-            </div>
-            <div class="stat-card float-tigo">
-                <h3>🔵 Jumla Tigo</h3>
-                <p class="tigo" id="totalFloatTigo">0 TSh</p>
-            </div>
-            <div class="stat-card" style="border-left: 4px solid #f57c00;">
-                <h3>📊 Jumla ya Leo</h3>
-                <p id="todayTotal">0 TSh</p>
+                <div id="agentMsg" class="msg"></div>
             </div>
         </div>
 
-        <div class="table-container">
-            <h2>📋 Historia Yangu</h2>
-            <div id="historyList"><p style="text-align:center;padding:20px;color:#999;">Loading...</p></div>
+        <!-- ===== HISTORY CARD WITH DROPDOWN ===== -->
+        <div class="history-card">
+            <div class="history-card-header" onclick="toggleHistoryCard()">
+                <h3><span>📋</span> Historia Yangu</h3>
+                <span class="toggle-icon" id="historyToggleIcon">▼</span>
+            </div>
+            <div class="history-card-body" id="historyCardBody">
+                <div id="historyList"><p class="no-data">Loading...</p></div>
+            </div>
         </div>
     </div>
 
@@ -355,6 +422,23 @@
             element.className = 'msg ' + type;
         }
 
+        // ===== TOGGLE FLOAT CARD =====
+        function toggleFloatCard() {
+            const body = document.getElementById('floatCardBody');
+            const icon = document.getElementById('floatToggleIcon');
+            body.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // ===== TOGGLE HISTORY CARD =====
+        function toggleHistoryCard() {
+            const body = document.getElementById('historyCardBody');
+            const icon = document.getElementById('historyToggleIcon');
+            body.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // ===== SET CAPITAL =====
         async function setCapital() {
             const capitalAmount = document.getElementById('capitalAmount').value.trim();
             const msg = document.getElementById('capitalMsg');
@@ -388,6 +472,7 @@
             }
         }
 
+        // ===== SUBMIT AGENT DATA =====
         async function submitAgentData() {
             const cash = document.getElementById('agentCash').value.trim();
             const floatVoda = document.getElementById('agentFloatVoda').value.trim();
@@ -416,6 +501,12 @@
                     document.getElementById('agentFloatVoda').value = '';
                     document.getElementById('agentFloatAirtel').value = '';
                     document.getElementById('agentFloatTigo').value = '';
+                    
+                    const floatBody = document.getElementById('floatCardBody');
+                    const floatIcon = document.getElementById('floatToggleIcon');
+                    floatBody.classList.remove('open');
+                    floatIcon.classList.remove('open');
+                    
                     loadMyData();
                 } else {
                     showMessage(msg, '❌ ' + (data.detail || 'Failed!'), 'error');
@@ -425,6 +516,7 @@
             }
         }
 
+        // ===== LOAD MY DATA =====
         async function loadMyData() {
             try {
                 const res = await fetch(`${API_URL}/agent/my_data`, {
@@ -449,20 +541,12 @@
                     document.getElementById('capitalInfo').style.display = 'none';
                 }
 
-                document.getElementById('initialCapital').textContent = (data.initial_capital || 0).toLocaleString() + ' TSh';
-                document.getElementById('currentCapital').textContent = (data.current_capital || 0).toLocaleString() + ' TSh';
-                document.getElementById('totalProfit').textContent = (data.total_profit || 0).toLocaleString() + ' TSh';
-                document.getElementById('totalCash').textContent = (data.total_cash || 0).toLocaleString() + ' TSh';
-                document.getElementById('totalFloatVoda').textContent = (data.total_float_voda || 0).toLocaleString() + ' TSh';
-                document.getElementById('totalFloatAirtel').textContent = (data.total_float_airtel || 0).toLocaleString() + ' TSh';
-                document.getElementById('totalFloatTigo').textContent = (data.total_float_tigo || 0).toLocaleString() + ' TSh';
-                document.getElementById('totalFloatAll').textContent = (data.total_float_all || 0).toLocaleString() + ' TSh';
-                document.getElementById('todayTotal').textContent = (data.today_total || 0).toLocaleString() + ' TSh';
                 document.getElementById('staffName').textContent = data.staff_name || 'Agent';
 
+                // History
                 const container = document.getElementById('historyList');
                 if (!data.history || data.history.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;color:#999;">Hakuna historia</p>';
+                    container.innerHTML = '<p class="no-data">Hakuna historia</p>';
                     return;
                 }
 
@@ -484,7 +568,7 @@
 
             } catch (error) {
                 console.error('Load data error:', error);
-                document.getElementById('historyList').innerHTML = '<p style="color:red;">❌ Error loading data</p>';
+                document.getElementById('historyList').innerHTML = '<p class="no-data" style="color:red;">❌ Error loading data</p>';
             }
         }
 

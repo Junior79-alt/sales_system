@@ -7,31 +7,33 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        body {
+        html, body {
             min-height: 100vh;
             height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            padding: 0;
-            position: relative;
-            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
 
+        /* ===== DECORATIVE CIRCLES ===== */
         .circle {
-            position: absolute;
+            position: fixed;
             border-radius: 50%;
             pointer-events: none;
-            opacity: 0.3;
+            opacity: 0.15;
         }
         .circle-1 {
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.4), transparent 70%);
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.5), transparent 70%);
             top: -200px;
             right: -100px;
-            animation: float 8s ease-in-out infinite;
         }
         .circle-2 {
             width: 400px;
@@ -39,67 +41,49 @@
             background: radial-gradient(circle, rgba(255, 107, 107, 0.3), transparent 70%);
             bottom: -150px;
             left: -100px;
-            animation: float 10s ease-in-out infinite reverse;
         }
         .circle-3 {
             width: 200px;
             height: 200px;
-            background: radial-gradient(circle, rgba(255, 217, 61, 0.25), transparent 70%);
+            background: radial-gradient(circle, rgba(255, 217, 61, 0.2), transparent 70%);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            animation: pulse 6s ease-in-out infinite;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, -30px); }
-        }
-        @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
-            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.1; }
-        }
-
-        .glass-full {
-            width: 100vw;
-            height: 100vh;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
+        /* ===== GLASS CARD ===== */
         .glass-card {
             background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 28px;
-            padding: 50px 45px 40px 45px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 45px 40px 35px 40px;
             width: 100%;
-            max-width: 440px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            max-width: 420px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 10;
+            transition: none;
+            margin: 20px;
         }
 
-        .glass-card .logo { text-align: center; margin-bottom: 5px; }
-        .glass-card .logo span { font-size: 56px; display: block; }
+        /* ===== LOGO ===== */
+        .logo {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .logo span {
+            font-size: 52px;
+            display: block;
+        }
+
         .glass-card h1 {
             text-align: center;
             color: #ffffff;
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             letter-spacing: 0.5px;
         }
@@ -107,58 +91,69 @@
             text-align: center;
             color: rgba(255, 255, 255, 0.6);
             font-size: 14px;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
             font-weight: 300;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
+        /* ===== INPUT FIELDS - BACKGROUND DARK ===== */
         .glass-card input {
             width: 100%;
-            padding: 15px 20px;
-            margin: 8px 0;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            padding: 14px 18px;
+            margin: 6px 0;
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
             font-size: 16px;
-            color: #ffffff;
+            color: #ffffff !important;
             box-sizing: border-box;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        .glass-card input::placeholder { color: rgba(255, 255, 255, 0.4); font-weight: 300; }
-        .glass-card input:focus {
             outline: none;
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.03);
         }
+
+        .glass-card input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 300;
+        }
+
+        .glass-card input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.5) !important;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+        }
+
         .glass-card input:-webkit-autofill {
-            -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.06) inset !important;
+            -webkit-box-shadow: 0 0 0 30px rgba(0, 0, 0, 0.5) inset !important;
             -webkit-text-fill-color: #ffffff !important;
             border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .glass-card .forgot-link {
+        /* ===== FORGOT LINK ===== */
+        .forgot-link {
             text-align: right;
-            margin-top: 4px;
+            margin-top: 2px;
             margin-bottom: 18px;
         }
-        .glass-card .forgot-link a {
+        .forgot-link a {
             color: rgba(255, 255, 255, 0.5);
             text-decoration: none;
             font-size: 13px;
             transition: color 0.3s ease;
             font-weight: 300;
         }
-        .glass-card .forgot-link a:hover { color: rgba(255, 255, 255, 0.9); text-decoration: underline; }
+        .forgot-link a:hover {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: underline;
+        }
 
-        .glass-card .login-btn {
+        /* ===== LOGIN BUTTON ===== */
+        .login-btn {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
             color: #1a1a2e;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 18px;
             font-weight: 700;
             cursor: pointer;
@@ -167,14 +162,17 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             letter-spacing: 0.5px;
         }
-        .glass-card .login-btn:hover {
-            transform: translateY(-3px);
+        .login-btn:hover {
+            transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-            background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.8));
+            background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.85));
         }
-        .glass-card .login-btn:active { transform: translateY(0px); }
+        .login-btn:active {
+            transform: translateY(0px);
+        }
 
-        .glass-card .msg {
+        /* ===== MESSAGE ===== */
+        .msg {
             text-align: center;
             margin-top: 12px;
             font-size: 14px;
@@ -184,73 +182,128 @@
             border-radius: 10px;
             display: none;
         }
-        .glass-card .msg.error { display: block; color: #ff6b6b; background: rgba(255, 107, 107, 0.12); border: 1px solid rgba(255, 107, 107, 0.15); }
-        .glass-card .msg.success { display: block; color: #51cf66; background: rgba(81, 207, 102, 0.12); border: 1px solid rgba(81, 207, 102, 0.15); }
+        .msg.error {
+            display: block;
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.12);
+            border: 1px solid rgba(255, 107, 107, 0.15);
+        }
+        .msg.success {
+            display: block;
+            color: #51cf66;
+            background: rgba(81, 207, 102, 0.12);
+            border: 1px solid rgba(81, 207, 102, 0.15);
+        }
 
-        .glass-card .divider {
+        /* ===== DIVIDER ===== */
+        .divider {
             display: flex;
             align-items: center;
-            margin: 22px 0 18px 0;
+            margin: 20px 0 16px 0;
         }
-        .glass-card .divider hr { flex: 1; border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-card .divider span { padding: 0 18px; color: rgba(255, 255, 255, 0.3); font-size: 13px; font-weight: 300; }
+        .divider hr {
+            flex: 1;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .divider span {
+            padding: 0 16px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 13px;
+            font-weight: 300;
+        }
 
-        .glass-card .register-link {
+        /* ===== REGISTER LINK ===== */
+        .register-link {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 14px;
             font-size: 14px;
             color: rgba(255, 255, 255, 0.5);
         }
-        .glass-card .register-link a {
+        .register-link a {
             color: #ffffff;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        .glass-card .register-link a:hover { text-decoration: underline; text-shadow: 0 0 30px rgba(255, 255, 255, 0.2); }
+        .register-link a:hover {
+            text-decoration: underline;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
 
-        /* ===== NO ADMIN HINT HERE! ===== */
-
+        /* ===== FORGOT FORM ===== */
         .forgot-form {
             display: none;
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
-        .forgot-form.active { display: block; }
-        .forgot-form h3 { color: #ffffff; text-align: center; margin-bottom: 4px; font-size: 20px; font-weight: 600; }
-        .forgot-form p { text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 13px; margin-bottom: 15px; }
+        .forgot-form.active {
+            display: block;
+        }
+        .forgot-form h3 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 4px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .forgot-form p {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
         .forgot-form input {
             width: 100%;
-            padding: 15px 20px;
-            margin: 8px 0;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            padding: 14px 18px;
+            margin: 6px 0;
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
             font-size: 16px;
-            color: #ffffff;
+            color: #ffffff !important;
             box-sizing: border-box;
             transition: all 0.3s ease;
+            outline: none;
         }
-        .forgot-form input::placeholder { color: rgba(255, 255, 255, 0.4); }
-        .forgot-form input:focus { outline: none; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.12); }
+        .forgot-form input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .forgot-form input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
         .forgot-form button {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: linear-gradient(135deg, #ffd93d, #f6b93b);
             color: #1a1a2e;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             margin-top: 5px;
             transition: all 0.3s ease;
         }
-        .forgot-form button:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 217, 61, 0.25); }
-        .forgot-form .back-link { text-align: center; margin-top: 12px; font-size: 13px; }
-        .forgot-form .back-link a { color: rgba(255, 255, 255, 0.5); text-decoration: none; }
-        .forgot-form .back-link a:hover { color: #ffffff; text-decoration: underline; }
+        .forgot-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 217, 61, 0.25);
+        }
+        .forgot-form .back-link {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .forgot-form .back-link a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+        }
+        .forgot-form .back-link a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
         .forgot-form .msg {
             text-align: center;
             margin-top: 10px;
@@ -261,49 +314,92 @@
             border-radius: 10px;
             display: none;
         }
-        .forgot-form .msg.error { display: block; color: #ff6b6b; background: rgba(255, 107, 107, 0.12); border: 1px solid rgba(255, 107, 107, 0.15); }
-        .forgot-form .msg.success { display: block; color: #51cf66; background: rgba(81, 207, 102, 0.12); border: 1px solid rgba(81, 207, 102, 0.15); }
+        .forgot-form .msg.error {
+            display: block;
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.12);
+            border: 1px solid rgba(255, 107, 107, 0.15);
+        }
+        .forgot-form .msg.success {
+            display: block;
+            color: #51cf66;
+            background: rgba(81, 207, 102, 0.12);
+            border: 1px solid rgba(81, 207, 102, 0.15);
+        }
 
+        /* ===== RESET FORM ===== */
         .reset-form {
             display: none;
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
-        .reset-form.active { display: block; }
-        .reset-form h3 { color: #ffffff; text-align: center; margin-bottom: 4px; font-size: 20px; font-weight: 600; }
-        .reset-form p { text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 13px; margin-bottom: 15px; }
+        .reset-form.active {
+            display: block;
+        }
+        .reset-form h3 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 4px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .reset-form p {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
         .reset-form input {
             width: 100%;
-            padding: 15px 20px;
-            margin: 8px 0;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            padding: 14px 18px;
+            margin: 6px 0;
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
             font-size: 16px;
-            color: #ffffff;
+            color: #ffffff !important;
             box-sizing: border-box;
             transition: all 0.3s ease;
+            outline: none;
         }
-        .reset-form input::placeholder { color: rgba(255, 255, 255, 0.4); }
-        .reset-form input:focus { outline: none; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.12); }
+        .reset-form input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .reset-form input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
         .reset-form button {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: linear-gradient(135deg, #a29bfe, #6c5ce7);
             color: #ffffff;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             margin-top: 5px;
             transition: all 0.3s ease;
         }
-        .reset-form button:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(108, 92, 231, 0.3); }
-        .reset-form .back-link { text-align: center; margin-top: 12px; font-size: 13px; }
-        .reset-form .back-link a { color: rgba(255, 255, 255, 0.5); text-decoration: none; }
-        .reset-form .back-link a:hover { color: #ffffff; text-decoration: underline; }
+        .reset-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.3);
+        }
+        .reset-form .back-link {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .reset-form .back-link a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+        }
+        .reset-form .back-link a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
         .reset-form .msg {
             text-align: center;
             margin-top: 10px;
@@ -314,31 +410,51 @@
             border-radius: 10px;
             display: none;
         }
-        .reset-form .msg.error { display: block; color: #ff6b6b; background: rgba(255, 107, 107, 0.12); border: 1px solid rgba(255, 107, 107, 0.15); }
-        .reset-form .msg.success { display: block; color: #51cf66; background: rgba(81, 207, 102, 0.12); border: 1px solid rgba(81, 207, 102, 0.15); }
+        .reset-form .msg.error {
+            display: block;
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.12);
+            border: 1px solid rgba(255, 107, 107, 0.15);
+        }
+        .reset-form .msg.success {
+            display: block;
+            color: #51cf66;
+            background: rgba(81, 207, 102, 0.12);
+            border: 1px solid rgba(81, 207, 102, 0.15);
+        }
 
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
-            .glass-card { padding: 35px 25px 30px 25px; border-radius: 20px; max-width: 100%; margin: 10px; }
-            .glass-card h1 { font-size: 26px; }
-            .glass-card .logo span { font-size: 48px; }
-            .glass-card input { padding: 13px 16px; font-size: 15px; border-radius: 12px; }
-            .glass-card .login-btn { font-size: 17px; padding: 13px; border-radius: 12px; }
-            .forgot-form input { padding: 13px 16px; font-size: 15px; border-radius: 12px; }
-            .forgot-form button { padding: 13px; font-size: 15px; border-radius: 12px; }
-            .reset-form input { padding: 13px 16px; font-size: 15px; border-radius: 12px; }
-            .reset-form button { padding: 13px; font-size: 15px; border-radius: 12px; }
+            .glass-card {
+                padding: 30px 22px 25px 22px;
+                border-radius: 18px;
+                max-width: 100%;
+                margin: 15px;
+            }
+            .glass-card h1 { font-size: 24px; }
+            .logo span { font-size: 44px; }
+            .glass-card input { padding: 12px 15px; font-size: 15px; border-radius: 10px; }
+            .login-btn { font-size: 16px; padding: 12px; border-radius: 10px; }
+            .forgot-form input { padding: 12px 15px; font-size: 15px; border-radius: 10px; }
+            .forgot-form button { font-size: 15px; padding: 12px; border-radius: 10px; }
+            .reset-form input { padding: 12px 15px; font-size: 15px; border-radius: 10px; }
+            .reset-form button { font-size: 15px; padding: 12px; border-radius: 10px; }
         }
 
         @media (max-width: 400px) {
-            .glass-card { padding: 25px 18px 20px 18px; border-radius: 16px; }
-            .glass-card h1 { font-size: 22px; }
-            .glass-card .logo span { font-size: 40px; }
+            .glass-card {
+                padding: 22px 16px 18px 16px;
+                border-radius: 14px;
+            }
+            .glass-card h1 { font-size: 20px; }
+            .logo span { font-size: 36px; }
             .glass-card .subtitle { font-size: 12px; margin-bottom: 20px; }
-            .glass-card input { padding: 11px 14px; font-size: 14px; }
-            .glass-card .login-btn { font-size: 15px; padding: 11px; }
+            .glass-card input { padding: 10px 12px; font-size: 14px; border-radius: 8px; }
+            .login-btn { font-size: 14px; padding: 10px; border-radius: 8px; }
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
@@ -346,65 +462,65 @@
 </head>
 <body>
 
+    <!-- DECORATIVE CIRCLES -->
     <div class="circle circle-1"></div>
     <div class="circle circle-2"></div>
     <div class="circle circle-3"></div>
 
-    <div class="glass-full">
-        <div class="glass-card">
-            <div class="logo"><span>🔐</span></div>
-            <h1>Karibu</h1>
-            <p class="subtitle">Ingia kwenye mfumo wako</p>
+    <!-- GLASS CARD -->
+    <div class="glass-card">
+        <div class="logo"><span>🔐</span></div>
+        <h1>Karibu</h1>
+        <p class="subtitle">Ingia kwenye mfumo wako</p>
 
-            <!-- LOGIN FORM -->
-            <div id="loginForm">
-                <input type="email" id="email" placeholder="📧 Email yako">
-                <input type="password" id="password" placeholder="🔑 Password">
-                
-                <div class="forgot-link">
-                    <a href="#" onclick="showForgotForm()">🔑 Nimeisahau password?</a>
-                </div>
-
-                <button onclick="login()" class="login-btn">🚀 INGIA</button>
-
-                <div id="msg" class="msg"></div>
-
-                <div class="divider">
-                    <hr>
-                    <span>au</span>
-                    <hr>
-                </div>
-
-                <div class="register-link">
-                    Huna akaunti? <a href="register.html">Jisajili hapa</a>
-                </div>
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+            <input type="email" id="email" placeholder="📧 Email yako" value="Admin3@test.com">
+            <input type="password" id="password" placeholder="🔑 Password" value="123">
+            
+            <div class="forgot-link">
+                <a href="#" onclick="showForgotForm()">🔑 Nimeisahau password?</a>
             </div>
 
-            <!-- FORGOT PASSWORD FORM -->
-            <div id="forgotForm" class="forgot-form">
-                <h3>🔑 Reset Password</h3>
-                <p>Ingiza email yako, tutakutumia password ya kianzio</p>
-                <input type="email" id="forgotEmail" placeholder="📧 Ingiza email yako">
-                <button onclick="forgotPassword()">📨 Tuma</button>
-                <div id="forgotMsg" class="msg"></div>
-                <div class="back-link">
-                    <a href="#" onclick="hideForgotForm()">← Rudi kwenye Login</a>
-                </div>
+            <button onclick="login()" class="login-btn">🚀 INGIA</button>
+
+            <div id="msg" class="msg"></div>
+
+            <div class="divider">
+                <hr>
+                <span>au</span>
+                <hr>
             </div>
 
-            <!-- RESET PASSWORD FORM -->
-            <div id="resetForm" class="reset-form">
-                <h3>🔐 Weka Password Mpya</h3>
-                <p>Ingia kwa password ya kianzio, kisha weka password mpya</p>
-                <input type="email" id="resetEmail" placeholder="📧 Email yako">
-                <input type="password" id="resetOldPassword" placeholder="🔑 Password ya kianzio">
-                <input type="password" id="resetNewPassword" placeholder="🔑 Password mpya (min 6)">
-                <input type="password" id="resetConfirmPassword" placeholder="🔑 Rudia password mpya">
-                <button onclick="resetPassword()">💾 Badilisha Password</button>
-                <div id="resetMsg" class="msg"></div>
-                <div class="back-link">
-                    <a href="#" onclick="hideResetForm()">← Rudi kwenye Login</a>
-                </div>
+            <div class="register-link">
+                Huna akaunti? <a href="register.html">Jisajili hapa</a>
+            </div>
+        </div>
+
+        <!-- FORGOT PASSWORD FORM -->
+        <div id="forgotForm" class="forgot-form">
+            <h3>🔑 Reset Password</h3>
+            <p>Ingiza email yako, tutakutumia password ya kianzio</p>
+            <input type="email" id="forgotEmail" placeholder="📧 Ingiza email yako">
+            <button onclick="forgotPassword()">📨 Tuma</button>
+            <div id="forgotMsg" class="msg"></div>
+            <div class="back-link">
+                <a href="#" onclick="hideForgotForm()">← Rudi kwenye Login</a>
+            </div>
+        </div>
+
+        <!-- RESET PASSWORD FORM -->
+        <div id="resetForm" class="reset-form">
+            <h3>🔐 Weka Password Mpya</h3>
+            <p>Ingia kwa password ya kianzio, kisha weka password mpya</p>
+            <input type="email" id="resetEmail" placeholder="📧 Email yako">
+            <input type="password" id="resetOldPassword" placeholder="🔑 Password ya kianzio">
+            <input type="password" id="resetNewPassword" placeholder="🔑 Password mpya (min 6)">
+            <input type="password" id="resetConfirmPassword" placeholder="🔑 Rudia password mpya">
+            <button onclick="resetPassword()">💾 Badilisha Password</button>
+            <div id="resetMsg" class="msg"></div>
+            <div class="back-link">
+                <a href="#" onclick="hideResetForm()">← Rudi kwenye Login</a>
             </div>
         </div>
     </div>
