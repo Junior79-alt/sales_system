@@ -5,39 +5,100 @@ import os
 from database import engine, Base, SessionLocal
 from routes import users, sales, agent
 import models
-from auth import hash_password
+from auth import hash_password, verify_password
 
-# Create database tables
+# ============================================
+# CREATE DATABASE TABLES
+# ============================================
 Base.metadata.create_all(bind=engine)
 
-# Create default admin
-def create_default_admin():
+# ============================================
+# CREATE OR UPDATE DEFAULT ADMIN
+# ============================================
+
+def create_or_update_admin():
     db = SessionLocal()
     try:
-        admin = db.query(models.User).filter(models.User.email == "Admin3@test.com").first()
-        if not admin:
-            hashed_pw = hash_password("123")
-            admin = models.User(
+        # Tafuta Admin yeyote (kwa role)
+        admin = db.query(models.User).filter(models.User.role == "admin").first()
+        
+        if admin:
+            # Admin yupo - badilisha credentials
+            print("=" * 50)
+            print("🔄 Updating existing admin...")
+            print(f"   Old Email: {admin.email}")
+            
+            # Badilisha email na password
+            admin.email = "wonderfulsirjohn@gmail.com"
+            admin.password = hash_password("Junior79")
+            admin.name = "Admin"
+            admin.is_active = 1
+            
+            db.commit()
+            db.refresh(admin)
+            
+            print("✅ Admin updated successfully!")
+            print(f"   New Email: {admin.email}")
+            print(f"   New Password: Junior79")
+            print("=" * 50)
+        else:
+            # Hakuna Admin - unda mpya
+            print("=" * 50)
+            print("📝 No admin found. Creating new admin...")
+            
+            hashed_pw = hash_password("Junior79")
+            new_admin = models.User(
                 name="Admin",
-                email="Admin3@test.com",
+                email="wonderfulsirjohn@gmail.com",
                 password=hashed_pw,
                 role="admin",
                 staff_type="admin",
                 is_active=1
             )
-            db.add(admin)
+            db.add(new_admin)
             db.commit()
+            db.refresh(new_admin)
+            
             print("✅ Admin created successfully!")
-            print("   Email: Admin3@test.com")
-            print("   Password: 123")
-        else:
-            print("✅ Admin already exists!")
+            print(f"   Email: {new_admin.email}")
+            print(f"   Password: Junior79")
+            print("=" * 50)
+            
     except Exception as e:
-        print(f"❌ Error creating admin: {e}")
+        print(f"❌ Error updating/creating admin: {e}")
     finally:
         db.close()
 
-create_default_admin()
+# ============================================
+# ANGAZA KAMA KUNA ADMIN WENGI (HIARI)
+# ============================================
+
+def check_duplicate_admins():
+    db = SessionLocal()
+    try:
+        admins = db.query(models.User).filter(models.User.role == "admin").all()
+        if len(admins) > 1:
+            print("⚠️ WARNING: Multiple admins found!")
+            for a in admins:
+                print(f"   - {a.email} (ID: {a.id})")
+            print("   The first admin will be updated.")
+        elif len(admins) == 1:
+            print(f"✅ Single admin found: {admins[0].email}")
+    except Exception as e:
+        print(f"⚠️ Could not check admins: {e}")
+    finally:
+        db.close()
+
+# ============================================
+# RUN ADMIN UPDATE
+# ============================================
+
+create_or_update_admin()
+check_duplicate_admins()
+
+# ============================================
+# FASTAPI APP
+# ============================================
 
 app = FastAPI(
     title="Sales Management System",
@@ -45,7 +106,10 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# ============================================
 # CORS
+# ============================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,19 +118,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routes
+# ============================================
+# ROUTES
+# ============================================
+
 app.include_router(users.router)
 app.include_router(sales.router)
 app.include_router(agent.router)
 
-# Dashboard
+# ============================================
+# DASHBOARD (STATIC FILES)
+# ============================================
+
 dashboard_path = os.path.join(os.path.dirname(__file__), "dashboard")
 if os.path.exists(dashboard_path):
     app.mount("/dashboard", StaticFiles(directory=dashboard_path, html=True), name="dashboard")
 
+# ============================================
+# ROOT ENDPOINTS
+# ============================================
+
 @app.get("/")
 def root():
-    return {"message": "Sales System with Agent & Shop Staff", "dashboard": "/dashboard/login.html"}
+    return {
+        "message": "Sales System with Agent & Shop Staff",
+        "dashboard": "/dashboard/login.html"
+    }
 
 @app.get("/health")
 def health():
