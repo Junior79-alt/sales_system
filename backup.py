@@ -1,17 +1,16 @@
 import os
 import subprocess
 from datetime import datetime
-import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-import time
 import glob
 import shutil
 import gzip
 import re
+from urllib.parse import urlparse
 
 # ===== CONFIGURATION =====
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
@@ -60,25 +59,38 @@ def send_alert_email(subject, body, attachment_path=None):
     except Exception as e:
         print(f"❌ Failed to send alert email: {e}")
 
+def parse_database_url(url):
+    """Parse DATABASE_URL and return components"""
+    # Remove postgresql:// prefix
+    if url.startswith('postgresql://'):
+        url = url[13:]
+    
+    # Split user:password@host:port/database
+    user_pass, host_db = url.split('@')
+    user, password = user_pass.split(':')
+    
+    # Handle host:port/database
+    host_port, database = host_db.split('/')
+    if ':' in host_port:
+        host, port = host_port.split(':')
+    else:
+        host = host_port
+        port = '5432'
+    
+    return user, password, host, port, database
+
 def backup_postgresql():
     """Backup PostgreSQL database"""
     try:
         # Parse DATABASE_URL
-        pattern = r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)'
-        match = re.match(pattern, DATABASE_URL)
-        
-        if not match:
-            print("❌ Invalid DATABASE_URL format!")
-            return False
-        
-        user, password, host, port, database = match.groups()
+        user, password, host, port, database = parse_database_url(DATABASE_URL)
         
         # Create backup filename with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         backup_file = os.path.join(BACKUP_PATH, f"backup_{database}_{timestamp}.sql")
         
-        # Use pg_dump to backup
-        print(f"📦 Creating backup: {backup_file}")
+        print(f"📦 Creating PostgreSQL backup: {backup_file}")
+        print(f"   Host: {host}:{port}, Database: {database}, User: {user}")
         
         env = os.environ.copy()
         env['PGPASSWORD'] = password
@@ -105,11 +117,8 @@ def backup_postgresql():
                     f_out.write(f_in.read())
             
             print(f"✅ Backup compressed: {compressed_file}")
-            
-            # Delete uncompressed file
             os.remove(backup_file)
             
-            # Send success email with backup attached
             file_size = os.path.getsize(compressed_file) / 1024 / 1024
             
             send_alert_email(
@@ -122,16 +131,11 @@ Database backup completed successfully!
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
 📍 Location: {compressed_file}
-🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.sql.gz')))}
-
-The backup is attached to this email.
                 """,
                 compressed_file
             )
             
-            # ===== NO DELETION - ALL BACKUPS ARE KEPT =====
             print("📁 All backups are kept permanently!")
-            
             return True
         else:
             print(f"❌ Backup failed: {result.stderr}")
@@ -193,9 +197,6 @@ SQLite database backup completed!
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
-🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.sql.gz')))}
-
-The backup is attached to this email.
             """,
             compressed_file
         )
@@ -208,16 +209,19 @@ The backup is attached to this email.
 
 def list_backups():
     """List all available backups"""
-    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz"))
+    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.db.gz"))
     backups.sort(key=os.path.getmtime, reverse=True)
     
     print("\n📁 AVAILABLE BACKUPS:")
     print("=" * 50)
-    for i, backup in enumerate(backups, 1):
-        size = os.path.getsize(backup) / 1024 / 1024
-        date = datetime.fromtimestamp(os.path.getmtime(backup)).strftime("%Y-%m-%d %H:%M:%S")
-        print(f"{i}. {os.path.basename(backup)}")
-        print(f"   📅 {date} | 📊 {size:.2f} MB")
+    if not backups:
+        print("No backups found.")
+    else:
+        for i, backup in enumerate(backups, 1):
+            size = os.path.getsize(backup) / 1024 / 1024
+            date = datetime.fromtimestamp(os.path.getmtime(backup)).strftime("%Y-%m-%d %H:%M:%S")
+            print(f"{i}. {os.path.basename(backup)}")
+            print(f"   📅 {date} | 📊 {size:.2f} MB")
     print("=" * 50)
     print(f"Total: {len(backups)} backup(s)")
     print("=" * 50)
