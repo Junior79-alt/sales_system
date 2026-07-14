@@ -11,6 +11,7 @@ import shutil
 import gzip
 import re
 from urllib.parse import urlparse
+import sys
 
 # ===== CONFIGURATION =====
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
@@ -61,15 +62,12 @@ def send_alert_email(subject, body, attachment_path=None):
 
 def parse_database_url(url):
     """Parse DATABASE_URL and return components"""
-    # Remove postgresql:// prefix
     if url.startswith('postgresql://'):
         url = url[13:]
     
-    # Split user:password@host:port/database
     user_pass, host_db = url.split('@')
     user, password = user_pass.split(':')
     
-    # Handle host:port/database
     host_port, database = host_db.split('/')
     if ':' in host_port:
         host, port = host_port.split(':')
@@ -82,10 +80,8 @@ def parse_database_url(url):
 def backup_postgresql():
     """Backup PostgreSQL database"""
     try:
-        # Parse DATABASE_URL
         user, password, host, port, database = parse_database_url(DATABASE_URL)
         
-        # Create backup filename with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         backup_file = os.path.join(BACKUP_PATH, f"backup_{database}_{timestamp}.sql")
         
@@ -110,7 +106,6 @@ def backup_postgresql():
         if result.returncode == 0:
             print(f"✅ Backup created successfully: {backup_file}")
             
-            # Compress the backup
             compressed_file = backup_file + '.gz'
             with open(backup_file, 'rb') as f_in:
                 with gzip.open(compressed_file, 'wb') as f_out:
@@ -130,7 +125,6 @@ Database backup completed successfully!
 📁 Database: {database}
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
-📍 Location: {compressed_file}
                 """,
                 compressed_file
             )
@@ -226,6 +220,17 @@ def list_backups():
     print(f"Total: {len(backups)} backup(s)")
     print("=" * 50)
 
+def send_invoice_auto():
+    """Send automatic invoices to all agents"""
+    try:
+        # Add the project root to path
+        sys.path.append(os.path.dirname(__file__))
+        from routes.agent import send_invoice_auto as send_invoices
+        return send_invoices()
+    except Exception as e:
+        print(f"❌ Auto invoice error: {e}")
+        return 0
+
 if __name__ == "__main__":
     print("=" * 50)
     print("🗄️ DATABASE BACKUP SYSTEM")
@@ -244,5 +249,10 @@ if __name__ == "__main__":
     if success:
         print("✅ Backup completed successfully!")
         list_backups()
+        
+        # ===== SEND AUTO INVOICE =====
+        print("\n📧 Sending automatic invoices...")
+        sent = send_invoice_auto()
+        print(f"✅ {sent} invoices sent")
     else:
         print("❌ Backup failed!")

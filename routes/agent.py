@@ -4,6 +4,7 @@ from database import get_db
 import models
 from auth import get_current_user
 from datetime import datetime, timedelta
+from utils.email import send_invoice_email
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
 
@@ -357,7 +358,7 @@ def get_shop_data(
     return result
 
 # ============================================
-# ADMIN: DELETE AGENT DATA (Single)
+# ADMIN: DELETE AGENT DATA
 # ============================================
 @router.delete("/delete/{data_id}")
 def delete_agent_data(
@@ -386,7 +387,6 @@ def delete_agent_data(
     db.delete(agent_data)
     db.commit()
     
-    # Recalculate capital
     remaining_data = db.query(models.AgentData).filter(
         models.AgentData.staff_id == staff_id
     ).order_by(models.AgentData.date.asc()).all()
@@ -446,7 +446,6 @@ def delete_agent_data_by_staff(
         db.delete(data)
     db.commit()
     
-    # Delete capital completely
     capital = db.query(models.AgentCapital).filter(
         models.AgentCapital.staff_id == staff_id
     ).first()
@@ -470,14 +469,12 @@ def delete_initial_capital(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Hakikisha ni Admin
     if current_user.role.lower() != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only Admin can delete capital!"
         )
     
-    # Tafuta capital ya staff
     capital = db.query(models.AgentCapital).filter(
         models.AgentCapital.staff_id == staff_id
     ).first()
@@ -488,11 +485,9 @@ def delete_initial_capital(
             detail="Capital not found for this staff!"
         )
     
-    # Hifadhi data kabla ya kufuta
     staff_name = capital.staff.name if capital.staff else "Unknown"
     initial_capital = capital.initial_capital
     
-    # Futa capital
     db.delete(capital)
     db.commit()
     
@@ -502,3 +497,358 @@ def delete_initial_capital(
         "staff_name": staff_name,
         "deleted_capital": initial_capital
     }
+
+
+# =========================================================
+# INVOICE SYSTEM
+# =========================================================
+
+# ===== GET INVOICE DATA FOR AGENT =====
+@router.get("/invoice/{staff_id}")
+def get_agent_invoice(
+    staff_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admin can view invoices!"
+        )
+    
+    agent = db.query(models.User).filter(
+        models.User.id == staff_id,
+        models.User.staff_type == "agent"
+    ).first()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found!")
+    
+    today = datetime.utcnow().date()
+    first_day = today.replace(day=1)
+    next_month = (first_day + timedelta(days=32)).replace(day=1)
+    
+    agent_data = db.query(models.AgentData).filter(
+        models.AgentData.staff_id == staff_id,
+        models.AgentData.date >= first_day,
+        models.AgentData.date < next_month
+    ).order_by(models.AgentData.date.asc()).all()
+    
+    capital = db.query(models.AgentCapital).filter(
+        models.AgentCapital.staff_id == staff_id
+    ).first()
+    
+    total_cash = sum(d.cash for d in agent_data)
+    total_float_voda = sum(d.float_voda for d in agent_data)
+    total_float_airtel = sum(d.float_airtel for d in agent_data)
+    total_float_tigo = sum(d.float_tigo for d in agent_data)
+    total_float = total_float_voda + total_float_airtel + total_float_tigo
+    total_all = total_cash + total_float
+    
+    initial_capital = capital.initial_capital if capital else 0
+    monthly_profit = total_all - initial_capital
+    
+    return {
+        "staff_id": agent.id,
+        "staff_name": agent.name,
+        "staff_email": agent.email,
+        "month": today.strftime("%B %Y"),
+        "days_worked": len(agent_data),
+        "total_cash": total_cash,
+        "total_float_voda": total_float_voda,
+        "total_float_airtel": total_float_airtel,
+        "total_float_tigo": total_float_tigo,
+        "total_float": total_float,
+        "total_all": total_all,
+        "initial_capital": initial_capital,
+        "monthly_profit": monthly_profit,
+        "has_data": len(agent_data) > 0,
+        "daily_data": [
+            {
+                "date": d.date.strftime("%Y-%m-%d"),
+                "cash": d.cash,
+                "float_voda": d.float_voda,
+                "float_airtel": d.float_airtel,
+                "float_tigo": d.float_tigo,
+                "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                "daily_total": d.daily_total,
+                "daily_profit": d.daily_profit
+            }
+            for d in agent_data
+        ]
+    }
+
+
+# ===== SEND INVOICE TO AGENT (Admin Manual) =====
+@router.post("/send_invoice/{staff_id}")
+def send_invoice_to_agent(
+    staff_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admin can send invoice emails!"
+        )
+    
+    agent = db.query(models.User).filter(
+        models.User.id == staff_id,
+        models.User.staff_type == "agent",
+        models.User.is_active == 1
+    ).first()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found or not active!")
+    
+    # Pata invoice data
+    today = datetime.utcnow().date()
+    first_day = today.replace(day=1)
+    next_month = (first_day + timedelta(days=32)).replace(day=1)
+    
+    agent_data = db.query(models.AgentData).filter(
+        models.AgentData.staff_id == staff_id,
+        models.AgentData.date >= first_day,
+        models.AgentData.date < next_month
+    ).order_by(models.AgentData.date.asc()).all()
+    
+    if not agent_data:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No data found for {agent.name} this month!"
+        )
+    
+    capital = db.query(models.AgentCapital).filter(
+        models.AgentCapital.staff_id == staff_id
+    ).first()
+    
+    total_cash = sum(d.cash for d in agent_data)
+    total_float_voda = sum(d.float_voda for d in agent_data)
+    total_float_airtel = sum(d.float_airtel for d in agent_data)
+    total_float_tigo = sum(d.float_tigo for d in agent_data)
+    total_float = total_float_voda + total_float_airtel + total_float_tigo
+    total_all = total_cash + total_float
+    
+    initial_capital = capital.initial_capital if capital else 0
+    monthly_profit = total_all - initial_capital
+    
+    invoice_data = {
+        "staff_name": agent.name,
+        "staff_email": agent.email,
+        "month": today.strftime("%B %Y"),
+        "days_worked": len(agent_data),
+        "total_cash": total_cash,
+        "total_float_voda": total_float_voda,
+        "total_float_airtel": total_float_airtel,
+        "total_float_tigo": total_float_tigo,
+        "total_float": total_float,
+        "total_all": total_all,
+        "initial_capital": initial_capital,
+        "monthly_profit": monthly_profit,
+        "daily_data": [
+            {
+                "date": d.date.strftime("%Y-%m-%d"),
+                "cash": d.cash,
+                "float_voda": d.float_voda,
+                "float_airtel": d.float_airtel,
+                "float_tigo": d.float_tigo,
+                "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                "daily_total": d.daily_total,
+                "daily_profit": d.daily_profit
+            }
+            for d in agent_data
+        ]
+    }
+    
+    # ===== SEND INVOICE EMAIL =====
+    send_invoice_email(agent.email, agent.name, invoice_data)
+    
+    return {
+        "message": f"✅ Invoice sent to {agent.email}",
+        "agent": agent.name,
+        "email": agent.email
+    }
+
+
+# ===== SEND INVOICE TO ALL AGENTS =====
+@router.post("/send_invoice_all")
+def send_invoice_to_all_agents(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Admin can send invoice emails!"
+        )
+    
+    agents = db.query(models.User).filter(
+        models.User.staff_type == "agent",
+        models.User.is_active == 1
+    ).all()
+    
+    if not agents:
+        raise HTTPException(status_code=404, detail="No active agents found!")
+    
+    sent_count = 0
+    failed_count = 0
+    errors = []
+    
+    for agent in agents:
+        try:
+            today = datetime.utcnow().date()
+            first_day = today.replace(day=1)
+            next_month = (first_day + timedelta(days=32)).replace(day=1)
+            
+            agent_data = db.query(models.AgentData).filter(
+                models.AgentData.staff_id == agent.id,
+                models.AgentData.date >= first_day,
+                models.AgentData.date < next_month
+            ).order_by(models.AgentData.date.asc()).all()
+            
+            if not agent_data:
+                failed_count += 1
+                errors.append(f"{agent.name}: No data this month")
+                continue
+            
+            capital = db.query(models.AgentCapital).filter(
+                models.AgentCapital.staff_id == agent.id
+            ).first()
+            
+            total_cash = sum(d.cash for d in agent_data)
+            total_float_voda = sum(d.float_voda for d in agent_data)
+            total_float_airtel = sum(d.float_airtel for d in agent_data)
+            total_float_tigo = sum(d.float_tigo for d in agent_data)
+            total_float = total_float_voda + total_float_airtel + total_float_tigo
+            total_all = total_cash + total_float
+            
+            initial_capital = capital.initial_capital if capital else 0
+            monthly_profit = total_all - initial_capital
+            
+            invoice_data = {
+                "staff_name": agent.name,
+                "staff_email": agent.email,
+                "month": today.strftime("%B %Y"),
+                "days_worked": len(agent_data),
+                "total_cash": total_cash,
+                "total_float_voda": total_float_voda,
+                "total_float_airtel": total_float_airtel,
+                "total_float_tigo": total_float_tigo,
+                "total_float": total_float,
+                "total_all": total_all,
+                "initial_capital": initial_capital,
+                "monthly_profit": monthly_profit,
+                "daily_data": [
+                    {
+                        "date": d.date.strftime("%Y-%m-%d"),
+                        "cash": d.cash,
+                        "float_voda": d.float_voda,
+                        "float_airtel": d.float_airtel,
+                        "float_tigo": d.float_tigo,
+                        "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                        "daily_total": d.daily_total,
+                        "daily_profit": d.daily_profit
+                    }
+                    for d in agent_data
+                ]
+            }
+            
+            send_invoice_email(agent.email, agent.name, invoice_data)
+            sent_count += 1
+            
+        except Exception as e:
+            failed_count += 1
+            errors.append(f"{agent.name}: {str(e)}")
+    
+    return {
+        "message": f"✅ Invoice sent to {sent_count} agents",
+        "total_agents": len(agents),
+        "sent": sent_count,
+        "failed": failed_count,
+        "errors": errors
+    }
+
+
+# ===== SEND INVOICE AUTO (Called by Cron) =====
+def send_invoice_auto():
+    """Send invoices to all active agents automatically"""
+    from database import SessionLocal
+    db = SessionLocal()
+    try:
+        agents = db.query(models.User).filter(
+            models.User.staff_type == "agent",
+            models.User.is_active == 1
+        ).all()
+        
+        sent_count = 0
+        for agent in agents:
+            try:
+                today = datetime.utcnow().date()
+                first_day = today.replace(day=1)
+                next_month = (first_day + timedelta(days=32)).replace(day=1)
+                
+                agent_data = db.query(models.AgentData).filter(
+                    models.AgentData.staff_id == agent.id,
+                    models.AgentData.date >= first_day,
+                    models.AgentData.date < next_month
+                ).order_by(models.AgentData.date.asc()).all()
+                
+                if not agent_data:
+                    continue
+                
+                capital = db.query(models.AgentCapital).filter(
+                    models.AgentCapital.staff_id == agent.id
+                ).first()
+                
+                total_cash = sum(d.cash for d in agent_data)
+                total_float_voda = sum(d.float_voda for d in agent_data)
+                total_float_airtel = sum(d.float_airtel for d in agent_data)
+                total_float_tigo = sum(d.float_tigo for d in agent_data)
+                total_float = total_float_voda + total_float_airtel + total_float_tigo
+                total_all = total_cash + total_float
+                
+                initial_capital = capital.initial_capital if capital else 0
+                monthly_profit = total_all - initial_capital
+                
+                invoice_data = {
+                    "staff_name": agent.name,
+                    "staff_email": agent.email,
+                    "month": today.strftime("%B %Y"),
+                    "days_worked": len(agent_data),
+                    "total_cash": total_cash,
+                    "total_float_voda": total_float_voda,
+                    "total_float_airtel": total_float_airtel,
+                    "total_float_tigo": total_float_tigo,
+                    "total_float": total_float,
+                    "total_all": total_all,
+                    "initial_capital": initial_capital,
+                    "monthly_profit": monthly_profit,
+                    "daily_data": [
+                        {
+                            "date": d.date.strftime("%Y-%m-%d"),
+                            "cash": d.cash,
+                            "float_voda": d.float_voda,
+                            "float_airtel": d.float_airtel,
+                            "float_tigo": d.float_tigo,
+                            "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                            "daily_total": d.daily_total,
+                            "daily_profit": d.daily_profit
+                        }
+                        for d in agent_data
+                    ]
+                }
+                
+                send_invoice_email(agent.email, agent.name, invoice_data)
+                sent_count += 1
+                
+            except Exception as e:
+                print(f"❌ Failed to send invoice to {agent.email}: {e}")
+        
+        print(f"✅ Auto invoice sent to {sent_count} agents")
+        return sent_count
+        
+    except Exception as e:
+        print(f"❌ Auto invoice error: {e}")
+        return 0
+    finally:
+        db.close()

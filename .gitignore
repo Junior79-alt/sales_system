@@ -28,4 +28,4 @@ db/
 *.swo
 
 # Logs
-*.log
+*.log"backups/" 
