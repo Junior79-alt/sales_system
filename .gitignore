@@ -29,3 +29,4 @@ db/
 
 # Logs
 *.log"backups/" 
+"backups/" 
