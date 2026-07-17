@@ -8,9 +8,19 @@ import models
 from auth import hash_password, verify_password
 
 # ============================================
-# CREATE DATABASE TABLES
+# CREATE DATABASE TABLES (CLEAN DEPLOYMENT)
 # ============================================
+
+# 🔥 Futa tables zote na uunde upya (Clean Start)
+print("=" * 50)
+print("🗑️  DROPPING ALL TABLES...")
+Base.metadata.drop_all(bind=engine)
+print("✅ All tables dropped!")
+
+print("📝 CREATING NEW TABLES...")
 Base.metadata.create_all(bind=engine)
+print("✅ All tables created successfully!")
+print("=" * 50)
 
 # ============================================
 # CREATE OR UPDATE DEFAULT ADMIN
@@ -70,7 +80,7 @@ def create_or_update_admin():
         db.close()
 
 # ============================================
-# ANGAZA KAMA KUNA ADMIN WENGI (HIARI)
+# ANGAZA KAMA KUNA ADMIN WENGI
 # ============================================
 
 def check_duplicate_admins():

@@ -62,7 +62,7 @@
             display: flex;
             align-items: center;
             padding: 12px 16px;
-            color: var(--sidebar-text);
+            color: rgba(255,255,255,0.6);
             text-decoration: none;
             border-radius: 8px;
             transition: all 0.3s;
@@ -72,7 +72,7 @@
         }
         .sidebar-nav .theme-toggle-item a:hover {
             background: rgba(255,255,255,0.08);
-            color: var(--sidebar-text-hover);
+            color: white;
         }
         .sidebar-nav .theme-toggle-item a .icon { font-size: 18px; width: 28px; text-align: center; }
         .sidebar-nav .theme-toggle-item .theme-label {
@@ -181,9 +181,9 @@
         .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
         .msg.info { display: block; background: #bbdefb; color: #0d47a1; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
-        th { background: #1a237e; color: white; padding: 10px 12px; text-align: left; white-space: nowrap; }
-        td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 800px; }
+        th { background: #1a237e; color: white; padding: 8px 10px; text-align: left; white-space: nowrap; font-size: 11px; }
+        td { padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 12px; }
         tr:hover { background: #f5f5f5; }
 
         .user-status { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
@@ -285,8 +285,8 @@
             .activate-form { flex-direction: column; align-items: stretch; }
             .activate-form input { min-width: auto; width: 100%; }
             .activate-form button { width: 100%; }
-            table { font-size: 12px; min-width: 500px; }
-            th, td { padding: 6px 8px; }
+            table { font-size: 11px; min-width: 600px; }
+            th, td { padding: 5px 8px; }
             .sales-cards-grid { grid-template-columns: 1fr; }
             .sale-card .card-body { grid-template-columns: 1fr 1fr; }
         }
@@ -297,7 +297,7 @@
             .stat-card .stat-value { font-size: 20px; }
             .top-header .header-left h1 { font-size: 17px; }
             .chart-box canvas { height: 160px !important; max-height: 160px; }
-            table { font-size: 11px; min-width: 400px; }
+            table { font-size: 10px; min-width: 500px; }
             th, td { padding: 4px 6px; }
             .sale-card .card-body { grid-template-columns: 1fr 1fr; gap: 6px; }
             .sale-card .card-body .info-item { padding: 6px; }
@@ -328,7 +328,6 @@
             <li><a href="#" onclick="showPage('agent')"><span class="icon">🤖</span> Agent System</a></li>
             <li><a href="#" onclick="showPage('shop')"><span class="icon">🏪</span> Shop System</a></li>
             
-            <!-- ===== DARK MODE TOGGLE IN SIDEBAR ===== -->
             <li class="theme-toggle-item">
                 <a href="#" onclick="toggleTheme(); return false;">
                     <span class="icon" id="themeIcon">☀️</span>
@@ -439,7 +438,6 @@
             <div class="agent-container">
                 <h2>🤖 Agent System - Data za Agent Staff</h2>
                 
-                <!-- ===== BUTTON YA KUMA INVOICE KWA WOTE ===== -->
                 <div style="margin-bottom: 20px; text-align: right;">
                     <button onclick="sendInvoiceToAll()" 
                             style="background: #1a237e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold;">
@@ -447,7 +445,6 @@
                     </button>
                 </div>
                 
-                <!-- Orodha ya Agent Staff -->
                 <div id="agentStaffList">
                     <p style="text-align:center;color:#999;">Loading...</p>
                 </div>
@@ -503,7 +500,6 @@
             }
         }
 
-        // Load saved theme
         (function loadTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
@@ -783,7 +779,7 @@
         }
 
         // =========================================================
-        // LOAD AGENT DATA
+        // LOAD AGENT DATA (Iliyoboreshwa)
         // =========================================================
         async function loadAgentData() {
             try {
@@ -814,7 +810,6 @@
                                     <span style="font-size:12px; color:#e65100;">💰 Mtaji Sasa: ${(agent.current_capital || 0).toLocaleString()} TSh</span>
                                     <span style="font-size:12px; color:#2e7d32;">📈 Faida: ${(agent.total_profit || 0).toLocaleString()} TSh</span>
                                     
-                                    <!-- ===== KITUFE CHA INVOICE ===== -->
                                     <button onclick="sendInvoice(${agent.staff_id}, '${agent.staff_name}')" 
                                             style="background:#1a237e; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px;">
                                         📧 Tuma Invoice
@@ -832,9 +827,14 @@
                             </div>
                             <div class="agent-stats-row">
                                 <div><strong>💰 Cash:</strong> ${(agent.total_cash || 0).toLocaleString()} TSh</div>
-                                <div style="color:#7B1FA2;"><strong>🟣 Voda:</strong> ${(agent.total_float_voda || 0).toLocaleString()} TSh</div>
-                                <div style="color:#D32F2F;"><strong>🔴 Airtel:</strong> ${(agent.total_float_airtel || 0).toLocaleString()} TSh</div>
-                                <div style="color:#1976D2;"><strong>🔵 Tigo:</strong> ${(agent.total_float_tigo || 0).toLocaleString()} TSh</div>
+                                <div style="color:#F9A825;"><strong>🟡 Halotel F:</strong> ${(agent.total_float_halotel || 0).toLocaleString()} TSh</div>
+                                <div style="color:#7B1FA2;"><strong>🟣 Voda F:</strong> ${(agent.total_float_voda || 0).toLocaleString()} TSh</div>
+                                <div style="color:#D32F2F;"><strong>🔴 Airtel F:</strong> ${(agent.total_float_airtel || 0).toLocaleString()} TSh</div>
+                                <div style="color:#1976D2;"><strong>🔵 Tigo F:</strong> ${(agent.total_float_tigo || 0).toLocaleString()} TSh</div>
+                                <div style="color:#F9A825;"><strong>🟡 Halotel L:</strong> ${(agent.total_lipa_halotel || 0).toLocaleString()} TSh</div>
+                                <div style="color:#7B1FA2;"><strong>🟣 Voda L:</strong> ${(agent.total_lipa_voda || 0).toLocaleString()} TSh</div>
+                                <div style="color:#D32F2F;"><strong>🔴 Airtel L:</strong> ${(agent.total_lipa_airtel || 0).toLocaleString()} TSh</div>
+                                <div style="color:#1976D2;"><strong>🔵 Tigo L:</strong> ${(agent.total_lipa_tigo || 0).toLocaleString()} TSh</div>
                             </div>
                             
                             <details style="margin-top:10px;">
@@ -842,19 +842,25 @@
                                     📋 Onyesha Historia za Siku (${agent.history ? agent.history.length : 0})
                                 </summary>
                                 <div style="margin-top:10px; overflow-x:auto;">
-                                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
                                         <thead>
                                             <tr style="background:#1a237e; color:white;">
-                                                <th style="padding:6px 10px; text-align:left;">#</th>
-                                                <th style="padding:6px 10px; text-align:left;">Tarehe</th>
-                                                <th style="padding:6px 10px; text-align:left;">Cash</th>
-                                                <th style="padding:6px 10px; text-align:left;">Voda</th>
-                                                <th style="padding:6px 10px; text-align:left;">Airtel</th>
-                                                <th style="padding:6px 10px; text-align:left;">Tigo</th>
-                                                <th style="padding:6px 10px; text-align:left;">Jumla Float</th>
-                                                <th style="padding:6px 10px; text-align:left;">Jumla</th>
-                                                <th style="padding:6px 10px; text-align:left;">Faida</th>
-                                                <th style="padding:6px 10px; text-align:left;">Kitendo</th>
+                                                <th style="padding:5px 8px; text-align:left;">#</th>
+                                                <th style="padding:5px 8px; text-align:left;">Tarehe</th>
+                                                <th style="padding:5px 8px; text-align:left;">Cash</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#F9A825;">Hal F</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#7B1FA2;">Voda F</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#D32F2F;">Airtel F</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#1976D2;">Tigo F</th>
+                                                <th style="padding:5px 8px; text-align:left;">Jumla F</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#F9A825;">Hal L</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#7B1FA2;">Voda L</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#D32F2F;">Airtel L</th>
+                                                <th style="padding:5px 8px; text-align:left; color:#1976D2;">Tigo L</th>
+                                                <th style="padding:5px 8px; text-align:left;">Jumla L</th>
+                                                <th style="padding:5px 8px; text-align:left;">Jumla</th>
+                                                <th style="padding:5px 8px; text-align:left;">Faida</th>
+                                                <th style="padding:5px 8px; text-align:left;">Kitendo</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -877,13 +883,13 @@
                             
                             html += `
                                 <tr style="background:#e3f2fd; font-weight:bold;">
-                                    <td colspan="9" style="padding:8px 10px; color:#0d47a1;">
+                                    <td colspan="15" style="padding:6px 8px; color:#0d47a1;">
                                         📅 ${dateKey} 
                                         <span style="color:#2e7d32; margin-left:15px;">Faida ya Siku: ${totalDailyProfit.toLocaleString()} TSh</span>
                                     </td>
-                                    <td style="padding:8px 10px; text-align:center;">
+                                    <td style="padding:6px 8px; text-align:center;">
                                         <button onclick="deleteAgentDataByDate(${agent.staff_id}, '${dateKey}')" 
-                                                style="background:#d32f2f; color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:10px;">
+                                                style="background:#d32f2f; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:9px;">
                                             🗑️ Futa Siku
                                         </button>
                                     </td>
@@ -892,22 +898,29 @@
                             
                             items.forEach((item, idx) => {
                                 count++;
-                                const totalFloat = item.float_voda + item.float_airtel + item.float_tigo;
+                                const totalFloat = (item.float_halotel || 0) + (item.float_voda || 0) + (item.float_airtel || 0) + (item.float_tigo || 0);
+                                const totalLipa = (item.lipa_halotel || 0) + (item.lipa_voda || 0) + (item.lipa_airtel || 0) + (item.lipa_tigo || 0);
                                 const profitCls = (item.daily_profit || 0) >= 0 ? 'style="color:#2e7d32;font-weight:bold;"' : 'style="color:#d32f2f;font-weight:bold;"';
                                 html += `
                                     <tr style="border-bottom:1px solid #eee;">
-                                        <td style="padding:6px 10px;">${count}</td>
-                                        <td style="padding:6px 10px;">${item.date}</td>
-                                        <td style="padding:6px 10px;">${(item.cash || 0).toLocaleString()} TSh</td>
-                                        <td style="padding:6px 10px; color:#7B1FA2;">${(item.float_voda || 0).toLocaleString()} TSh</td>
-                                        <td style="padding:6px 10px; color:#D32F2F;">${(item.float_airtel || 0).toLocaleString()} TSh</td>
-                                        <td style="padding:6px 10px; color:#1976D2;">${(item.float_tigo || 0).toLocaleString()} TSh</td>
-                                        <td style="padding:6px 10px; font-weight:bold;">${totalFloat.toLocaleString()} TSh</td>
-                                        <td style="padding:6px 10px; font-weight:bold; color:#1a237e;">${(item.daily_total || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px;">${count}</td>
+                                        <td style="padding:5px 8px;">${item.date}</td>
+                                        <td style="padding:5px 8px;">${(item.cash || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#F9A825;">${(item.float_halotel || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#7B1FA2;">${(item.float_voda || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#D32F2F;">${(item.float_airtel || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#1976D2;">${(item.float_tigo || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; font-weight:bold;">${totalFloat.toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#F9A825;">${(item.lipa_halotel || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#7B1FA2;">${(item.lipa_voda || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#D32F2F;">${(item.lipa_airtel || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; color:#1976D2;">${(item.lipa_tigo || 0).toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; font-weight:bold;">${totalLipa.toLocaleString()} TSh</td>
+                                        <td style="padding:5px 8px; font-weight:bold; color:#1a237e;">${(item.daily_total || 0).toLocaleString()} TSh</td>
                                         <td ${profitCls}>${(item.daily_profit || 0).toLocaleString()} TSh</td>
-                                        <td style="padding:6px 10px; text-align:center;">
+                                        <td style="padding:5px 8px; text-align:center;">
                                             <button onclick="deleteSingleAgentData(${item.id})" 
-                                                    style="background:#d32f2f; color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:10px;">
+                                                    style="background:#d32f2f; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:9px;">
                                                 🗑️ Futa
                                             </button>
                                         </td>
@@ -1027,16 +1040,13 @@
         // DELETE FUNCTIONS FOR AGENT DATA (Admin Only)
         // =========================================================
 
-        // ===== DELETE SINGLE AGENT DATA =====
         async function deleteSingleAgentData(dataId) {
             if (!confirm('⚠️ Je, una uhakika unataka kufuta data hii? Hatua hii haiwezi kurekebishwa!')) return;
             
             try {
                 const response = await fetch(`${API_URL}/agent/delete/${dataId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
                 const data = await response.json();
@@ -1053,16 +1063,13 @@
             }
         }
 
-        // ===== DELETE ALL AGENT DATA FOR A STAFF =====
         async function deleteAllAgentData(staffId, staffName) {
             if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA data zote na mtaji wa ${staffName}? Hatua hii haiwezi kurekebishwa!`)) return;
             
             try {
                 const response = await fetch(`${API_URL}/agent/delete_by_staff/${staffId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
                 const data = await response.json();
@@ -1079,7 +1086,6 @@
             }
         }
 
-        // ===== DELETE AGENT DATA BY DATE =====
         async function deleteAgentDataByDate(staffId, dateKey) {
             if (!confirm(`⚠️ Je, una uhakika unataka kufuta data zote za tarehe ${dateKey}? Hatua hii haiwezi kurekebishwa!`)) return;
             
@@ -1109,9 +1115,7 @@
                 for (const entry of entriesToDelete) {
                     const response = await fetch(`${API_URL}/agent/delete/${entry.id}`, {
                         method: 'DELETE',
-                        headers: {
-                            'Authorization': 'Bearer ' + token
-                        }
+                        headers: { 'Authorization': 'Bearer ' + token }
                     });
                     
                     if (response.ok) {
@@ -1128,16 +1132,13 @@
             }
         }
 
-        // ===== DELETE CAPITAL ONLY =====
         async function deleteCapitalOnly(staffId, staffName) {
             if (!confirm(`⚠️ Je, una uhakika unataka KUFUTA mtaji wa ${staffName}? Hatua hii itafuta mtaji wa mwanzo na wa sasa. Agent atalazimika kuweka mtaji mpya!`)) return;
             
             try {
                 const response = await fetch(`${API_URL}/agent/delete_capital/${staffId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
                 const data = await response.json();
@@ -1158,16 +1159,13 @@
         // INVOICE FUNCTIONS
         // =========================================================
 
-        // ===== SEND INVOICE TO AGENT =====
         async function sendInvoice(staffId, staffName) {
             if (!confirm(`📧 Je, una uhakika unataka kutuma invoice kwa ${staffName}?`)) return;
             
             try {
                 const response = await fetch(`${API_URL}/agent/send_invoice/${staffId}`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
                 const data = await response.json();
@@ -1183,16 +1181,13 @@
             }
         }
 
-        // ===== SEND INVOICE TO ALL AGENTS =====
         async function sendInvoiceToAll() {
             if (!confirm('📧 Je, una uhakika unataka kutuma invoice kwa AGENT WOTE walio active?')) return;
             
             try {
                 const response = await fetch(`${API_URL}/agent/send_invoice_all`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
                 const data = await response.json();

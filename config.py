@@ -1,11 +1,11 @@
 import os
 
 class Config:
-    # SendGrid Configuration (Optional - for backup)
+    # SendGrid Configuration
     SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
     SENDGRID_FROM_EMAIL = os.environ.get("SENDGRID_FROM_EMAIL", "wonderfulsirjohn@gmail.com")
     
-    # SMTP Configuration (Main - for email)
+    # SMTP Configuration (Backup - Sio lazima tena)
     SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
     SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
     SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
@@ -17,4 +17,4 @@ class Config:
     
     @classmethod
     def is_email_enabled(cls):
-        return bool(cls.SMTP_USERNAME and cls.SMTP_PASSWORD)
+        return bool(cls.SENDGRID_API_KEY)

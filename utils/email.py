@@ -1,43 +1,34 @@
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
+import sendgrid
+from sendgrid.helpers.mail import Mail, Email, To, Content
 from datetime import datetime
 from config import Config
 
 # ============================================
-# SEND EMAIL VIA SMTP (GMAIL)
+# SEND EMAIL VIA SENDGRID
 # ============================================
 
 def send_email(to_email, subject, body, html_body=None):
     """
-    Tuma barua pepe kwa mtumiaji kutumia SMTP (Gmail)
+    Tuma barua pepe kwa mtumiaji kutumia SendGrid
     """
-    if not Config.SMTP_USERNAME or not Config.SMTP_PASSWORD:
-        print("⚠️ SMTP credentials not configured! Email not sent.")
+    # Check if SendGrid is configured
+    if not Config.SENDGRID_API_KEY:
+        print("⚠️ SendGrid API key not configured! Email not sent.")
         print(f"   To: {to_email}")
         print(f"   Subject: {subject}")
         return False
     
     try:
-        # Create message
-        msg = MIMEMultipart()
-        msg['From'] = Config.SMTP_USERNAME
-        msg['To'] = to_email
-        msg['Subject'] = subject
+        # Create email message
+        from_email = Email(Config.SENDGRID_FROM_EMAIL)
+        to_email_obj = To(to_email)
         
-        # Plain text body
-        plain_body = body.replace('<br>', '\n').replace('&nbsp;', ' ')
-        # Remove HTML tags for plain text
-        import re
-        plain_body = re.sub(r'<[^>]+>', '', plain_body)
-        
-        # HTML body
+        # Prepare HTML content
         if html_body is None:
             html_body = body
         
+        # Create full HTML email with template
         html_content = f"""
         <html>
             <head>
@@ -48,18 +39,6 @@ def send_email(to_email, subject, body, html_body=None):
                     .header h2 {{ margin: 0; font-size: 22px; }}
                     .content {{ padding: 10px 0; line-height: 1.6; font-size: 15px; }}
                     .footer {{ margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px; }}
-                    table {{ width: 100%; border-collapse: collapse; margin: 15px 0; }}
-                    th {{ background: #1a237e; color: white; padding: 8px 12px; text-align: left; }}
-                    td {{ padding: 8px 12px; border-bottom: 1px solid #eee; }}
-                    .summary-grid {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 15px 0; }}
-                    .summary-item {{ background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid #1a237e; }}
-                    .summary-item .label {{ font-size: 11px; color: #888; text-transform: uppercase; }}
-                    .summary-item .value {{ font-size: 18px; font-weight: bold; color: #1a237e; margin-top: 5px; }}
-                    .summary-item .value.profit {{ color: #2e7d32; }}
-                    @media (max-width: 600px) {{
-                        .summary-grid {{ grid-template-columns: 1fr 1fr; }}
-                        table {{ font-size: 12px; }}
-                    }}
                 </style>
             </head>
             <body>
@@ -81,19 +60,24 @@ def send_email(to_email, subject, body, html_body=None):
         </html>
         """
         
-        # Attach both plain text and HTML
-        msg.attach(MIMEText(plain_body, 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
+        # Create SendGrid message
+        message = Mail(
+            from_email=from_email,
+            to_emails=to_email_obj,
+            subject=subject,
+            html_content=html_content
+        )
         
         # Send email
-        server = smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT)
-        server.starttls()
-        server.login(Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        sg = sendgrid.SendGridAPIClient(Config.SENDGRID_API_KEY)
+        response = sg.send(message)
         
-        print(f"✅ Email sent to {to_email} via SMTP")
-        return True
+        if response.status_code == 202:
+            print(f"✅ Email sent to {to_email} via SendGrid")
+            return True
+        else:
+            print(f"❌ SendGrid error: Status {response.status_code}")
+            return False
         
     except Exception as e:
         print(f"❌ Email error: {e}")
@@ -101,7 +85,7 @@ def send_email(to_email, subject, body, html_body=None):
 
 
 # ============================================
-# EMAIL FUNCTIONS
+# EMAIL FUNCTIONS (Zinabaki sawa)
 # ============================================
 
 def send_registration_email(email, name, password, staff_type):
@@ -209,10 +193,6 @@ Asante,<br>
 <strong>Sales System Team</strong>"""
     return send_email(email, subject, body)
 
-
-# ============================================
-# INVOICE EMAIL
-# ============================================
 
 def send_invoice_email(to_email, name, invoice_data):
     """Send invoice email to agent"""

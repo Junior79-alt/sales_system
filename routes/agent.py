@@ -91,14 +91,19 @@ def get_capital(
     }
 
 # ============================================
-# ADD AGENT DATA
+# ADD AGENT DATA (Iliyoboreshwa)
 # ============================================
 @router.post("/add")
 def add_agent_data(
     cash: float,
-    float_voda: float,
-    float_airtel: float,
-    float_tigo: float,
+    float_halotel: float = 0,
+    float_voda: float = 0,
+    float_airtel: float = 0,
+    float_tigo: float = 0,
+    lipa_halotel: float = 0,
+    lipa_voda: float = 0,
+    lipa_airtel: float = 0,
+    lipa_tigo: float = 0,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -121,15 +126,23 @@ def add_agent_data(
             detail="Hujatoa mtaji! Tafadhali weka mtaji kwanza."
         )
     
-    daily_total = cash + float_voda + float_airtel + float_tigo
+    # Calculate totals
+    total_float = float_halotel + float_voda + float_airtel + float_tigo
+    total_lipa = lipa_halotel + lipa_voda + lipa_airtel + lipa_tigo
+    daily_total = cash + total_float + total_lipa
     daily_profit = daily_total - capital.current_capital
     
     agent_data = models.AgentData(
         staff_id=current_user.id,
         cash=cash,
+        float_halotel=float_halotel,
         float_voda=float_voda,
         float_airtel=float_airtel,
         float_tigo=float_tigo,
+        lipa_halotel=lipa_halotel,
+        lipa_voda=lipa_voda,
+        lipa_airtel=lipa_airtel,
+        lipa_tigo=lipa_tigo,
         daily_total=daily_total,
         daily_profit=daily_profit,
         date=datetime.utcnow()
@@ -139,6 +152,7 @@ def add_agent_data(
     db.commit()
     db.refresh(agent_data)
     
+    # Update capital
     capital.current_capital = daily_total
     capital.total_profit = capital.total_profit + daily_profit
     
@@ -149,9 +163,16 @@ def add_agent_data(
         "message": "✅ Data imehifadhiwa!",
         "id": agent_data.id,
         "cash": cash,
+        "float_halotel": float_halotel,
         "float_voda": float_voda,
         "float_airtel": float_airtel,
         "float_tigo": float_tigo,
+        "lipa_halotel": lipa_halotel,
+        "lipa_voda": lipa_voda,
+        "lipa_airtel": lipa_airtel,
+        "lipa_tigo": lipa_tigo,
+        "total_float": total_float,
+        "total_lipa": total_lipa,
         "daily_total": daily_total,
         "daily_profit": daily_profit,
         "initial_capital": capital.initial_capital,
@@ -160,7 +181,7 @@ def add_agent_data(
     }
 
 # ============================================
-# GET MY DATA
+# GET MY DATA (Iliyoboreshwa)
 # ============================================
 @router.get("/my_data")
 def get_my_data(
@@ -179,11 +200,19 @@ def get_my_data(
             models.AgentData.staff_id == current_user.id
         ).order_by(models.AgentData.date.asc()).all()
         
+        # Calculate totals
         total_cash = sum(d.cash for d in all_data)
+        total_float_halotel = sum(d.float_halotel for d in all_data)
         total_float_voda = sum(d.float_voda for d in all_data)
         total_float_airtel = sum(d.float_airtel for d in all_data)
         total_float_tigo = sum(d.float_tigo for d in all_data)
-        total_float_all = total_float_voda + total_float_airtel + total_float_tigo
+        total_float_all = total_float_halotel + total_float_voda + total_float_airtel + total_float_tigo
+        
+        total_lipa_halotel = sum(d.lipa_halotel for d in all_data)
+        total_lipa_voda = sum(d.lipa_voda for d in all_data)
+        total_lipa_airtel = sum(d.lipa_airtel for d in all_data)
+        total_lipa_tigo = sum(d.lipa_tigo for d in all_data)
+        total_lipa_all = total_lipa_halotel + total_lipa_voda + total_lipa_airtel + total_lipa_tigo
         
         initial_capital = capital.initial_capital if capital else 0
         current_capital = capital.current_capital if capital else 0
@@ -204,20 +233,32 @@ def get_my_data(
             "total_profit": total_profit,
             "month": capital.month if capital else None,
             "total_cash": total_cash,
+            "total_float_halotel": total_float_halotel,
             "total_float_voda": total_float_voda,
             "total_float_airtel": total_float_airtel,
             "total_float_tigo": total_float_tigo,
             "total_float_all": total_float_all,
+            "total_lipa_halotel": total_lipa_halotel,
+            "total_lipa_voda": total_lipa_voda,
+            "total_lipa_airtel": total_lipa_airtel,
+            "total_lipa_tigo": total_lipa_tigo,
+            "total_lipa_all": total_lipa_all,
             "today_total": today_total,
             "today_profit": today_profit,
             "history": [
                 {
                     "id": d.id,
                     "cash": d.cash,
+                    "float_halotel": d.float_halotel,
                     "float_voda": d.float_voda,
                     "float_airtel": d.float_airtel,
                     "float_tigo": d.float_tigo,
-                    "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                    "total_float": d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo,
+                    "lipa_halotel": d.lipa_halotel,
+                    "lipa_voda": d.lipa_voda,
+                    "lipa_airtel": d.lipa_airtel,
+                    "lipa_tigo": d.lipa_tigo,
+                    "total_lipa": d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo,
                     "daily_total": d.daily_total,
                     "daily_profit": d.daily_profit,
                     "date": d.date.strftime("%Y-%m-%d %H:%M")
@@ -255,7 +296,7 @@ def get_my_data(
         raise HTTPException(status_code=400, detail="Unknown staff type")
 
 # ============================================
-# GET ALL AGENT DATA (Admin)
+# GET ALL AGENT DATA (Admin - Iliyoboreshwa)
 # ============================================
 @router.get("/all")
 def get_all_agent_data(
@@ -287,25 +328,43 @@ def get_all_agent_data(
                 "current_capital": capital.current_capital if capital else 0,
                 "total_profit": capital.total_profit if capital else 0,
                 "total_cash": 0,
+                "total_float_halotel": 0,
                 "total_float_voda": 0,
                 "total_float_airtel": 0,
                 "total_float_tigo": 0,
                 "total_float_all": 0,
+                "total_lipa_halotel": 0,
+                "total_lipa_voda": 0,
+                "total_lipa_airtel": 0,
+                "total_lipa_tigo": 0,
+                "total_lipa_all": 0,
                 "history": []
             }
         
         result[staff_name]["total_cash"] += item.cash
+        result[staff_name]["total_float_halotel"] += item.float_halotel
         result[staff_name]["total_float_voda"] += item.float_voda
         result[staff_name]["total_float_airtel"] += item.float_airtel
         result[staff_name]["total_float_tigo"] += item.float_tigo
-        result[staff_name]["total_float_all"] += (item.float_voda + item.float_airtel + item.float_tigo)
+        result[staff_name]["total_float_all"] += (item.float_halotel + item.float_voda + item.float_airtel + item.float_tigo)
+        result[staff_name]["total_lipa_halotel"] += item.lipa_halotel
+        result[staff_name]["total_lipa_voda"] += item.lipa_voda
+        result[staff_name]["total_lipa_airtel"] += item.lipa_airtel
+        result[staff_name]["total_lipa_tigo"] += item.lipa_tigo
+        result[staff_name]["total_lipa_all"] += (item.lipa_halotel + item.lipa_voda + item.lipa_airtel + item.lipa_tigo)
         result[staff_name]["history"].append({
             "id": item.id,
             "cash": item.cash,
+            "float_halotel": item.float_halotel,
             "float_voda": item.float_voda,
             "float_airtel": item.float_airtel,
             "float_tigo": item.float_tigo,
-            "total_float": item.float_voda + item.float_airtel + item.float_tigo,
+            "total_float": item.float_halotel + item.float_voda + item.float_airtel + item.float_tigo,
+            "lipa_halotel": item.lipa_halotel,
+            "lipa_voda": item.lipa_voda,
+            "lipa_airtel": item.lipa_airtel,
+            "lipa_tigo": item.lipa_tigo,
+            "total_lipa": item.lipa_halotel + item.lipa_voda + item.lipa_airtel + item.lipa_tigo,
             "daily_total": item.daily_total,
             "daily_profit": item.daily_profit,
             "date": item.date.strftime("%Y-%m-%d %H:%M")
@@ -398,8 +457,9 @@ def delete_agent_data(
     if capital:
         if remaining_data:
             total_cash = sum(d.cash for d in remaining_data)
-            total_float = sum(d.float_voda + d.float_airtel + d.float_tigo for d in remaining_data)
-            total_spent = total_cash + total_float
+            total_float = sum(d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo for d in remaining_data)
+            total_lipa = sum(d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo for d in remaining_data)
+            total_spent = total_cash + total_float + total_lipa
             
             capital.current_capital = total_spent
             capital.total_profit = total_spent - capital.initial_capital
@@ -500,7 +560,7 @@ def delete_initial_capital(
 
 
 # =========================================================
-# INVOICE SYSTEM
+# INVOICE SYSTEM (Iliyoboreshwa)
 # =========================================================
 
 # ===== GET INVOICE DATA FOR AGENT =====
@@ -539,11 +599,19 @@ def get_agent_invoice(
     ).first()
     
     total_cash = sum(d.cash for d in agent_data)
+    total_float_halotel = sum(d.float_halotel for d in agent_data)
     total_float_voda = sum(d.float_voda for d in agent_data)
     total_float_airtel = sum(d.float_airtel for d in agent_data)
     total_float_tigo = sum(d.float_tigo for d in agent_data)
-    total_float = total_float_voda + total_float_airtel + total_float_tigo
-    total_all = total_cash + total_float
+    total_float = total_float_halotel + total_float_voda + total_float_airtel + total_float_tigo
+    
+    total_lipa_halotel = sum(d.lipa_halotel for d in agent_data)
+    total_lipa_voda = sum(d.lipa_voda for d in agent_data)
+    total_lipa_airtel = sum(d.lipa_airtel for d in agent_data)
+    total_lipa_tigo = sum(d.lipa_tigo for d in agent_data)
+    total_lipa = total_lipa_halotel + total_lipa_voda + total_lipa_airtel + total_lipa_tigo
+    
+    total_all = total_cash + total_float + total_lipa
     
     initial_capital = capital.initial_capital if capital else 0
     monthly_profit = total_all - initial_capital
@@ -555,10 +623,16 @@ def get_agent_invoice(
         "month": today.strftime("%B %Y"),
         "days_worked": len(agent_data),
         "total_cash": total_cash,
+        "total_float_halotel": total_float_halotel,
         "total_float_voda": total_float_voda,
         "total_float_airtel": total_float_airtel,
         "total_float_tigo": total_float_tigo,
         "total_float": total_float,
+        "total_lipa_halotel": total_lipa_halotel,
+        "total_lipa_voda": total_lipa_voda,
+        "total_lipa_airtel": total_lipa_airtel,
+        "total_lipa_tigo": total_lipa_tigo,
+        "total_lipa": total_lipa,
         "total_all": total_all,
         "initial_capital": initial_capital,
         "monthly_profit": monthly_profit,
@@ -567,10 +641,16 @@ def get_agent_invoice(
             {
                 "date": d.date.strftime("%Y-%m-%d"),
                 "cash": d.cash,
+                "float_halotel": d.float_halotel,
                 "float_voda": d.float_voda,
                 "float_airtel": d.float_airtel,
                 "float_tigo": d.float_tigo,
-                "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                "total_float": d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo,
+                "lipa_halotel": d.lipa_halotel,
+                "lipa_voda": d.lipa_voda,
+                "lipa_airtel": d.lipa_airtel,
+                "lipa_tigo": d.lipa_tigo,
+                "total_lipa": d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo,
                 "daily_total": d.daily_total,
                 "daily_profit": d.daily_profit
             }
@@ -601,7 +681,7 @@ def send_invoice_to_agent(
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found or not active!")
     
-    # Pata invoice data
+    # Get invoice data
     today = datetime.utcnow().date()
     first_day = today.replace(day=1)
     next_month = (first_day + timedelta(days=32)).replace(day=1)
@@ -623,11 +703,19 @@ def send_invoice_to_agent(
     ).first()
     
     total_cash = sum(d.cash for d in agent_data)
+    total_float_halotel = sum(d.float_halotel for d in agent_data)
     total_float_voda = sum(d.float_voda for d in agent_data)
     total_float_airtel = sum(d.float_airtel for d in agent_data)
     total_float_tigo = sum(d.float_tigo for d in agent_data)
-    total_float = total_float_voda + total_float_airtel + total_float_tigo
-    total_all = total_cash + total_float
+    total_float = total_float_halotel + total_float_voda + total_float_airtel + total_float_tigo
+    
+    total_lipa_halotel = sum(d.lipa_halotel for d in agent_data)
+    total_lipa_voda = sum(d.lipa_voda for d in agent_data)
+    total_lipa_airtel = sum(d.lipa_airtel for d in agent_data)
+    total_lipa_tigo = sum(d.lipa_tigo for d in agent_data)
+    total_lipa = total_lipa_halotel + total_lipa_voda + total_lipa_airtel + total_lipa_tigo
+    
+    total_all = total_cash + total_float + total_lipa
     
     initial_capital = capital.initial_capital if capital else 0
     monthly_profit = total_all - initial_capital
@@ -638,10 +726,16 @@ def send_invoice_to_agent(
         "month": today.strftime("%B %Y"),
         "days_worked": len(agent_data),
         "total_cash": total_cash,
+        "total_float_halotel": total_float_halotel,
         "total_float_voda": total_float_voda,
         "total_float_airtel": total_float_airtel,
         "total_float_tigo": total_float_tigo,
         "total_float": total_float,
+        "total_lipa_halotel": total_lipa_halotel,
+        "total_lipa_voda": total_lipa_voda,
+        "total_lipa_airtel": total_lipa_airtel,
+        "total_lipa_tigo": total_lipa_tigo,
+        "total_lipa": total_lipa,
         "total_all": total_all,
         "initial_capital": initial_capital,
         "monthly_profit": monthly_profit,
@@ -649,10 +743,16 @@ def send_invoice_to_agent(
             {
                 "date": d.date.strftime("%Y-%m-%d"),
                 "cash": d.cash,
+                "float_halotel": d.float_halotel,
                 "float_voda": d.float_voda,
                 "float_airtel": d.float_airtel,
                 "float_tigo": d.float_tigo,
-                "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                "total_float": d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo,
+                "lipa_halotel": d.lipa_halotel,
+                "lipa_voda": d.lipa_voda,
+                "lipa_airtel": d.lipa_airtel,
+                "lipa_tigo": d.lipa_tigo,
+                "total_lipa": d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo,
                 "daily_total": d.daily_total,
                 "daily_profit": d.daily_profit
             }
@@ -716,11 +816,19 @@ def send_invoice_to_all_agents(
             ).first()
             
             total_cash = sum(d.cash for d in agent_data)
+            total_float_halotel = sum(d.float_halotel for d in agent_data)
             total_float_voda = sum(d.float_voda for d in agent_data)
             total_float_airtel = sum(d.float_airtel for d in agent_data)
             total_float_tigo = sum(d.float_tigo for d in agent_data)
-            total_float = total_float_voda + total_float_airtel + total_float_tigo
-            total_all = total_cash + total_float
+            total_float = total_float_halotel + total_float_voda + total_float_airtel + total_float_tigo
+            
+            total_lipa_halotel = sum(d.lipa_halotel for d in agent_data)
+            total_lipa_voda = sum(d.lipa_voda for d in agent_data)
+            total_lipa_airtel = sum(d.lipa_airtel for d in agent_data)
+            total_lipa_tigo = sum(d.lipa_tigo for d in agent_data)
+            total_lipa = total_lipa_halotel + total_lipa_voda + total_lipa_airtel + total_lipa_tigo
+            
+            total_all = total_cash + total_float + total_lipa
             
             initial_capital = capital.initial_capital if capital else 0
             monthly_profit = total_all - initial_capital
@@ -731,10 +839,16 @@ def send_invoice_to_all_agents(
                 "month": today.strftime("%B %Y"),
                 "days_worked": len(agent_data),
                 "total_cash": total_cash,
+                "total_float_halotel": total_float_halotel,
                 "total_float_voda": total_float_voda,
                 "total_float_airtel": total_float_airtel,
                 "total_float_tigo": total_float_tigo,
                 "total_float": total_float,
+                "total_lipa_halotel": total_lipa_halotel,
+                "total_lipa_voda": total_lipa_voda,
+                "total_lipa_airtel": total_lipa_airtel,
+                "total_lipa_tigo": total_lipa_tigo,
+                "total_lipa": total_lipa,
                 "total_all": total_all,
                 "initial_capital": initial_capital,
                 "monthly_profit": monthly_profit,
@@ -742,10 +856,16 @@ def send_invoice_to_all_agents(
                     {
                         "date": d.date.strftime("%Y-%m-%d"),
                         "cash": d.cash,
+                        "float_halotel": d.float_halotel,
                         "float_voda": d.float_voda,
                         "float_airtel": d.float_airtel,
                         "float_tigo": d.float_tigo,
-                        "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                        "total_float": d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo,
+                        "lipa_halotel": d.lipa_halotel,
+                        "lipa_voda": d.lipa_voda,
+                        "lipa_airtel": d.lipa_airtel,
+                        "lipa_tigo": d.lipa_tigo,
+                        "total_lipa": d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo,
                         "daily_total": d.daily_total,
                         "daily_profit": d.daily_profit
                     }
@@ -801,11 +921,19 @@ def send_invoice_auto():
                 ).first()
                 
                 total_cash = sum(d.cash for d in agent_data)
+                total_float_halotel = sum(d.float_halotel for d in agent_data)
                 total_float_voda = sum(d.float_voda for d in agent_data)
                 total_float_airtel = sum(d.float_airtel for d in agent_data)
                 total_float_tigo = sum(d.float_tigo for d in agent_data)
-                total_float = total_float_voda + total_float_airtel + total_float_tigo
-                total_all = total_cash + total_float
+                total_float = total_float_halotel + total_float_voda + total_float_airtel + total_float_tigo
+                
+                total_lipa_halotel = sum(d.lipa_halotel for d in agent_data)
+                total_lipa_voda = sum(d.lipa_voda for d in agent_data)
+                total_lipa_airtel = sum(d.lipa_airtel for d in agent_data)
+                total_lipa_tigo = sum(d.lipa_tigo for d in agent_data)
+                total_lipa = total_lipa_halotel + total_lipa_voda + total_lipa_airtel + total_lipa_tigo
+                
+                total_all = total_cash + total_float + total_lipa
                 
                 initial_capital = capital.initial_capital if capital else 0
                 monthly_profit = total_all - initial_capital
@@ -816,10 +944,16 @@ def send_invoice_auto():
                     "month": today.strftime("%B %Y"),
                     "days_worked": len(agent_data),
                     "total_cash": total_cash,
+                    "total_float_halotel": total_float_halotel,
                     "total_float_voda": total_float_voda,
                     "total_float_airtel": total_float_airtel,
                     "total_float_tigo": total_float_tigo,
                     "total_float": total_float,
+                    "total_lipa_halotel": total_lipa_halotel,
+                    "total_lipa_voda": total_lipa_voda,
+                    "total_lipa_airtel": total_lipa_airtel,
+                    "total_lipa_tigo": total_lipa_tigo,
+                    "total_lipa": total_lipa,
                     "total_all": total_all,
                     "initial_capital": initial_capital,
                     "monthly_profit": monthly_profit,
@@ -827,10 +961,16 @@ def send_invoice_auto():
                         {
                             "date": d.date.strftime("%Y-%m-%d"),
                             "cash": d.cash,
+                            "float_halotel": d.float_halotel,
                             "float_voda": d.float_voda,
                             "float_airtel": d.float_airtel,
                             "float_tigo": d.float_tigo,
-                            "total_float": d.float_voda + d.float_airtel + d.float_tigo,
+                            "total_float": d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo,
+                            "lipa_halotel": d.lipa_halotel,
+                            "lipa_voda": d.lipa_voda,
+                            "lipa_airtel": d.lipa_airtel,
+                            "lipa_tigo": d.lipa_tigo,
+                            "total_lipa": d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo,
                             "daily_total": d.daily_total,
                             "daily_profit": d.daily_profit
                         }

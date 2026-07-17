@@ -37,10 +37,23 @@ class AgentData(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     staff_id = Column(Integer, ForeignKey("users.id"))
+    
+    # Cash
     cash = Column(Float, default=0)
-    float_voda = Column(Float, default=0)
-    float_airtel = Column(Float, default=0)
-    float_tigo = Column(Float, default=0)
+    
+    # Float za Mitandao (Kwa ajili ya kuuza)
+    float_halotel = Column(Float, default=0)  # 🟡 HALOTEL
+    float_voda = Column(Float, default=0)     # 🟣 VODA
+    float_airtel = Column(Float, default=0)   # 🔴 AIRTEL
+    float_tigo = Column(Float, default=0)     # 🔵 TIGO
+    
+    # Lipa za Mitandao (Kwa ajili ya kulipa)
+    lipa_halotel = Column(Float, default=0)   # 🟡 HALOTEL LIPA
+    lipa_voda = Column(Float, default=0)      # 🟣 VODA LIPA
+    lipa_airtel = Column(Float, default=0)    # 🔴 AIRTEL LIPA
+    lipa_tigo = Column(Float, default=0)      # 🔵 TIGO LIPA
+    
+    # Totals
     daily_total = Column(Float, default=0)
     daily_profit = Column(Float, default=0)
     date = Column(DateTime, default=datetime.utcnow)

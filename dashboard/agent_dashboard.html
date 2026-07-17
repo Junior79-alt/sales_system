@@ -182,9 +182,28 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
         }
+
+        /* Float Colors */
+        .float-card-body .form-group.float-halotel input { border-left: 4px solid #F9A825; }
         .float-card-body .form-group.float-voda input { border-left: 4px solid #7B1FA2; }
         .float-card-body .form-group.float-airtel input { border-left: 4px solid #D32F2F; }
         .float-card-body .form-group.float-tigo input { border-left: 4px solid #1976D2; }
+        
+        /* Lipa Colors */
+        .float-card-body .form-group.lipa-halotel input { border-left: 4px solid #F9A825; }
+        .float-card-body .form-group.lipa-voda input { border-left: 4px solid #7B1FA2; }
+        .float-card-body .form-group.lipa-airtel input { border-left: 4px solid #D32F2F; }
+        .float-card-body .form-group.lipa-tigo input { border-left: 4px solid #1976D2; }
+
+        .float-card-body .section-title {
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #1a237e;
+            font-weight: 600;
+        }
 
         .float-card-body .btn-submit {
             padding: 12px;
@@ -197,6 +216,7 @@
             font-weight: bold;
             width: 100%;
             transition: background 0.3s;
+            margin-top: 10px;
         }
         .float-card-body .btn-submit:hover { background: #1b5e20; }
         .float-card-body .btn-submit:active { transform: scale(0.98); }
@@ -266,20 +286,21 @@
         .history-card-body table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
-            min-width: 600px;
+            font-size: 12px;
+            min-width: 800px;
         }
         .history-card-body th {
             background: #1a237e;
             color: white;
             padding: 8px 10px;
             text-align: left;
-            font-size: 12px;
+            font-size: 11px;
+            white-space: nowrap;
         }
         .history-card-body td {
-            padding: 8px 10px;
+            padding: 6px 10px;
             border-bottom: 1px solid #eee;
-            font-size: 13px;
+            font-size: 12px;
         }
         .history-card-body tr:hover { background: #f5f5f5; }
         .history-card-body .no-data {
@@ -305,8 +326,8 @@
             .history-card-header h3 { font-size: 14px; }
             .float-card-body { padding: 15px; }
             .history-card-body { padding: 15px; }
-            .history-card-body table { font-size: 12px; min-width: 500px; }
-            .history-card-body th, .history-card-body td { padding: 6px 8px; }
+            .history-card-body table { font-size: 11px; min-width: 600px; }
+            .history-card-body th, .history-card-body td { padding: 5px 8px; }
         }
 
         @media (max-width: 480px) {
@@ -316,13 +337,13 @@
             .float-card-header h3 { font-size: 13px; }
             .history-card-header { padding: 12px 15px; }
             .history-card-header h3 { font-size: 13px; }
-            .history-card-body table { font-size: 11px; min-width: 400px; }
-            .history-card-body th, .history-card-body td { padding: 5px 6px; }
+            .history-card-body table { font-size: 10px; min-width: 500px; }
+            .history-card-body th, .history-card-body td { padding: 4px 6px; }
             .float-card-body .form-group input { font-size: 14px; padding: 8px 12px; }
         }
 
         @media (max-width: 360px) {
-            .history-card-body table { font-size: 10px; min-width: 350px; }
+            .history-card-body table { font-size: 9px; min-width: 400px; }
         }
     </style>
 </head>
@@ -339,7 +360,7 @@
 
         <!-- INFO NOTE -->
         <div class="info-note">
-            📊 <strong>Faida:</strong> Jumla ya Cash + Float - <strong>Mtaji wa Sasa</strong> &nbsp;|&nbsp;
+            📊 <strong>Faida:</strong> Jumla ya Cash + Float + Lipa - <strong>Mtaji wa Sasa</strong> &nbsp;|&nbsp;
             💰 <strong>Mtaji Mwanzo:</strong> Haubadiliki &nbsp;|&nbsp; 📈 <strong>Mtaji Sasa:</strong> Unabadilika
         </div>
 
@@ -364,28 +385,62 @@
         <!-- ===== FLOAT CARD WITH DROPDOWN ===== -->
         <div class="float-card">
             <div class="float-card-header" onclick="toggleFloatCard()">
-                <h3><span>📱</span> Weka Float za Mitandao</h3>
+                <h3><span>📱</span> Weka Float na Lipa za Mitandao</h3>
                 <span class="toggle-icon" id="floatToggleIcon">▼</span>
             </div>
             <div class="float-card-body" id="floatCardBody">
-                <div class="form-grid">
-                    <div class="form-group float-voda">
-                        <label><span class="icon">🟣</span> Vodacom</label>
-                        <input type="number" id="agentFloatVoda" placeholder="Float ya Voda">
-                    </div>
-                    <div class="form-group float-airtel">
-                        <label><span class="icon">🔴</span> Airtel</label>
-                        <input type="number" id="agentFloatAirtel" placeholder="Float ya Airtel">
-                    </div>
-                    <div class="form-group float-tigo">
-                        <label><span class="icon">🔵</span> Tigo</label>
-                        <input type="number" id="agentFloatTigo" placeholder="Float ya Tigo">
-                    </div>
-                    <div class="form-group full-width">
-                        <label><span class="icon">💰</span> Cash</label>
-                        <input type="number" id="agentCash" placeholder="Ingiza cash">
+                <!-- FLOAT ZA MITANDAO (KUUZA) -->
+                <div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom:15px;">
+                    <div class="section-title">📤 FLOAT (Kuuza)</div>
+                    <div class="form-grid">
+                        <div class="form-group float-halotel">
+                            <label><span class="icon">🟡</span> Halotel Float</label>
+                            <input type="number" id="agentFloatHalotel" placeholder="Float ya Halotel">
+                        </div>
+                        <div class="form-group float-voda">
+                            <label><span class="icon">🟣</span> Vodacom Float</label>
+                            <input type="number" id="agentFloatVoda" placeholder="Float ya Voda">
+                        </div>
+                        <div class="form-group float-airtel">
+                            <label><span class="icon">🔴</span> Airtel Float</label>
+                            <input type="number" id="agentFloatAirtel" placeholder="Float ya Airtel">
+                        </div>
+                        <div class="form-group float-tigo">
+                            <label><span class="icon">🔵</span> Tigo Float</label>
+                            <input type="number" id="agentFloatTigo" placeholder="Float ya Tigo">
+                        </div>
                     </div>
                 </div>
+
+                <!-- LIPA ZA MITANDAO -->
+                <div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom:15px;">
+                    <div class="section-title">💰 LIPA (Kulipa)</div>
+                    <div class="form-grid">
+                        <div class="form-group lipa-halotel">
+                            <label><span class="icon">🟡</span> Halotel Lipa</label>
+                            <input type="number" id="agentLipaHalotel" placeholder="Lipa ya Halotel">
+                        </div>
+                        <div class="form-group lipa-voda">
+                            <label><span class="icon">🟣</span> Vodacom Lipa</label>
+                            <input type="number" id="agentLipaVoda" placeholder="Lipa ya Voda">
+                        </div>
+                        <div class="form-group lipa-airtel">
+                            <label><span class="icon">🔴</span> Airtel Lipa</label>
+                            <input type="number" id="agentLipaAirtel" placeholder="Lipa ya Airtel">
+                        </div>
+                        <div class="form-group lipa-tigo">
+                            <label><span class="icon">🔵</span> Tigo Lipa</label>
+                            <input type="number" id="agentLipaTigo" placeholder="Lipa ya Tigo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CASH -->
+                <div class="form-group full-width">
+                    <label><span class="icon">💰</span> Cash</label>
+                    <input type="number" id="agentCash" placeholder="Ingiza cash">
+                </div>
+
                 <button class="btn-submit" onclick="submitAgentData()">💾 HIFADHI</button>
                 <div id="agentMsg" class="msg"></div>
             </div>
@@ -472,15 +527,21 @@
             }
         }
 
-        // ===== SUBMIT AGENT DATA =====
+        // ===== SUBMIT AGENT DATA (Iliyoboreshwa) =====
         async function submitAgentData() {
             const cash = document.getElementById('agentCash').value.trim();
+            const floatHalotel = document.getElementById('agentFloatHalotel').value.trim();
             const floatVoda = document.getElementById('agentFloatVoda').value.trim();
             const floatAirtel = document.getElementById('agentFloatAirtel').value.trim();
             const floatTigo = document.getElementById('agentFloatTigo').value.trim();
+            const lipaHalotel = document.getElementById('agentLipaHalotel').value.trim();
+            const lipaVoda = document.getElementById('agentLipaVoda').value.trim();
+            const lipaAirtel = document.getElementById('agentLipaAirtel').value.trim();
+            const lipaTigo = document.getElementById('agentLipaTigo').value.trim();
             const msg = document.getElementById('agentMsg');
 
-            if (!cash && !floatVoda && !floatAirtel && !floatTigo) {
+            if (!cash && !floatHalotel && !floatVoda && !floatAirtel && !floatTigo && 
+                !lipaHalotel && !lipaVoda && !lipaAirtel && !lipaTigo) {
                 showMessage(msg, '❌ Tafadhali jaza angalau sehemu moja!', 'error');
                 return;
             }
@@ -488,20 +549,38 @@
             showMessage(msg, '⏳ Inahifadhi...', 'success');
 
             try {
-                const response = await fetch(
-                    `${API_URL}/agent/add?cash=${parseFloat(cash) || 0}&float_voda=${parseFloat(floatVoda) || 0}&float_airtel=${parseFloat(floatAirtel) || 0}&float_tigo=${parseFloat(floatTigo) || 0}`,
-                    { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }
-                );
+                // Build URL with all parameters
+                let url = `${API_URL}/agent/add?cash=${parseFloat(cash) || 0}`;
+                url += `&float_halotel=${parseFloat(floatHalotel) || 0}`;
+                url += `&float_voda=${parseFloat(floatVoda) || 0}`;
+                url += `&float_airtel=${parseFloat(floatAirtel) || 0}`;
+                url += `&float_tigo=${parseFloat(floatTigo) || 0}`;
+                url += `&lipa_halotel=${parseFloat(lipaHalotel) || 0}`;
+                url += `&lipa_voda=${parseFloat(lipaVoda) || 0}`;
+                url += `&lipa_airtel=${parseFloat(lipaAirtel) || 0}`;
+                url += `&lipa_tigo=${parseFloat(lipaTigo) || 0}`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
 
                 const data = await response.json();
 
                 if (response.ok) {
                     showMessage(msg, '✅ ' + data.message, 'success');
+                    // Clear all fields
                     document.getElementById('agentCash').value = '';
+                    document.getElementById('agentFloatHalotel').value = '';
                     document.getElementById('agentFloatVoda').value = '';
                     document.getElementById('agentFloatAirtel').value = '';
                     document.getElementById('agentFloatTigo').value = '';
+                    document.getElementById('agentLipaHalotel').value = '';
+                    document.getElementById('agentLipaVoda').value = '';
+                    document.getElementById('agentLipaAirtel').value = '';
+                    document.getElementById('agentLipaTigo').value = '';
                     
+                    // Close the float card
                     const floatBody = document.getElementById('floatCardBody');
                     const floatIcon = document.getElementById('floatToggleIcon');
                     floatBody.classList.remove('open');
@@ -516,7 +595,7 @@
             }
         }
 
-        // ===== LOAD MY DATA =====
+        // ===== LOAD MY DATA (Iliyoboreshwa) =====
         async function loadMyData() {
             try {
                 const res = await fetch(`${API_URL}/agent/my_data`, {
@@ -550,19 +629,56 @@
                     return;
                 }
 
-                let html = `<table><thead><tr><th>#</th><th>Tarehe</th><th>Cash</th><th>Voda</th><th>Airtel</th><th>Tigo</th><th>Jumla Float</th><th>Jumla</th><th>Faida</th></tr></thead><tbody>`;
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tarehe</th>
+                                <th>Cash</th>
+                                <th style="color:#F9A825;">Halotel F</th>
+                                <th style="color:#7B1FA2;">Voda F</th>
+                                <th style="color:#D32F2F;">Airtel F</th>
+                                <th style="color:#1976D2;">Tigo F</th>
+                                <th>Jumla Float</th>
+                                <th style="color:#F9A825;">Halotel L</th>
+                                <th style="color:#7B1FA2;">Voda L</th>
+                                <th style="color:#D32F2F;">Airtel L</th>
+                                <th style="color:#1976D2;">Tigo L</th>
+                                <th>Jumla Lipa</th>
+                                <th>Jumla</th>
+                                <th>Faida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
                 data.history.forEach((item, index) => {
-                    const totalFloat = item.float_voda + item.float_airtel + item.float_tigo;
-                    const profitClass = item.daily_profit >= 0 ? 'color: #2e7d32;' : 'color: #d32f2f;';
-                    html += `<tr><td>${index + 1}</td><td>${item.date}</td>
-                        <td>${item.cash.toLocaleString()} TSh</td>
-                        <td style="color:#7B1FA2;">${item.float_voda.toLocaleString()} TSh</td>
-                        <td style="color:#D32F2F;">${item.float_airtel.toLocaleString()} TSh</td>
-                        <td style="color:#1976D2;">${item.float_tigo.toLocaleString()} TSh</td>
-                        <td><strong>${totalFloat.toLocaleString()} TSh</strong></td>
-                        <td><strong style="color:#1a237e;">${item.daily_total.toLocaleString()} TSh</strong></td>
-                        <td><strong style="${profitClass}">${item.daily_profit.toLocaleString()} TSh</strong></td></tr>`;
+                    const totalFloat = item.float_halotel + item.float_voda + item.float_airtel + item.float_tigo;
+                    const totalLipa = item.lipa_halotel + item.lipa_voda + item.lipa_airtel + item.lipa_tigo;
+                    const profitClass = item.daily_profit >= 0 ? 'color: #2e7d32; font-weight:bold;' : 'color: #d32f2f; font-weight:bold;';
+                    
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.date}</td>
+                            <td>${item.cash.toLocaleString()} TSh</td>
+                            <td style="color:#F9A825;">${item.float_halotel.toLocaleString()} TSh</td>
+                            <td style="color:#7B1FA2;">${item.float_voda.toLocaleString()} TSh</td>
+                            <td style="color:#D32F2F;">${item.float_airtel.toLocaleString()} TSh</td>
+                            <td style="color:#1976D2;">${item.float_tigo.toLocaleString()} TSh</td>
+                            <td><strong>${totalFloat.toLocaleString()} TSh</strong></td>
+                            <td style="color:#F9A825;">${item.lipa_halotel.toLocaleString()} TSh</td>
+                            <td style="color:#7B1FA2;">${item.lipa_voda.toLocaleString()} TSh</td>
+                            <td style="color:#D32F2F;">${item.lipa_airtel.toLocaleString()} TSh</td>
+                            <td style="color:#1976D2;">${item.lipa_tigo.toLocaleString()} TSh</td>
+                            <td><strong>${totalLipa.toLocaleString()} TSh</strong></td>
+                            <td><strong style="color:#1a237e;">${item.daily_total.toLocaleString()} TSh</strong></td>
+                            <td><strong style="${profitClass}">${item.daily_profit.toLocaleString()} TSh</strong></td>
+                        </tr>
+                    `;
                 });
+
                 html += '</tbody></table>';
                 container.innerHTML = html;
 
