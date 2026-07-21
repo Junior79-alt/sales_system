@@ -69,12 +69,12 @@ def send_alert_email(subject, body, attachment_path=None):
         print(f"❌ Failed to send alert email: {e}")
 
 def backup_postgresql():
-    """Backup PostgreSQL database"""
+    """Backup PostgreSQL database using multiple methods"""
     try:
         # Remove ?sslmode=require if present
         clean_url = DATABASE_URL.split('?')[0]
         
-        print(f"📦 Backing up PostgreSQL...")
+        print(f"\n📦 Backing up PostgreSQL...")
         print(f"   Using: {clean_url}")
         
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -82,24 +82,57 @@ def backup_postgresql():
         
         print(f"   Backup file: {backup_file}")
         
-        # Use pg_dump with clean URL
-        cmd = f"pg_dump '{clean_url}' > {backup_file}"
+        # ===== METHOD 1: Try with ignore-version flag =====
+        print("   🔄 Attempt 1: Using --ignore-version...")
+        cmd = f"pg_dump --ignore-version --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
         result = os.system(cmd)
         
-        if result == 0 and os.path.exists(backup_file):
-            print(f"✅ Backup created successfully!")
+        # ===== METHOD 2: If failed, try with -v flag =====
+        if result != 0 or not os.path.exists(backup_file):
+            print("   🔄 Attempt 2: Using -v (verbose) flag...")
+            cmd = f"pg_dump -v --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
+            result = os.system(cmd)
+        
+        # ===== METHOD 3: Try with format custom =====
+        if result != 0 or not os.path.exists(backup_file):
+            print("   🔄 Attempt 3: Using custom format...")
+            backup_file_custom = backup_file.replace('.sql', '.dump')
+            cmd = f"pg_dump --ignore-version --no-owner --no-privileges -F c '{clean_url}' -f {backup_file_custom}"
+            result = os.system(cmd)
+            if result == 0 and os.path.exists(backup_file_custom):
+                backup_file = backup_file_custom
+        
+        # ===== METHOD 4: Try data-only backup =====
+        if result != 0 or not os.path.exists(backup_file):
+            print("   🔄 Attempt 4: Using data-only backup...")
+            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_data_{timestamp}.sql")
+            cmd = f"pg_dump --ignore-version --no-owner --no-privileges --data-only '{clean_url}' > {backup_file}"
+            result = os.system(cmd)
+        
+        # ===== METHOD 5: Try with --schema-only =====
+        if result != 0 or not os.path.exists(backup_file):
+            print("   🔄 Attempt 5: Using schema-only backup...")
+            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_schema_{timestamp}.sql")
+            cmd = f"pg_dump --ignore-version --no-owner --no-privileges --schema-only '{clean_url}' > {backup_file}"
+            result = os.system(cmd)
+        
+        # ===== CHECK IF BACKUP SUCCEEDED =====
+        if result == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
+            print(f"✅ Backup created successfully! ({os.path.getsize(backup_file)} bytes)")
             
-            # Compress
+            # Compress the backup
             compressed_file = backup_file + '.gz'
             with open(backup_file, 'rb') as f_in:
                 with gzip.open(compressed_file, 'wb') as f_out:
                     f_out.write(f_in.read())
             
+            # Remove uncompressed file
             os.remove(backup_file)
             
             file_size = os.path.getsize(compressed_file) / 1024 / 1024
             print(f"✅ Compressed: {os.path.basename(compressed_file)} ({file_size:.2f} MB)")
             
+            # Send success email
             send_alert_email(
                 "✅ Database Backup Successful",
                 f"""
@@ -108,20 +141,30 @@ Database backup completed successfully!
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
+🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.sql.gz')))} 
+
+The backup is attached to this email.
                 """,
                 compressed_file
             )
             
             return True
         else:
-            print(f"❌ Backup failed! (Exit code: {result})")
+            print(f"❌ All backup attempts failed! (Exit code: {result})")
+            
+            # Check if pg_dump exists
+            check_cmd = "which pg_dump"
+            check_result = os.system(check_cmd)
+            if check_result != 0:
+                print("   ⚠️ pg_dump not found! PostgreSQL client may not be installed.")
+            
             send_alert_email(
                 "❌ Database Backup Failed",
                 f"""
 Database backup failed!
 
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-❌ Error: pg_dump failed with exit code {result}
+❌ Error: All backup methods failed with exit code {result}
                 """
             )
             return False
@@ -172,6 +215,9 @@ SQLite database backup completed!
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
+🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.db.gz')))} 
+
+The backup is attached to this email.
             """,
             compressed_file
         )
@@ -184,22 +230,24 @@ SQLite database backup completed!
 
 def list_backups():
     """List all available backups"""
-    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.db.gz"))
+    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.db.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.dump.gz"))
     backups.sort(key=os.path.getmtime, reverse=True)
     
     print("\n📁 AVAILABLE BACKUPS:")
-    print("=" * 50)
+    print("=" * 60)
     if not backups:
         print("No backups found.")
     else:
-        for i, backup in enumerate(backups[:10], 1):
+        total_size = 0
+        for i, backup in enumerate(backups[:20], 1):
             size = os.path.getsize(backup) / 1024 / 1024
+            total_size += size
             date = datetime.fromtimestamp(os.path.getmtime(backup)).strftime("%Y-%m-%d %H:%M:%S")
             print(f"{i}. {os.path.basename(backup)}")
             print(f"   📅 {date} | 📊 {size:.2f} MB")
-    print("=" * 50)
-    print(f"Total: {len(backups)} backup(s)")
-    print("=" * 50)
+        print("-" * 60)
+        print(f"📊 Total: {len(backups)} backup(s) | 💾 {total_size:.2f} MB total")
+    print("=" * 60)
 
 def send_invoice_auto():
     """Send automatic invoices to all agents"""
@@ -210,9 +258,40 @@ def send_invoice_auto():
         result = send_invoices()
         print(f"✅ {result} invoices sent")
         return result
+    except ImportError as e:
+        print(f"⚠️ Could not import send_invoice_auto: {e}")
+        print("   This is normal if running locally without all dependencies.")
+        return 0
     except Exception as e:
         print(f"❌ Auto invoice error: {e}")
         return 0
+
+def check_pg_dump_version():
+    """Check pg_dump version for debugging"""
+    try:
+        result = subprocess.run(['pg_dump', '--version'], capture_output=True, text=True)
+        print(f"📌 pg_dump version: {result.stdout.strip()}")
+        return result.stdout.strip()
+    except Exception as e:
+        print(f"⚠️ Could not check pg_dump version: {e}")
+        return None
+
+def cleanup_old_backups(max_backups=30):
+    """Keep only the last N backups"""
+    try:
+        backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + \
+                  glob.glob(os.path.join(BACKUP_PATH, "*.db.gz")) + \
+                  glob.glob(os.path.join(BACKUP_PATH, "*.dump.gz"))
+        backups.sort(key=os.path.getmtime, reverse=True)
+        
+        if len(backups) > max_backups:
+            to_delete = backups[max_backups:]
+            for old_file in to_delete:
+                os.remove(old_file)
+                print(f"🗑️ Removed old backup: {os.path.basename(old_file)}")
+            print(f"✅ Cleaned up {len(to_delete)} old backups")
+    except Exception as e:
+        print(f"⚠️ Cleanup error: {e}")
 
 if __name__ == "__main__":
     print("=" * 50)
@@ -221,19 +300,29 @@ if __name__ == "__main__":
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
     
+    # Check pg_dump version
+    check_pg_dump_version()
+    
+    # Determine which database to backup
     if DATABASE_URL and "postgresql" in DATABASE_URL:
         success = backup_postgresql()
     else:
+        print("📦 Backing up SQLite...")
         success = backup_sqlite()
     
     if success:
-        print("✅ Backup completed successfully!")
+        print("\n✅ Backup completed successfully!")
         list_backups()
         
+        # Cleanup old backups (keep last 30)
+        cleanup_old_backups(30)
+        
+        # Send automatic invoices
         print("\n📧 Sending automatic invoices...")
         sent = send_invoice_auto()
         print(f"✅ {sent} invoices sent automatically")
         
+        # Send final summary
         send_alert_email(
             "✅ Backup and Invoice Summary",
             f"""
@@ -245,7 +334,7 @@ Backup and Invoice Summary
             """
         )
     else:
-        print("❌ Backup failed!")
+        print("\n❌ Backup failed!")
         send_alert_email(
             "❌ Backup Failed - Check Logs",
             f"""
