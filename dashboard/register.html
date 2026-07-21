@@ -112,7 +112,7 @@
 <body>
 
     <div class="register-box">
-        <h1>📝 Jisajili</h1>
+        <h1> Jisajili</h1>
         <p class="subtitle">Unda akaunti yako kama Staff</p>
 
         <input type="text" id="name" placeholder="Jina lako">
@@ -121,8 +121,8 @@
         <input type="password" id="confirm" placeholder="Rudia Password">
         
         <select id="staffType">
-            <option value="shop">🏪 Shop Staff - Anauza bidhaa</option>
-            <option value="agent">🤖 Agent Staff - Anaweka cash/float</option>
+            <option value="shop">Shop staff </option>
+            <option value="agent">Agent Staff</option>
         </select>
 
         <button onclick="register()">Jisajili</button>
@@ -130,7 +130,7 @@
         <div id="msg" class="msg"></div>
 
         <div class="login-link">
-            Tuna akaunti? <a href="login.html">Ingia hapa</a>
+            Una akaunti? <a href="login.html">Ingia hapa</a>
         </div>
     </div>
 
@@ -146,29 +146,23 @@
             const msg = document.getElementById('msg');
 
             if (!name || !email || !password || !confirm) {
-                msg.textContent = '❌ Tafadhali jaza taarifa zote!';
+                msg.textContent = 'Tafadhali jaza taarifa zote!';
                 msg.className = 'msg error';
                 return;
             }
 
             if (password !== confirm) {
-                msg.textContent = '❌ Password hazifanani!';
+                msg.textContent = 'Password hazifanani!';
                 msg.className = 'msg error';
                 return;
             }
 
             if (password.length < 6) {
-                msg.textContent = '❌ Password iwe na angalau herufi 6!';
+                msg.textContent = 'Password iwe na angalau herufi 6!';
                 msg.className = 'msg error';
                 return;
             }
-
-            if (email.toLowerCase() === 'admin3@test.com') {
-                msg.textContent = '❌ Email hii ni ya Admin! Tafadhali tumia email nyingine.';
-                msg.className = 'msg error';
-                return;
-            }
-
+            
             msg.textContent = '⏳ Inaandikisha...';
             msg.className = 'msg';
 
