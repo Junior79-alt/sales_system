@@ -475,11 +475,11 @@
 
         <!-- LOGIN FORM -->
         <div id="loginForm">
-            <input type="email" id="email" placeholder="📧 Email yako" value="Admin3@test.com">
-            <input type="password" id="password" placeholder="🔑 Password" value="123">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
             
             <div class="forgot-link">
-                <a href="#" onclick="showForgotForm()">🔑 Nimeisahau password?</a>
+                <a href="#" onclick="showForgotForm()">Nimesahau password?</a>
             </div>
 
             <button onclick="login()" class="login-btn">🚀 INGIA</button>
@@ -499,10 +499,10 @@
 
         <!-- FORGOT PASSWORD FORM -->
         <div id="forgotForm" class="forgot-form">
-            <h3>🔑 Reset Password</h3>
+            <h3> Reset Password</h3>
             <p>Ingiza email yako, tutakutumia password ya kianzio</p>
-            <input type="email" id="forgotEmail" placeholder="📧 Ingiza email yako">
-            <button onclick="forgotPassword()">📨 Tuma</button>
+            <input type="email" id="forgotEmail" placeholder="Ingiza email yako">
+            <button onclick="forgotPassword()">Tuma</button>
             <div id="forgotMsg" class="msg"></div>
             <div class="back-link">
                 <a href="#" onclick="hideForgotForm()">← Rudi kwenye Login</a>
@@ -511,16 +511,16 @@
 
         <!-- RESET PASSWORD FORM -->
         <div id="resetForm" class="reset-form">
-            <h3>🔐 Weka Password Mpya</h3>
+            <h3> Weka Password Mpya</h3>
             <p>Ingia kwa password ya kianzio, kisha weka password mpya</p>
-            <input type="email" id="resetEmail" placeholder="📧 Email yako">
-            <input type="password" id="resetOldPassword" placeholder="🔑 Password ya kianzio">
-            <input type="password" id="resetNewPassword" placeholder="🔑 Password mpya (min 6)">
-            <input type="password" id="resetConfirmPassword" placeholder="🔑 Rudia password mpya">
-            <button onclick="resetPassword()">💾 Badilisha Password</button>
+            <input type="email" id="resetEmail" placeholder=" Email yako">
+            <input type="password" id="resetOldPassword" placeholder=" Password ya kianzio">
+            <input type="password" id="resetNewPassword" placeholder=" Password mpya (min 6)">
+            <input type="password" id="resetConfirmPassword" placeholder=" Rudia password mpya">
+            <button onclick="resetPassword()"> Badilisha Password</button>
             <div id="resetMsg" class="msg"></div>
             <div class="back-link">
-                <a href="#" onclick="hideResetForm()">← Rudi kwenye Login</a>
+                <a href="#" onclick="hideResetForm()">← Rudi kwenye Login page</a>
             </div>
         </div>
     </div>
@@ -535,12 +535,12 @@
             const msg = document.getElementById('msg');
 
             if (!email || !password) {
-                msg.textContent = '❌ Tafadhali jaza email na password!';
+                msg.textContent = 'Tafadhali jaza Email na Password!';
                 msg.className = 'msg error';
                 return;
             }
 
-            msg.textContent = '⏳ Inaingiza...';
+            msg.textContent = '⏳ Login...';
             msg.className = 'msg success';
 
             try {
@@ -554,7 +554,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    msg.textContent = '❌ ' + (data.detail || 'Email au Password si sahihi!');
+                    msg.textContent = (data.detail || 'Email au Password si sahihi!');
                     msg.className = 'msg error';
                     return;
                 }
@@ -567,7 +567,7 @@
                 const staffType = data.staff_type || 'shop';
                 const role = data.role || 'staff';
 
-                msg.textContent = '✅ Inaingiza...';
+                msg.textContent = '✅ Login...';
                 msg.className = 'msg success';
 
                 setTimeout(() => {
@@ -594,7 +594,7 @@
             const msg = document.getElementById('forgotMsg');
 
             if (!email) {
-                msg.textContent = '❌ Tafadhali ingiza email yako!';
+                msg.textContent = 'Tafadhali ingiza email yako!';
                 msg.className = 'msg error';
                 return;
             }
@@ -622,7 +622,7 @@
                         document.getElementById('forgotMsg').className = 'msg';
                     }, 1500);
                 } else {
-                    msg.textContent = '❌ ' + (data.detail || 'Email haijapatikana!');
+                    msg.textContent = '❌ ' + (data.detail || 'Email si sahihi!');
                     msg.className = 'msg error';
                 }
             } catch (error) {
@@ -640,19 +640,19 @@
             const msg = document.getElementById('resetMsg');
 
             if (!email || !oldPassword || !newPassword || !confirmPassword) {
-                msg.textContent = '❌ Tafadhali jaza taarifa zote!';
+                msg.textContent = 'Tafadhali jaza taarifa zote!';
                 msg.className = 'msg error';
                 return;
             }
 
             if (newPassword !== confirmPassword) {
-                msg.textContent = '❌ Password mpya hazifanani!';
+                msg.textContent = ' Password mpya hazifanani!';
                 msg.className = 'msg error';
                 return;
             }
 
             if (newPassword.length < 6) {
-                msg.textContent = '❌ Password mpya iwe na angalau herufi 6!';
+                msg.textContent = ' Password mpya iwe na angalau herufi 6!';
                 msg.className = 'msg error';
                 return;
             }
