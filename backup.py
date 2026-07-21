@@ -82,43 +82,52 @@ def backup_postgresql():
         
         print(f"   Backup file: {backup_file}")
         
-        # ===== METHOD 1: Try with ignore-version flag =====
-        print("   🔄 Attempt 1: Using --ignore-version...")
-        cmd = f"pg_dump --ignore-version --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
+        # ===== METHOD 1: Try with -v (verbose) flag =====
+        print("   🔄 Attempt 1: Using -v (verbose) flag...")
+        cmd = f"pg_dump -v --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
         result = os.system(cmd)
         
-        # ===== METHOD 2: If failed, try with -v flag =====
-        if result != 0 or not os.path.exists(backup_file):
-            print("   🔄 Attempt 2: Using -v (verbose) flag...")
-            cmd = f"pg_dump -v --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
-            result = os.system(cmd)
-        
-        # ===== METHOD 3: Try with format custom =====
-        if result != 0 or not os.path.exists(backup_file):
-            print("   🔄 Attempt 3: Using custom format...")
+        # ===== METHOD 2: Try with format custom =====
+        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
+            print("   🔄 Attempt 2: Using custom format...")
             backup_file_custom = backup_file.replace('.sql', '.dump')
-            cmd = f"pg_dump --ignore-version --no-owner --no-privileges -F c '{clean_url}' -f {backup_file_custom}"
+            cmd = f"pg_dump --no-owner --no-privileges -F c '{clean_url}' -f {backup_file_custom}"
             result = os.system(cmd)
-            if result == 0 and os.path.exists(backup_file_custom):
+            if result == 0 and os.path.exists(backup_file_custom) and os.path.getsize(backup_file_custom) > 0:
                 backup_file = backup_file_custom
         
-        # ===== METHOD 4: Try data-only backup =====
-        if result != 0 or not os.path.exists(backup_file):
-            print("   🔄 Attempt 4: Using data-only backup...")
+        # ===== METHOD 3: Try data-only backup =====
+        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
+            print("   🔄 Attempt 3: Using data-only backup...")
             backup_file = os.path.join(BACKUP_PATH, f"backup_neon_data_{timestamp}.sql")
-            cmd = f"pg_dump --ignore-version --no-owner --no-privileges --data-only '{clean_url}' > {backup_file}"
+            cmd = f"pg_dump --no-owner --no-privileges --data-only '{clean_url}' > {backup_file}"
             result = os.system(cmd)
         
-        # ===== METHOD 5: Try with --schema-only =====
-        if result != 0 or not os.path.exists(backup_file):
-            print("   🔄 Attempt 5: Using schema-only backup...")
+        # ===== METHOD 4: Try with --schema-only =====
+        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
+            print("   🔄 Attempt 4: Using schema-only backup...")
             backup_file = os.path.join(BACKUP_PATH, f"backup_neon_schema_{timestamp}.sql")
-            cmd = f"pg_dump --ignore-version --no-owner --no-privileges --schema-only '{clean_url}' > {backup_file}"
+            cmd = f"pg_dump --no-owner --no-privileges --schema-only '{clean_url}' > {backup_file}"
+            result = os.system(cmd)
+        
+        # ===== METHOD 5: Try with --inserts (for compatibility) =====
+        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
+            print("   🔄 Attempt 5: Using --inserts (compatibility mode)...")
+            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_inserts_{timestamp}.sql")
+            cmd = f"pg_dump --no-owner --no-privileges --inserts '{clean_url}' > {backup_file}"
+            result = os.system(cmd)
+        
+        # ===== METHOD 6: Try with --column-inserts =====
+        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
+            print("   🔄 Attempt 6: Using --column-inserts...")
+            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_column_inserts_{timestamp}.sql")
+            cmd = f"pg_dump --no-owner --no-privileges --column-inserts '{clean_url}' > {backup_file}"
             result = os.system(cmd)
         
         # ===== CHECK IF BACKUP SUCCEEDED =====
         if result == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
-            print(f"✅ Backup created successfully! ({os.path.getsize(backup_file)} bytes)")
+            file_size = os.path.getsize(backup_file) / 1024
+            print(f"✅ Backup created successfully! ({file_size:.2f} KB)")
             
             # Compress the backup
             compressed_file = backup_file + '.gz'
@@ -129,8 +138,8 @@ def backup_postgresql():
             # Remove uncompressed file
             os.remove(backup_file)
             
-            file_size = os.path.getsize(compressed_file) / 1024 / 1024
-            print(f"✅ Compressed: {os.path.basename(compressed_file)} ({file_size:.2f} MB)")
+            file_size_mb = os.path.getsize(compressed_file) / 1024 / 1024
+            print(f"✅ Compressed: {os.path.basename(compressed_file)} ({file_size_mb:.2f} MB)")
             
             # Send success email
             send_alert_email(
@@ -140,7 +149,7 @@ Database backup completed successfully!
 
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 📄 File: {os.path.basename(compressed_file)}
-📊 Size: {file_size:.2f} MB
+📊 Size: {file_size_mb:.2f} MB
 🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.sql.gz')))} 
 
 The backup is attached to this email.
@@ -157,6 +166,8 @@ The backup is attached to this email.
             check_result = os.system(check_cmd)
             if check_result != 0:
                 print("   ⚠️ pg_dump not found! PostgreSQL client may not be installed.")
+            else:
+                print("   ⚠️ pg_dump found but unable to backup. Version mismatch may be the issue.")
             
             send_alert_email(
                 "❌ Database Backup Failed",
