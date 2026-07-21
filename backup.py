@@ -1,13 +1,11 @@
 import os
 import subprocess
 from datetime import datetime
-import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-import time
 import glob
 import shutil
 import gzip
@@ -24,6 +22,15 @@ SMTP_PORT = 587
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 ALERT_EMAIL = os.environ.get("ALERT_EMAIL", "")
+
+print("=" * 50)
+print("🗄️ DATABASE BACKUP SYSTEM")
+print("=" * 50)
+print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"Database URL: {'✅ Set' if DATABASE_URL else '❌ Not Set'}")
+print(f"SMTP: {'✅ Set' if SMTP_USERNAME and SMTP_PASSWORD else '❌ Not Set'}")
+print(f"Alert Email: {ALERT_EMAIL if ALERT_EMAIL else '❌ Not Set'}")
+print("=" * 50)
 
 def send_alert_email(subject, body, attachment_path=None):
     """Send email alert about backup status"""
@@ -79,6 +86,9 @@ def backup_postgresql():
         
         # Use pg_dump to backup
         print(f"📦 Creating backup: {backup_file}")
+        print(f"   Host: {host}:{port}")
+        print(f"   Database: {database}")
+        print(f"   User: {user}")
         
         env = os.environ.copy()
         env['PGPASSWORD'] = password
@@ -129,7 +139,6 @@ The backup is attached to this email.
                 compressed_file
             )
             
-            # ===== NO DELETION - ALL BACKUPS ARE KEPT =====
             print("📁 All backups are kept permanently!")
             
             return True
@@ -208,19 +217,35 @@ The backup is attached to this email.
 
 def list_backups():
     """List all available backups"""
-    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz"))
+    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.db.gz"))
     backups.sort(key=os.path.getmtime, reverse=True)
     
     print("\n📁 AVAILABLE BACKUPS:")
     print("=" * 50)
-    for i, backup in enumerate(backups, 1):
-        size = os.path.getsize(backup) / 1024 / 1024
-        date = datetime.fromtimestamp(os.path.getmtime(backup)).strftime("%Y-%m-%d %H:%M:%S")
-        print(f"{i}. {os.path.basename(backup)}")
-        print(f"   📅 {date} | 📊 {size:.2f} MB")
+    if not backups:
+        print("No backups found.")
+    else:
+        for i, backup in enumerate(backups[:10], 1):
+            size = os.path.getsize(backup) / 1024 / 1024
+            date = datetime.fromtimestamp(os.path.getmtime(backup)).strftime("%Y-%m-%d %H:%M:%S")
+            print(f"{i}. {os.path.basename(backup)}")
+            print(f"   📅 {date} | 📊 {size:.2f} MB")
     print("=" * 50)
     print(f"Total: {len(backups)} backup(s)")
     print("=" * 50)
+
+def send_invoice_auto():
+    """Send automatic invoices to all agents"""
+    try:
+        print("\n📧 Sending automatic invoices...")
+        sys.path.append(os.path.dirname(__file__))
+        from routes.agent import send_invoice_auto as send_invoices
+        result = send_invoices()
+        print(f"✅ {result} invoices sent")
+        return result
+    except Exception as e:
+        print(f"❌ Auto invoice error: {e}")
+        return 0
 
 if __name__ == "__main__":
     print("=" * 50)
@@ -240,5 +265,30 @@ if __name__ == "__main__":
     if success:
         print("✅ Backup completed successfully!")
         list_backups()
+        
+        # ===== SEND AUTO INVOICE =====
+        print("\n📧 Sending automatic invoices...")
+        sent = send_invoice_auto()
+        print(f"✅ {sent} invoices sent automatically")
+        
+        # Send final summary
+        send_alert_email(
+            "✅ Backup and Invoice Summary",
+            f"""
+Backup and Invoice Summary
+
+📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+✅ Backup: Success
+📧 Invoices: {sent} sent
+            """
+        )
     else:
         print("❌ Backup failed!")
+        send_alert_email(
+            "❌ Backup Failed - Check Logs",
+            f"""
+Backup failed on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Please check the logs for details.
+            """
+        )
