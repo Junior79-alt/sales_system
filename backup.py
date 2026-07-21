@@ -69,7 +69,7 @@ def send_alert_email(subject, body, attachment_path=None):
         print(f"❌ Failed to send alert email: {e}")
 
 def backup_postgresql():
-    """Backup PostgreSQL database using multiple methods"""
+    """Backup PostgreSQL database"""
     try:
         # Remove ?sslmode=require if present
         clean_url = DATABASE_URL.split('?')[0]
@@ -82,52 +82,15 @@ def backup_postgresql():
         
         print(f"   Backup file: {backup_file}")
         
-        # ===== METHOD 1: Try with -v (verbose) flag =====
-        print("   🔄 Attempt 1: Using -v (verbose) flag...")
-        cmd = f"pg_dump -v --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
+        # ===== SIMPLE BACKUP WITH PG_DUMP 18 =====
+        cmd = f"pg_dump --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
+        print(f"   Running: {cmd}")
         result = os.system(cmd)
-        
-        # ===== METHOD 2: Try with format custom =====
-        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
-            print("   🔄 Attempt 2: Using custom format...")
-            backup_file_custom = backup_file.replace('.sql', '.dump')
-            cmd = f"pg_dump --no-owner --no-privileges -F c '{clean_url}' -f {backup_file_custom}"
-            result = os.system(cmd)
-            if result == 0 and os.path.exists(backup_file_custom) and os.path.getsize(backup_file_custom) > 0:
-                backup_file = backup_file_custom
-        
-        # ===== METHOD 3: Try data-only backup =====
-        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
-            print("   🔄 Attempt 3: Using data-only backup...")
-            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_data_{timestamp}.sql")
-            cmd = f"pg_dump --no-owner --no-privileges --data-only '{clean_url}' > {backup_file}"
-            result = os.system(cmd)
-        
-        # ===== METHOD 4: Try with --schema-only =====
-        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
-            print("   🔄 Attempt 4: Using schema-only backup...")
-            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_schema_{timestamp}.sql")
-            cmd = f"pg_dump --no-owner --no-privileges --schema-only '{clean_url}' > {backup_file}"
-            result = os.system(cmd)
-        
-        # ===== METHOD 5: Try with --inserts (for compatibility) =====
-        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
-            print("   🔄 Attempt 5: Using --inserts (compatibility mode)...")
-            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_inserts_{timestamp}.sql")
-            cmd = f"pg_dump --no-owner --no-privileges --inserts '{clean_url}' > {backup_file}"
-            result = os.system(cmd)
-        
-        # ===== METHOD 6: Try with --column-inserts =====
-        if result != 0 or not os.path.exists(backup_file) or os.path.getsize(backup_file) == 0:
-            print("   🔄 Attempt 6: Using --column-inserts...")
-            backup_file = os.path.join(BACKUP_PATH, f"backup_neon_column_inserts_{timestamp}.sql")
-            cmd = f"pg_dump --no-owner --no-privileges --column-inserts '{clean_url}' > {backup_file}"
-            result = os.system(cmd)
         
         # ===== CHECK IF BACKUP SUCCEEDED =====
         if result == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
-            file_size = os.path.getsize(backup_file) / 1024
-            print(f"✅ Backup created successfully! ({file_size:.2f} KB)")
+            file_size = os.path.getsize(backup_file) / 1024 / 1024
+            print(f"✅ Backup created successfully! ({file_size:.2f} MB)")
             
             # Compress the backup
             compressed_file = backup_file + '.gz'
@@ -159,15 +122,11 @@ The backup is attached to this email.
             
             return True
         else:
-            print(f"❌ All backup attempts failed! (Exit code: {result})")
+            print(f"❌ Backup failed! (Exit code: {result})")
             
-            # Check if pg_dump exists
-            check_cmd = "which pg_dump"
-            check_result = os.system(check_cmd)
-            if check_result != 0:
-                print("   ⚠️ pg_dump not found! PostgreSQL client may not be installed.")
-            else:
-                print("   ⚠️ pg_dump found but unable to backup. Version mismatch may be the issue.")
+            # Check pg_dump version
+            check_cmd = "pg_dump --version"
+            os.system(check_cmd)
             
             send_alert_email(
                 "❌ Database Backup Failed",
@@ -175,7 +134,7 @@ The backup is attached to this email.
 Database backup failed!
 
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-❌ Error: All backup methods failed with exit code {result}
+❌ Error: pg_dump failed with exit code {result}
                 """
             )
             return False
@@ -241,7 +200,7 @@ The backup is attached to this email.
 
 def list_backups():
     """List all available backups"""
-    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.db.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.dump.gz"))
+    backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + glob.glob(os.path.join(BACKUP_PATH, "*.db.gz"))
     backups.sort(key=os.path.getmtime, reverse=True)
     
     print("\n📁 AVAILABLE BACKUPS:")
@@ -291,8 +250,7 @@ def cleanup_old_backups(max_backups=30):
     """Keep only the last N backups"""
     try:
         backups = glob.glob(os.path.join(BACKUP_PATH, "*.sql.gz")) + \
-                  glob.glob(os.path.join(BACKUP_PATH, "*.db.gz")) + \
-                  glob.glob(os.path.join(BACKUP_PATH, "*.dump.gz"))
+                  glob.glob(os.path.join(BACKUP_PATH, "*.db.gz"))
         backups.sort(key=os.path.getmtime, reverse=True)
         
         if len(backups) > max_backups:
