@@ -10,6 +10,7 @@ import glob
 import shutil
 import gzip
 import re
+import sys
 
 # ===== CONFIGURATION =====
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
@@ -70,57 +71,34 @@ def send_alert_email(subject, body, attachment_path=None):
 def backup_postgresql():
     """Backup PostgreSQL database"""
     try:
-        # Parse DATABASE_URL
-        pattern = r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)'
-        match = re.match(pattern, DATABASE_URL)
+        # Remove ?sslmode=require if present
+        clean_url = DATABASE_URL.split('?')[0]
         
-        if not match:
-            print("❌ Invalid DATABASE_URL format!")
-            return False
+        print(f"📦 Backing up PostgreSQL...")
+        print(f"   Using: {clean_url}")
         
-        user, password, host, port, database = match.groups()
-        
-        # Create backup filename with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        backup_file = os.path.join(BACKUP_PATH, f"backup_{database}_{timestamp}.sql")
+        backup_file = os.path.join(BACKUP_PATH, f"backup_neon_{timestamp}.sql")
         
-        # Use pg_dump to backup
-        print(f"📦 Creating backup: {backup_file}")
-        print(f"   Host: {host}:{port}")
-        print(f"   Database: {database}")
-        print(f"   User: {user}")
+        print(f"   Backup file: {backup_file}")
         
-        env = os.environ.copy()
-        env['PGPASSWORD'] = password
+        # Use pg_dump with clean URL
+        cmd = f"pg_dump '{clean_url}' > {backup_file}"
+        result = os.system(cmd)
         
-        cmd = [
-            'pg_dump',
-            '-h', host,
-            '-p', port,
-            '-U', user,
-            '-d', database,
-            '-F', 'p',
-            '-f', backup_file
-        ]
-        
-        result = subprocess.run(cmd, env=env, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            print(f"✅ Backup created successfully: {backup_file}")
+        if result == 0 and os.path.exists(backup_file):
+            print(f"✅ Backup created successfully!")
             
-            # Compress the backup
+            # Compress
             compressed_file = backup_file + '.gz'
             with open(backup_file, 'rb') as f_in:
                 with gzip.open(compressed_file, 'wb') as f_out:
                     f_out.write(f_in.read())
             
-            print(f"✅ Backup compressed: {compressed_file}")
-            
-            # Delete uncompressed file
             os.remove(backup_file)
             
-            # Send success email with backup attached
             file_size = os.path.getsize(compressed_file) / 1024 / 1024
+            print(f"✅ Compressed: {os.path.basename(compressed_file)} ({file_size:.2f} MB)")
             
             send_alert_email(
                 "✅ Database Backup Successful",
@@ -128,30 +106,22 @@ def backup_postgresql():
 Database backup completed successfully!
 
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-📁 Database: {database}
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
-📍 Location: {compressed_file}
-🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.sql.gz')))}
-
-The backup is attached to this email.
                 """,
                 compressed_file
             )
             
-            print("📁 All backups are kept permanently!")
-            
             return True
         else:
-            print(f"❌ Backup failed: {result.stderr}")
+            print(f"❌ Backup failed! (Exit code: {result})")
             send_alert_email(
                 "❌ Database Backup Failed",
                 f"""
 Database backup failed!
 
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-📁 Database: {database}
-❌ Error: {result.stderr}
+❌ Error: pg_dump failed with exit code {result}
                 """
             )
             return False
@@ -202,9 +172,6 @@ SQLite database backup completed!
 📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 📄 File: {os.path.basename(compressed_file)}
 📊 Size: {file_size:.2f} MB
-🗄️ Total Backups: {len(glob.glob(os.path.join(BACKUP_PATH, '*.sql.gz')))}
-
-The backup is attached to this email.
             """,
             compressed_file
         )
@@ -254,24 +221,19 @@ if __name__ == "__main__":
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
     
-    # Determine which database to backup
     if DATABASE_URL and "postgresql" in DATABASE_URL:
-        print("📦 Backing up PostgreSQL...")
         success = backup_postgresql()
     else:
-        print("📦 Backing up SQLite...")
         success = backup_sqlite()
     
     if success:
         print("✅ Backup completed successfully!")
         list_backups()
         
-        # ===== SEND AUTO INVOICE =====
         print("\n📧 Sending automatic invoices...")
         sent = send_invoice_auto()
         print(f"✅ {sent} invoices sent automatically")
         
-        # Send final summary
         send_alert_email(
             "✅ Backup and Invoice Summary",
             f"""
