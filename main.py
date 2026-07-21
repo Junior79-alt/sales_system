@@ -5,21 +5,19 @@ import os
 from database import engine, Base, SessionLocal
 from routes import users, sales, agent
 import models
-from auth import hash_password, verify_password
+from auth import hash_password
 
 # ============================================
-# CREATE DATABASE TABLES (CLEAN DEPLOYMENT)
+# CREATE DATABASE TABLES (SAFE - NO DROP)
 # ============================================
 
-# 🔥 Futa tables zote na uunde upya (Clean Start)
 print("=" * 50)
-print("🗑️  DROPPING ALL TABLES...")
-Base.metadata.drop_all(bind=engine)
-print("✅ All tables dropped!")
+print("📝 CHECKING DATABASE TABLES...")
+print("=" * 50)
 
-print("📝 CREATING NEW TABLES...")
-Base.metadata.create_all(bind=engine)
-print("✅ All tables created successfully!")
+# ✅ SAFE: Inaunda tables ikiwa hazipo (HAIFUTI DATA!)
+Base.metadata.create_all(bind=engine, checkfirst=True)
+print("✅ Database tables checked/created successfully!")
 print("=" * 50)
 
 # ============================================
@@ -33,7 +31,7 @@ def create_or_update_admin():
         admin = db.query(models.User).filter(models.User.role == "admin").first()
         
         if admin:
-            # Admin yupo - badilisha credentials
+            # Admin yupo - hakikisha credentials ni sahihi
             print("=" * 50)
             print("🔄 Updating existing admin...")
             print(f"   Old Email: {admin.email}")
