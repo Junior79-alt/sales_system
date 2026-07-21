@@ -2,8 +2,8 @@ name: Database Backup
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Inaendesha kila siku saa 6:00 AM
-  workflow_dispatch:      # Inaweza kuendeshwa manually
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
 jobs:
   backup:
@@ -20,18 +20,14 @@ jobs:
 
       - name: Install PostgreSQL client version 18
         run: |
-          # Ongeza repository ya PostgreSQL 18
           sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          
-          # Ongeza signing key
           wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          
-          # Update na install PostgreSQL 18 client
           sudo apt-get update
           sudo apt-get install -y postgresql-client-18
           
-          # Thibitisha version
-          pg_dump --version
+          # Thibitisha pg_dump 18 ipo
+          echo "✅ pg_dump 18 installed:"
+          /usr/lib/postgresql/18/bin/pg_dump --version
 
       - name: Install Python dependencies
         run: |
@@ -44,11 +40,8 @@ jobs:
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
-        run: |
-          # Hakikisha inatumia pg_dump 18
-          which pg_dump
-          pg_dump --version
-          python backup.py
+          PGDUMP_PATH: /usr/lib/postgresql/18/bin/pg_dump
+        run: python backup.py
 
       - name: Upload backup to GitHub Artifacts
         uses: actions/upload-artifact@v4
