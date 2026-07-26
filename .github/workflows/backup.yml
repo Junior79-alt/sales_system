@@ -20,54 +20,28 @@ jobs:
 
       - name: Install PostgreSQL client version 18
         run: |
-          # Ongeza repository ya PostgreSQL 18
           sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          
-          # Ongeza signing key
           wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          
-          # Update na install PostgreSQL 18 client
           sudo apt-get update
           sudo apt-get install -y postgresql-client-18
           
-          # Tafuta location ya pg_dump 18
-          echo "📍 Finding pg_dump 18..."
-          find /usr -name pg_dump 2>/dev/null
-          
-          # Thibitisha version ya pg_dump 18
-          /usr/lib/postgresql/18/bin/pg_dump --version || echo "⚠️ pg_dump 18 not found at /usr/lib/postgresql/18/bin/"
-          
-          # Angalia ikiwa ipo kwenye PATH
-          which pg_dump || echo "⚠️ pg_dump not in PATH"
+          # Thibitisha pg_dump 18 ipo
+          echo "✅ pg_dump 18 installed:"
+          /usr/lib/postgresql/18/bin/pg_dump --version
 
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
           pip install psycopg2-binary
 
-      - name: Run backup script with pg_dump 18
+      - name: Run backup script
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
-        run: |
-          # Tumia njia kamili ya pg_dump 18
-          export PGDUMP_PATH="/usr/lib/postgresql/18/bin/pg_dump"
-          
-          # Angalia ikiwa pg_dump 18 ipo
-          if [ -f "$PGDUMP_PATH" ]; then
-            echo "✅ Using pg_dump 18: $PGDUMP_PATH"
-            $PGDUMP_PATH --version
-            # Badilisha backup.py kutumia pg_dump 18
-            sed -i 's|pg_dump|'"$PGDUMP_PATH"'|g' backup.py
-          else
-            echo "⚠️ pg_dump 18 not found! Trying to find it..."
-            find /usr -name pg_dump 2>/dev/null | grep 18 || echo "❌ pg_dump 18 not found!"
-          fi
-          
-          # Endesha backup
-          python backup.py
+          PGDUMP_PATH: /usr/lib/postgresql/18/bin/pg_dump
+        run: python backup.py
 
       - name: Upload backup to GitHub Artifacts
         uses: actions/upload-artifact@v4
