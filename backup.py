@@ -17,6 +17,9 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 BACKUP_PATH = os.path.join(os.path.dirname(__file__), "backups")
 os.makedirs(BACKUP_PATH, exist_ok=True)
 
+# ===== PG_DUMP PATH =====
+PG_DUMP = os.environ.get("PGDUMP_PATH", "pg_dump")
+
 # Email configuration for alerts
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -29,6 +32,7 @@ print("🗄️ DATABASE BACKUP SYSTEM")
 print("=" * 50)
 print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print(f"Database URL: {'✅ Set' if DATABASE_URL else '❌ Not Set'}")
+print(f"pg_dump: {PG_DUMP}")
 print(f"SMTP: {'✅ Set' if SMTP_USERNAME and SMTP_PASSWORD else '❌ Not Set'}")
 print(f"Alert Email: {ALERT_EMAIL if ALERT_EMAIL else '❌ Not Set'}")
 print("=" * 50)
@@ -75,15 +79,16 @@ def backup_postgresql():
         clean_url = DATABASE_URL.split('?')[0]
         
         print(f"\n📦 Backing up PostgreSQL...")
-        print(f"   Using: {clean_url}")
+        print(f"   Using pg_dump: {PG_DUMP}")
+        print(f"   Database: {clean_url}")
         
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         backup_file = os.path.join(BACKUP_PATH, f"backup_neon_{timestamp}.sql")
         
         print(f"   Backup file: {backup_file}")
         
-        # ===== SIMPLE BACKUP WITH PG_DUMP 18 =====
-        cmd = f"pg_dump --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
+        # ===== BACKUP USING PG_DUMP =====
+        cmd = f"{PG_DUMP} --no-owner --no-privileges --clean --if-exists '{clean_url}' > {backup_file}"
         print(f"   Running: {cmd}")
         result = os.system(cmd)
         
@@ -125,7 +130,7 @@ The backup is attached to this email.
             print(f"❌ Backup failed! (Exit code: {result})")
             
             # Check pg_dump version
-            check_cmd = "pg_dump --version"
+            check_cmd = f"{PG_DUMP} --version"
             os.system(check_cmd)
             
             send_alert_email(
@@ -239,7 +244,7 @@ def send_invoice_auto():
 def check_pg_dump_version():
     """Check pg_dump version for debugging"""
     try:
-        result = subprocess.run(['pg_dump', '--version'], capture_output=True, text=True)
+        result = subprocess.run([PG_DUMP, '--version'], capture_output=True, text=True)
         print(f"📌 pg_dump version: {result.stdout.strip()}")
         return result.stdout.strip()
     except Exception as e:
