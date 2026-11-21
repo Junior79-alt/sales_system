@@ -3,24 +3,26 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# ===== USE POSTGRESQL =====
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    # Fallback to SQLite for local development
-    db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db')
+    db_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "db")
     os.makedirs(db_dir, exist_ok=True)
     DATABASE_URL = f"sqlite:///{os.path.join(db_dir, 'sales.db')}"
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    # Render/Neon PostgreSQL inahitaji sslmode
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     engine = create_engine(
         DATABASE_URL,
-        connect_args={"check_same_thread": False}
+        pool_pre_ping=True,
+        pool_recycle=300,
     )
-else:
-    # PostgreSQL
-    engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()

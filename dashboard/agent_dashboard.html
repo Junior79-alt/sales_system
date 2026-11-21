@@ -5,330 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f0f2f5; padding: 15px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        body { background:#f0f2f5; padding:15px; }
+        .container { max-width:1200px; margin:0 auto; }
 
         /* ===== HEADER ===== */
         header {
-            background: linear-gradient(135deg, #e65100, #bf360c);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            background:linear-gradient(135deg,#e65100,#bf360c);
+            color:white; padding:15px 20px; border-radius:12px;
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:20px; flex-wrap:wrap; gap:10px;
         }
-        header h1 { font-size: 20px; }
-        .logout-btn {
-            background: #d32f2f;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .logout-btn:hover { background: #b71c1c; }
-        .user-info { color: white; margin-right: 15px; font-weight: 500; }
+        header h1 { font-size:20px; }
+        .logout-btn { background:#d32f2f; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:14px; }
+        .logout-btn:hover { background:#b71c1c; }
+        .user-info { color:white; margin-right:15px; font-weight:500; }
 
         /* ===== CAPITAL FORM ===== */
         .capital-form {
-            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            border: 2px solid #ffcc80;
+            background:linear-gradient(135deg,#fff3e0,#ffe0b2);
+            padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom:20px; border:2px solid #ffcc80;
         }
-        .capital-form h2 { color: #e65100; margin-bottom: 8px; font-size: 18px; }
-        .capital-form p { color: #555; margin-bottom: 12px; font-size: 13px; }
-        .capital-form .form-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+        .capital-form h2 { color:#e65100; margin-bottom:8px; font-size:18px; }
+        .capital-form p { color:#555; margin-bottom:12px; font-size:13px; }
+        .capital-form .form-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
         .capital-form input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            min-width: 180px;
+            flex:1; padding:10px 14px; border:1px solid #ddd;
+            border-radius:8px; font-size:15px; min-width:180px;
         }
         .capital-form button {
-            padding: 10px 25px;
-            background: #e65100;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            font-weight: bold;
+            padding:10px 25px; background:#e65100; color:white;
+            border:none; border-radius:8px; font-size:15px;
+            cursor:pointer; font-weight:bold;
         }
-        .capital-form button:hover { background: #bf360c; }
-        .capital-form .msg { margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; font-size: 14px; }
-        .capital-form .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
-        .capital-form .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
+        .capital-form button:hover { background:#bf360c; }
+        .capital-form button:disabled { opacity:0.6; cursor:not-allowed; }
+        .msg {
+            margin-top:10px; padding:10px; border-radius:6px;
+            font-weight:bold; display:none; font-size:14px;
+        }
+        .msg.success { display:block; background:#c8e6c9; color:#1b5e20; }
+        .msg.error { display:block; background:#ffcdd2; color:#b71c1c; }
 
         /* ===== CAPITAL INFO ===== */
         .capital-info {
-            background: #fff3e0;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #ffcc80;
-            font-size: 13px;
-            color: #555;
-            text-align: center;
+            background:#fff3e0; padding:10px 15px; border-radius:8px;
+            margin-bottom:15px; border:1px solid #ffcc80;
+            font-size:13px; color:#555; text-align:center;
         }
 
-        /* ===== FLOAT CARD WITH DROPDOWN ===== */
-        .float-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: 1px solid #e0e0e0;
+        /* ===== CARD ===== */
+        .card {
+            background:white; border-radius:12px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom:20px; overflow:hidden; border:1px solid #e0e0e0;
         }
-        .float-card-header {
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            padding: 14px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.3s;
-            user-select: none;
+        .card-header {
+            color:white; padding:14px 20px; display:flex;
+            justify-content:space-between; align-items:center;
+            cursor:pointer; transition:background 0.3s; user-select:none;
         }
-        .float-card-header:hover {
-            background: linear-gradient(135deg, #1b5e20, #0d3d12);
-        }
-        .float-card-header h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .float-card-header h3 span { font-size: 20px; }
-        .float-card-header .toggle-icon {
-            font-size: 22px;
-            transition: transform 0.3s ease;
-        }
-        .float-card-header .toggle-icon.open {
-            transform: rotate(180deg);
-        }
+        .card-header.float { background:linear-gradient(135deg,#2e7d32,#1b5e20); }
+        .card-header.float:hover { background:linear-gradient(135deg,#1b5e20,#0d3d12); }
+        .card-header.history { background:linear-gradient(135deg,#1a237e,#0d47a1); }
+        .card-header.history:hover { background:linear-gradient(135deg,#0d47a1,#0a1a5e); }
+        .card-header h3 { font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
+        .card-header h3 span { font-size:20px; }
+        .toggle-icon { font-size:22px; transition:transform 0.3s ease; }
+        .toggle-icon.open { transform:rotate(180deg); }
 
-        .float-card-body {
-            padding: 20px;
-            display: none;
-            animation: fadeIn 0.3s ease;
+        .card-body {
+            padding:20px; display:none; animation:fadeIn 0.3s ease; overflow-x:auto;
         }
-        .float-card-body.open {
-            display: block;
-        }
+        .card-body.open { display:block; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity:0; transform:translateY(-10px); }
+            to { opacity:1; transform:translateY(0); }
         }
 
-        .float-card-body .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+        .form-group { display:flex; flex-direction:column; }
+        .form-group.full-width { grid-column:1 / -1; }
+        .form-group label { font-size:13px; font-weight:600; color:#555; margin-bottom:4px; }
+        .form-group label .icon { margin-right:5px; }
+        .form-group input {
+            padding:10px 14px; border:1px solid #ddd;
+            border-radius:8px; font-size:15px; width:100%;
+            transition:border-color 0.3s;
         }
-        .float-card-body .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .float-card-body .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        .float-card-body .form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 4px;
-        }
-        .float-card-body .form-group label .icon { margin-right: 5px; }
-        .float-card-body .form-group input {
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            width: 100%;
-            transition: border-color 0.3s;
-        }
-        .float-card-body .form-group input:focus {
-            border-color: #2e7d32;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        .form-group input:focus {
+            border-color:#2e7d32; outline:none;
+            box-shadow:0 0 0 3px rgba(46,125,50,0.1);
         }
 
-        .float-card-body .section-title {
-            background: #f5f5f5;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #1a237e;
-            font-weight: 600;
+        .section-title {
+            background:#f5f5f5; padding:8px 12px; border-radius:6px;
+            margin-bottom:10px; font-size:14px; color:#1a237e; font-weight:600;
         }
 
-        .float-card-body .btn-submit {
-            padding: 12px;
-            background: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.3s;
-            margin-top: 10px;
+        .btn-submit {
+            padding:12px; background:#2e7d32; color:white; border:none;
+            border-radius:8px; font-size:16px; cursor:pointer;
+            font-weight:bold; width:100%; transition:background 0.3s; margin-top:10px;
         }
-        .float-card-body .btn-submit:hover { background: #1b5e20; }
-        .float-card-body .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:hover { background:#1b5e20; }
+        .btn-submit:active { transform:scale(0.98); }
+        .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
 
-        .float-card-body .msg {
-            margin-top: 12px;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            display: none;
-            font-size: 14px;
-            text-align: center;
-        }
-        .float-card-body .msg.success { display: block; background: #c8e6c9; color: #1b5e20; }
-        .float-card-body .msg.error { display: block; background: #ffcdd2; color: #b71c1c; }
-
-        /* ===== HISTORY CARD WITH DROPDOWN ===== */
-        .history-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: 1px solid #e0e0e0;
-        }
-        .history-card-header {
-            background: linear-gradient(135deg, #1a237e, #0d47a1);
-            color: white;
-            padding: 14px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.3s;
-            user-select: none;
-        }
-        .history-card-header:hover {
-            background: linear-gradient(135deg, #0d47a1, #0a1a5e);
-        }
-        .history-card-header h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .history-card-header h3 span { font-size: 20px; }
-        .history-card-header .toggle-icon {
-            font-size: 22px;
-            transition: transform 0.3s ease;
-        }
-        .history-card-header .toggle-icon.open {
-            transform: rotate(180deg);
-        }
-
-        .history-card-body {
-            padding: 20px;
-            display: none;
-            animation: fadeIn 0.3s ease;
-            overflow-x: auto;
-        }
-        .history-card-body.open {
-            display: block;
-        }
-
-        .history-card-body table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            min-width: 700px;
-        }
-        .history-card-body th {
-            background: #1a237e;
-            color: white;
-            padding: 8px 10px;
-            text-align: left;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-        .history-card-body td {
-            padding: 6px 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 12px;
-            color: #333;
-        }
-        .history-card-body tr:hover { background: #f5f5f5; }
-        .history-card-body .no-data {
-            text-align: center;
-            padding: 30px;
-            color: #999;
-            font-size: 14px;
-        }
+        /* ===== HISTORY TABLE ===== */
+        table { width:100%; border-collapse:collapse; font-size:12px; min-width:700px; }
+        th { background:#1a237e; color:white; padding:8px 10px; text-align:left; font-size:11px; white-space:nowrap; }
+        td { padding:6px 10px; border-bottom:1px solid #eee; font-size:12px; color:#333; }
+        tr:hover { background:#f5f5f5; }
+        .no-data { text-align:center; padding:30px; color:#999; font-size:14px; }
 
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .float-card-body .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .float-card-body .form-group.full-width {
-                grid-column: 1;
-            }
-            .capital-form .form-row { flex-direction: column; }
-            .capital-form input { min-width: auto; width: 100%; }
-            .capital-form button { width: 100%; }
-            header { flex-direction: column; text-align: center; gap: 8px; }
-            .float-card-header h3 { font-size: 14px; }
-            .history-card-header h3 { font-size: 14px; }
-            .float-card-body { padding: 15px; }
-            .history-card-body { padding: 15px; }
-            .history-card-body table { font-size: 11px; min-width: 600px; }
-            .history-card-body th, .history-card-body td { padding: 5px 8px; }
+        @media (max-width:768px) {
+            .form-grid { grid-template-columns:1fr; }
+            .form-group.full-width { grid-column:1; }
+            .capital-form .form-row { flex-direction:column; }
+            .capital-form input { min-width:auto; width:100%; }
+            .capital-form button { width:100%; }
+            header { flex-direction:column; text-align:center; gap:8px; }
+            .card-header h3 { font-size:14px; }
+            .card-body { padding:15px; }
+            table { font-size:11px; min-width:600px; }
+            th, td { padding:5px 8px; }
         }
-
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            header h1 { font-size: 17px; }
-            .float-card-header { padding: 12px 15px; }
-            .float-card-header h3 { font-size: 13px; }
-            .history-card-header { padding: 12px 15px; }
-            .history-card-header h3 { font-size: 13px; }
-            .history-card-body table { font-size: 10px; min-width: 500px; }
-            .history-card-body th, .history-card-body td { padding: 4px 6px; }
-            .float-card-body .form-group input { font-size: 14px; padding: 8px 12px; }
-        }
-
-        @media (max-width: 360px) {
-            .history-card-body table { font-size: 9px; min-width: 400px; }
+        @media (max-width:480px) {
+            body { padding:10px; }
+            header h1 { font-size:17px; }
+            .card-header { padding:12px 15px; }
+            .card-header h3 { font-size:13px; }
+            table { font-size:10px; min-width:500px; }
+            th, td { padding:4px 6px; }
+            .form-group input { font-size:14px; padding:8px 12px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- HEADER -->
         <header>
             <h1>AGENT DASHBOARD</h1>
             <div>
@@ -337,16 +155,13 @@
             </div>
         </header>
 
-        <!-- ===== INFO NOTE IMEFUTWA KABISA! ===== -->
-        <!-- <div class="info-note">...</div> -->
-
         <!-- CAPITAL FORM -->
-        <div id="capitalSection" class="capital-form">
+        <div id="capitalSection" class="capital-form" style="display:none;">
             <h2>💰 Weka Mtaji (Capital)</h2>
             <p>Weka mtaji wako wa awali. Hii itakuwa <strong>Mtaji wa Mwanzo</strong> na haitabadilika.</p>
             <div class="form-row">
-                <input type="number" id="capitalAmount" placeholder="Ingiza kiasi cha mtaji (TSh)">
-                <button onclick="setCapital()">WEKA MTAJI</button>
+                <input type="number" id="capitalAmount" placeholder="Ingiza kiasi cha mtaji (TSh)" min="1">
+                <button id="capitalBtn" onclick="setCapital()">WEKA MTAJI</button>
             </div>
             <div id="capitalMsg" class="msg"></div>
         </div>
@@ -358,77 +173,77 @@
             📈 <strong>Jumla Faida:</strong> <span id="displayProfit" style="color:#2e7d32; font-weight:bold;">0</span> TSh
         </div>
 
-        <!-- ===== FLOAT CARD WITH DROPDOWN ===== -->
-        <div class="float-card">
-            <div class="float-card-header" onclick="toggleFloatCard()">
+        <!-- FLOAT CARD -->
+        <div class="card">
+            <div class="card-header float" onclick="toggleCard('float')">
                 <h3><span>📱</span> Weka Float na Lipa za Mitandao</h3>
-                <span class="toggle-icon" id="floatToggleIcon">▼</span>
+                <span class="toggle-icon" id="floatIcon">▼</span>
             </div>
-            <div class="float-card-body" id="floatCardBody">
-                <!-- FLOAT ZA MITANDAO (KUUZA) -->
+            <div class="card-body" id="floatBody">
+                <!-- FLOAT -->
                 <div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom:15px;">
                     <div class="section-title">FLOAT</div>
                     <div class="form-grid">
-                        <div class="form-group float-halotel">
-                            <label><span class="icon"></span> Halotel Float</label>
-                            <input type="number" id="agentFloatHalotel" placeholder="Float ya Halotel">
+                        <div class="form-group">
+                            <label>Halotel Float</label>
+                            <input type="number" id="floatHalotel" placeholder="Float ya Halotel" min="0">
                         </div>
-                        <div class="form-group float-voda">
-                            <label><span class="icon"></span> Vodacom Float</label>
-                            <input type="number" id="agentFloatVoda" placeholder="Float ya Voda">
+                        <div class="form-group">
+                            <label>Vodacom Float</label>
+                            <input type="number" id="floatVoda" placeholder="Float ya Voda" min="0">
                         </div>
-                        <div class="form-group float-airtel">
-                            <label><span class="icon"></span> Airtel Float</label>
-                            <input type="number" id="agentFloatAirtel" placeholder="Float ya Airtel">
+                        <div class="form-group">
+                            <label>Airtel Float</label>
+                            <input type="number" id="floatAirtel" placeholder="Float ya Airtel" min="0">
                         </div>
-                        <div class="form-group float-tigo">
-                            <label><span class="icon"></span> Tigo Float</label>
-                            <input type="number" id="agentFloatTigo" placeholder="Float ya Tigo">
+                        <div class="form-group">
+                            <label>Tigo Float</label>
+                            <input type="number" id="floatTigo" placeholder="Float ya Tigo" min="0">
                         </div>
                     </div>
                 </div>
 
-                <!-- LIPA ZA MITANDAO -->
+                <!-- LIPA -->
                 <div style="background:#f5f5f5; padding:12px; border-radius:8px; margin-bottom:15px;">
-                    <div class="section-title"> LIPA</div>
+                    <div class="section-title">LIPA</div>
                     <div class="form-grid">
-                        <div class="form-group lipa-halotel">
-                            <label><span class="icon"></span> Halotel Lipa</label>
-                            <input type="number" id="agentLipaHalotel" placeholder="Lipa ya Halotel">
+                        <div class="form-group">
+                            <label>Halotel Lipa</label>
+                            <input type="number" id="lipaHalotel" placeholder="Lipa ya Halotel" min="0">
                         </div>
-                        <div class="form-group lipa-voda">
-                            <label><span class="icon"></span> Vodacom Lipa</label>
-                            <input type="number" id="agentLipaVoda" placeholder="Lipa ya Voda">
+                        <div class="form-group">
+                            <label>Vodacom Lipa</label>
+                            <input type="number" id="lipaVoda" placeholder="Lipa ya Voda" min="0">
                         </div>
-                        <div class="form-group lipa-airtel">
-                            <label><span class="icon"></span> Airtel Lipa</label>
-                            <input type="number" id="agentLipaAirtel" placeholder="Lipa ya Airtel">
+                        <div class="form-group">
+                            <label>Airtel Lipa</label>
+                            <input type="number" id="lipaAirtel" placeholder="Lipa ya Airtel" min="0">
                         </div>
-                        <div class="form-group lipa-tigo">
-                            <label><span class="icon"></span> Tigo Lipa</label>
-                            <input type="number" id="agentLipaTigo" placeholder="Lipa ya Tigo">
+                        <div class="form-group">
+                            <label>Tigo Lipa</label>
+                            <input type="number" id="lipaTigo" placeholder="Lipa ya Tigo" min="0">
                         </div>
                     </div>
                 </div>
 
                 <!-- CASH -->
                 <div class="form-group full-width">
-                    <label><span class="icon">💰</span> Cash</label>
-                    <input type="number" id="agentCash" placeholder="Ingiza cash">
+                    <label>💰 Cash</label>
+                    <input type="number" id="cash" placeholder="Ingiza cash" min="0">
                 </div>
 
-                <button class="btn-submit" onclick="submitAgentData()">💾 HIFADHI</button>
-                <div id="agentMsg" class="msg"></div>
+                <button class="btn-submit" id="submitBtn" onclick="submitData()">💾 HIFADHI</button>
+                <div id="dataMsg" class="msg"></div>
             </div>
         </div>
 
-        <!-- ===== HISTORY CARD WITH DROPDOWN ===== -->
-        <div class="history-card">
-            <div class="history-card-header" onclick="toggleHistoryCard()">
+        <!-- HISTORY CARD -->
+        <div class="card">
+            <div class="card-header history" onclick="toggleCard('history')">
                 <h3><span>📋</span> Historia Yangu</h3>
-                <span class="toggle-icon" id="historyToggleIcon">▼</span>
+                <span class="toggle-icon" id="historyIcon">▼</span>
             </div>
-            <div class="history-card-body" id="historyCardBody">
+            <div class="card-body" id="historyBody">
                 <div id="historyList"><p class="no-data">Loading...</p></div>
             </div>
         </div>
@@ -438,7 +253,24 @@
         const API_URL = window.location.origin;
         const token = localStorage.getItem('token');
 
-        if (!token) { window.location.href = 'login.html'; }
+        if (!token) window.location.href = 'login.html';
+
+        // ============ HELPERS ============
+        function escapeHtml(s) {
+            if (s === null || s === undefined) return '';
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function fmt(n) {
+            return (n || 0).toLocaleString('sw-TZ');
+        }
+
+        function showMsg(el, text, type) {
+            el.textContent = text;
+            el.className = 'msg ' + type;
+        }
 
         function logout() {
             localStorage.removeItem('token');
@@ -448,146 +280,134 @@
             window.location.href = 'login.html';
         }
 
-        function showMessage(element, text, type) {
-            element.textContent = text;
-            element.className = 'msg ' + type;
+        async function apiFetch(path, options = {}) {
+            const res = await fetch(`${API_URL}${path}`, {
+                ...options,
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    ...(options.headers || {})
+                }
+            });
+            if (res.status === 401) { logout(); return null; }
+            return res;
         }
 
-        // ===== TOGGLE FLOAT CARD =====
-        function toggleFloatCard() {
-            const body = document.getElementById('floatCardBody');
-            const icon = document.getElementById('floatToggleIcon');
-            body.classList.toggle('open');
-            icon.classList.toggle('open');
+        // ============ TOGGLE ============
+        function toggleCard(which) {
+            if (which === 'float') {
+                document.getElementById('floatBody').classList.toggle('open');
+                document.getElementById('floatIcon').classList.toggle('open');
+            } else {
+                document.getElementById('historyBody').classList.toggle('open');
+                document.getElementById('historyIcon').classList.toggle('open');
+            }
         }
 
-        // ===== TOGGLE HISTORY CARD =====
-        function toggleHistoryCard() {
-            const body = document.getElementById('historyCardBody');
-            const icon = document.getElementById('historyToggleIcon');
-            body.classList.toggle('open');
-            icon.classList.toggle('open');
-        }
-
-        // ===== SET CAPITAL =====
+        // ============ SET CAPITAL ============
         async function setCapital() {
-            const capitalAmount = document.getElementById('capitalAmount').value.trim();
+            const amount = parseFloat(document.getElementById('capitalAmount').value);
             const msg = document.getElementById('capitalMsg');
+            const btn = document.getElementById('capitalBtn');
 
-            if (!capitalAmount || parseFloat(capitalAmount) <= 0) {
-                showMessage(msg, '❌ Tafadhali ingiza kiasi sahihi cha mtaji!', 'error');
+            if (!amount || amount <= 0) {
+                showMsg(msg, '❌ Tafadhali ingiza kiasi sahihi cha mtaji!', 'error');
                 return;
             }
 
-            showMessage(msg, '⏳ Inaweka mtaji...', 'success');
+            btn.disabled = true;
+            showMsg(msg, '⏳ Inaweka mtaji...', 'success');
 
             try {
-                const response = await fetch(
-                    `${API_URL}/agent/set_capital?capital_amount=${parseFloat(capitalAmount)}`,
-                    { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }
-                );
+                const res = await apiFetch(`/agent/set_capital?capital_amount=${amount}`, { method: 'POST' });
+                if (!res) return;
+                const data = await res.json();
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage(msg, '✅ ' + data.message, 'success');
+                if (res.ok) {
+                    showMsg(msg, '✅ ' + data.message, 'success');
                     document.getElementById('capitalAmount').value = '';
-                    document.getElementById('capitalSection').style.display = 'none';
-                    document.getElementById('capitalInfo').style.display = 'block';
                     loadMyData();
                 } else {
-                    showMessage(msg, '❌ ' + (data.detail || 'Failed!'), 'error');
+                    showMsg(msg, '❌ ' + (data.detail || 'Failed'), 'error');
                 }
-            } catch (error) {
-                showMessage(msg, '❌ Error: ' + error.message, 'error');
+            } catch (e) {
+                showMsg(msg, '❌ Error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
             }
         }
 
-        // ===== SUBMIT AGENT DATA =====
-        async function submitAgentData() {
-            const cash = document.getElementById('agentCash').value.trim();
-            const floatHalotel = document.getElementById('agentFloatHalotel').value.trim();
-            const floatVoda = document.getElementById('agentFloatVoda').value.trim();
-            const floatAirtel = document.getElementById('agentFloatAirtel').value.trim();
-            const floatTigo = document.getElementById('agentFloatTigo').value.trim();
-            const lipaHalotel = document.getElementById('agentLipaHalotel').value.trim();
-            const lipaVoda = document.getElementById('agentLipaVoda').value.trim();
-            const lipaAirtel = document.getElementById('agentLipaAirtel').value.trim();
-            const lipaTigo = document.getElementById('agentLipaTigo').value.trim();
-            const msg = document.getElementById('agentMsg');
+        // ============ SUBMIT DATA ============
+        async function submitData() {
+            const vals = {
+                cash: parseFloat(document.getElementById('cash').value) || 0,
+                float_halotel: parseFloat(document.getElementById('floatHalotel').value) || 0,
+                float_voda: parseFloat(document.getElementById('floatVoda').value) || 0,
+                float_airtel: parseFloat(document.getElementById('floatAirtel').value) || 0,
+                float_tigo: parseFloat(document.getElementById('floatTigo').value) || 0,
+                lipa_halotel: parseFloat(document.getElementById('lipaHalotel').value) || 0,
+                lipa_voda: parseFloat(document.getElementById('lipaVoda').value) || 0,
+                lipa_airtel: parseFloat(document.getElementById('lipaAirtel').value) || 0,
+                lipa_tigo: parseFloat(document.getElementById('lipaTigo').value) || 0,
+            };
 
-            if (!cash && !floatHalotel && !floatVoda && !floatAirtel && !floatTigo && 
-                !lipaHalotel && !lipaVoda && !lipaAirtel && !lipaTigo) {
-                showMessage(msg, '❌ Tafadhali jaza angalau sehemu moja!', 'error');
+            const hasAny = Object.values(vals).some(v => v > 0);
+            const msg = document.getElementById('dataMsg');
+            const btn = document.getElementById('submitBtn');
+
+            if (!hasAny) {
+                showMsg(msg, '❌ Tafadhali jaza angalau sehemu moja!', 'error');
                 return;
             }
 
-            showMessage(msg, '⏳ Inahifadhi...', 'success');
+            btn.disabled = true;
+            showMsg(msg, '⏳ Inahifadhi...', 'success');
 
             try {
-                let url = `${API_URL}/agent/add?cash=${parseFloat(cash) || 0}`;
-                url += `&float_halotel=${parseFloat(floatHalotel) || 0}`;
-                url += `&float_voda=${parseFloat(floatVoda) || 0}`;
-                url += `&float_airtel=${parseFloat(floatAirtel) || 0}`;
-                url += `&float_tigo=${parseFloat(floatTigo) || 0}`;
-                url += `&lipa_halotel=${parseFloat(lipaHalotel) || 0}`;
-                url += `&lipa_voda=${parseFloat(lipaVoda) || 0}`;
-                url += `&lipa_airtel=${parseFloat(lipaAirtel) || 0}`;
-                url += `&lipa_tigo=${parseFloat(lipaTigo) || 0}`;
+                const params = new URLSearchParams(vals).toString();
+                const res = await apiFetch(`/agent/add?${params}`, { method: 'POST' });
+                if (!res) return;
+                const data = await res.json();
 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage(msg, '✅ ' + data.message, 'success');
-                    document.getElementById('agentCash').value = '';
-                    document.getElementById('agentFloatHalotel').value = '';
-                    document.getElementById('agentFloatVoda').value = '';
-                    document.getElementById('agentFloatAirtel').value = '';
-                    document.getElementById('agentFloatTigo').value = '';
-                    document.getElementById('agentLipaHalotel').value = '';
-                    document.getElementById('agentLipaVoda').value = '';
-                    document.getElementById('agentLipaAirtel').value = '';
-                    document.getElementById('agentLipaTigo').value = '';
-                    
-                    const floatBody = document.getElementById('floatCardBody');
-                    const floatIcon = document.getElementById('floatToggleIcon');
-                    floatBody.classList.remove('open');
-                    floatIcon.classList.remove('open');
-                    
+                if (res.ok) {
+                    showMsg(msg, '✅ ' + data.message, 'success');
+                    // Clear fields
+                    ['cash','floatHalotel','floatVoda','floatAirtel','floatTigo',
+                     'lipaHalotel','lipaVoda','lipaAirtel','lipaTigo'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
+                    // Close card
+                    document.getElementById('floatBody').classList.remove('open');
+                    document.getElementById('floatIcon').classList.remove('open');
                     loadMyData();
                 } else {
-                    showMessage(msg, '❌ ' + (data.detail || 'Failed!'), 'error');
+                    showMsg(msg, '❌ ' + (data.detail || 'Failed'), 'error');
                 }
-            } catch (error) {
-                showMessage(msg, '❌ Error: ' + error.message, 'error');
+            } catch (e) {
+                showMsg(msg, '❌ Error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
             }
         }
 
-        // ===== LOAD MY DATA (RANGI ZIMEONDOKA) =====
+        // ============ LOAD DATA ============
         async function loadMyData() {
             try {
-                const res = await fetch(`${API_URL}/agent/my_data`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-
+                const res = await apiFetch('/agent/my_data');
+                if (!res) return;
                 if (!res.ok) {
                     if (res.status === 403) { window.location.href = 'shop_dashboard.html'; return; }
                     throw new Error('Failed to load data');
                 }
-
                 const data = await res.json();
 
                 if (data.has_capital) {
                     document.getElementById('capitalSection').style.display = 'none';
                     document.getElementById('capitalInfo').style.display = 'block';
-                    document.getElementById('displayInitialCapital').textContent = data.initial_capital.toLocaleString();
-                    document.getElementById('displayCurrentCapital').textContent = data.current_capital.toLocaleString();
-                    document.getElementById('displayProfit').textContent = data.total_profit.toLocaleString();
+                    document.getElementById('displayInitialCapital').textContent = fmt(data.initial_capital);
+                    document.getElementById('displayCurrentCapital').textContent = fmt(data.current_capital);
+                    const profitEl = document.getElementById('displayProfit');
+                    profitEl.textContent = fmt(data.total_profit);
+                    profitEl.style.color = data.total_profit >= 0 ? '#2e7d32' : '#d32f2f';
                 } else {
                     document.getElementById('capitalSection').style.display = 'block';
                     document.getElementById('capitalInfo').style.display = 'none';
@@ -595,88 +415,78 @@
 
                 document.getElementById('staffName').textContent = data.staff_name || 'Agent';
 
-                // History - RANGI ZIMEONDOKA KABISA!
+                // History
                 const container = document.getElementById('historyList');
                 if (!data.history || data.history.length === 0) {
-                    container.innerHTML = '<p class="no-data">Hakuna historia</p>';
+                    container.innerHTML = '<p class="no-data">Hakuna historia bado</p>';
                     return;
                 }
 
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Tarehe</th>
-                                <th>Cash</th>
-                                <th>Halotel F</th>
-                                <th>Voda F</th>
-                                <th>Airtel F</th>
-                                <th>Tigo F</th>
-                                <th>Jumla Float</th>
-                                <th>Halotel L</th>
-                                <th>Voda L</th>
-                                <th>Airtel L</th>
-                                <th>Tigo L</th>
-                                <th>Jumla Lipa</th>
-                                <th>Jumla</th>
-                                <th>Faida</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                data.history.forEach((item, index) => {
-                    const totalFloat = item.float_halotel + item.float_voda + item.float_airtel + item.float_tigo;
-                    const totalLipa = item.lipa_halotel + item.lipa_voda + item.lipa_airtel + item.lipa_tigo;
-                    const profitClass = item.daily_profit >= 0 ? 'color: #2e7d32; font-weight:bold;' : 'color: #d32f2f; font-weight:bold;';
-                    
-                    html += `
+                let html = `<table>
+                    <thead>
                         <tr>
-                            <td>${index + 1}</td>
-                            <td>${item.date}</td>
-                            <td>${item.cash.toLocaleString()} TSh</td>
-                            <td>${item.float_halotel.toLocaleString()} TSh</td>
-                            <td>${item.float_voda.toLocaleString()} TSh</td>
-                            <td>${item.float_airtel.toLocaleString()} TSh</td>
-                            <td>${item.float_tigo.toLocaleString()} TSh</td>
-                            <td><strong>${totalFloat.toLocaleString()} TSh</strong></td>
-                            <td>${item.lipa_halotel.toLocaleString()} TSh</td>
-                            <td>${item.lipa_voda.toLocaleString()} TSh</td>
-                            <td>${item.lipa_airtel.toLocaleString()} TSh</td>
-                            <td>${item.lipa_tigo.toLocaleString()} TSh</td>
-                            <td><strong>${totalLipa.toLocaleString()} TSh</strong></td>
-                            <td><strong style="color:#1a237e;">${item.daily_total.toLocaleString()} TSh</strong></td>
-                            <td><strong style="${profitClass}">${item.daily_profit.toLocaleString()} TSh</strong></td>
+                            <th>#</th><th>Tarehe</th><th>Cash</th>
+                            <th>Hal F</th><th>Voda F</th><th>Airtel F</th><th>Tigo F</th><th>Jumla F</th>
+                            <th>Hal L</th><th>Voda L</th><th>Airtel L</th><th>Tigo L</th><th>Jumla L</th>
+                            <th>Jumla</th><th>Faida</th>
                         </tr>
-                    `;
+                    </thead>
+                    <tbody>`;
+
+                data.history.forEach((item, i) => {
+                    const totalFloat = (item.float_halotel || 0) + (item.float_voda || 0) + (item.float_airtel || 0) + (item.float_tigo || 0);
+                    const totalLipa = (item.lipa_halotel || 0) + (item.lipa_voda || 0) + (item.lipa_airtel || 0) + (item.lipa_tigo || 0);
+                    const profitColor = (item.daily_profit || 0) >= 0 ? '#2e7d32' : '#d32f2f';
+
+                    html += `<tr>
+                        <td>${i + 1}</td>
+                        <td>${escapeHtml(item.date)}</td>
+                        <td>${fmt(item.cash)}</td>
+                        <td>${fmt(item.float_halotel)}</td>
+                        <td>${fmt(item.float_voda)}</td>
+                        <td>${fmt(item.float_airtel)}</td>
+                        <td>${fmt(item.float_tigo)}</td>
+                        <td><strong>${fmt(totalFloat)}</strong></td>
+                        <td>${fmt(item.lipa_halotel)}</td>
+                        <td>${fmt(item.lipa_voda)}</td>
+                        <td>${fmt(item.lipa_airtel)}</td>
+                        <td>${fmt(item.lipa_tigo)}</td>
+                        <td><strong>${fmt(totalLipa)}</strong></td>
+                        <td><strong style="color:#1a237e;">${fmt(item.daily_total)}</strong></td>
+                        <td><strong style="color:${profitColor};">${fmt(item.daily_profit)}</strong></td>
+                    </tr>`;
                 });
 
                 html += '</tbody></table>';
                 container.innerHTML = html;
-
-            } catch (error) {
-                console.error('Load data error:', error);
+            } catch (e) {
+                console.error(e);
                 document.getElementById('historyList').innerHTML = '<p class="no-data" style="color:red;">❌ Error loading data</p>';
             }
         }
 
-        async function checkStaffType() {
+        // ============ CHECK STAFF TYPE ============
+        async function init() {
             try {
-                const res = await fetch(`${API_URL}/users/me`, { headers: { 'Authorization': 'Bearer ' + token } });
-                if (res.ok) {
-                    const user = await res.json();
-                    if (user.staff_type !== 'agent') {
-                        if (user.staff_type === 'shop') { window.location.href = 'shop_dashboard.html'; }
-                        else if (user.role === 'admin') { window.location.href = 'index.html'; }
-                    }
+                const res = await apiFetch('/users/me');
+                if (!res) return;
+                if (!res.ok) { window.location.href = 'login.html'; return; }
+                const user = await res.json();
+                if (user.staff_type !== 'agent') {
+                    if (user.staff_type === 'shop') { window.location.href = 'shop_dashboard.html'; return; }
+                    if (user.role === 'admin') { window.location.href = 'index.html'; return; }
                 }
-            } catch (e) { console.error('Check staff type error:', e); }
+                loadMyData();
+            } catch (e) {
+                console.error('Init error:', e);
+                window.location.href = 'login.html';
+            }
         }
 
-        checkStaffType();
-        loadMyData();
-        setInterval(loadMyData, 30000);
+        init();
+
+        const refreshInterval = setInterval(loadMyData, 30000);
+        window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
     </script>
 </body>
 </html>
