@@ -8,3 +8,8 @@ requests==2.32.3
 python-dotenv==1.0.1
 psycopg2-binary==2.9.10
 sendgrid==6.10.0
+slowapi==0.1.9
+cachetools==5.5.0
+pyotp==2.9.0
+reportlab==4.2.5
+boto3==1.35.76

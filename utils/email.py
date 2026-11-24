@@ -1,8 +1,11 @@
 import os
+import tempfile
 from datetime import datetime, timezone
+from email.mime.application import MIMEApplication
 import sendgrid
-from sendgrid.helpers.mail import Mail, Email, To
+from sendgrid.helpers.mail import Mail, Email, To, Attachment, FileContent, FileName, FileType, Disposition
 from config import Config
+from utils.pdf import generate_invoice_pdf
 
 
 def _build_html_template(content: str) -> str:
@@ -30,7 +33,11 @@ def _build_html_template(content: str) -> str:
     """
 
 
-def send_email(to_email: str, subject: str, body: str, html_body: str = None) -> bool:
+def send_email(to_email: str, subject: str, body: str, html_body: str = None, attachment_path: str = None) -> bool:
+    """
+    Send email via SendGrid.
+    attachment_path: Optional — path to PDF or other file to attach.
+    """
     if not to_email or "@" not in to_email:
         print(f"⚠️ Invalid recipient: {to_email}")
         return False
@@ -46,6 +53,20 @@ def send_email(to_email: str, subject: str, body: str, html_body: str = None) ->
             subject=subject,
             html_content=html_content,
         )
+
+        # ✅ Ongeza attachment kama ipo
+        if attachment_path and os.path.exists(attachment_path):
+            with open(attachment_path, "rb") as f:
+                data = f.read()
+            encoded = __import__("base64").b64encode(data).decode()
+            attachment = Attachment(
+                FileContent(encoded),
+                FileName(os.path.basename(attachment_path)),
+                FileType("application/pdf"),
+                Disposition("attachment"),
+            )
+            message.attachment = attachment
+
         sg = sendgrid.SendGridAPIClient(Config.SENDGRID_API_KEY)
         response = sg.send(message)
         if response.status_code in (200, 202):
@@ -57,6 +78,8 @@ def send_email(to_email: str, subject: str, body: str, html_body: str = None) ->
         print(f"❌ Email error: {e}")
         return False
 
+
+# ============ EMAILS ZA KAWAIDA ============
 
 def send_registration_email(email, name, staff_type):
     subject = "✅ Akaunti Yako Imewekwa - Sales System"
@@ -131,26 +154,19 @@ def send_reset_password_email(email, name):
     return send_email(email, subject, body)
 
 
+# ============ INVOICE EMAIL (PDF ATTACHMENT) ============
+
 def send_invoice_email(to_email, name, data):
-    subject = f"📊 Invoice - {data['month']}"
+    """
+    ✅ Tuma invoice kama PDF attachment.
+    """
+    subject = f"📊 Monthly Invoice - {data['month']} - Sales System"
 
-    daily_rows = ""
-    for d in data["daily_data"]:
-        color = "#2e7d32" if d["daily_profit"] >= 0 else "#d32f2f"
-        daily_rows += f"""
-        <tr>
-            <td style="padding:6px; border-bottom:1px solid #eee;">{d['date']}</td>
-            <td style="padding:6px; border-bottom:1px solid #eee; text-align:right;">{d['cash']:,.0f}</td>
-            <td style="padding:6px; border-bottom:1px solid #eee; text-align:right;">{d['total_float']:,.0f}</td>
-            <td style="padding:6px; border-bottom:1px solid #eee; text-align:right;">{d['total_lipa']:,.0f}</td>
-            <td style="padding:6px; border-bottom:1px solid #eee; text-align:right; font-weight:bold;">{d['daily_total']:,.0f}</td>
-            <td style="padding:6px; border-bottom:1px solid #eee; text-align:right; color:{color}; font-weight:bold;">{d['daily_profit']:,.0f}</td>
-        </tr>"""
-
+    # Build email body (short HTML summary)
     body = f"""
-    <h2 style="color:#1a237e;">📊 Monthly Invoice - {data['month']}</h2>
-    <p><strong>👤 {data['staff_name']}</strong> ({data['staff_email']})</p>
-    <p>Days worked: <strong>{data['days_worked']}</strong></p>
+    <h2 style="color:#1a237e;">📊 Monthly Invoice — {data['month']}</h2>
+    <p>Habari <strong>{name}</strong>,</p>
+    <p>Invoice yako ya mwezi <strong>{data['month']}</strong> imeambatishwa kama PDF.</p>
 
     <table style="width:100%; margin:15px 0; background:#f8f9fa; padding:15px; border-radius:8px;">
         <tr>
@@ -176,19 +192,31 @@ def send_invoice_email(to_email, name, data):
         </tr>
     </table>
 
-    <h4>📋 Daily Breakdown</h4>
-    <table style="width:100%; border-collapse:collapse; font-size:12px;">
-        <thead>
-            <tr style="background:#1a237e; color:white;">
-                <th style="padding:8px; text-align:left;">Date</th>
-                <th style="padding:8px; text-align:right;">Cash</th>
-                <th style="padding:8px; text-align:right;">Float</th>
-                <th style="padding:8px; text-align:right;">Lipa</th>
-                <th style="padding:8px; text-align:right;">Total</th>
-                <th style="padding:8px; text-align:right;">Profit</th>
-            </tr>
-        </thead>
-        <tbody>{daily_rows}</tbody>
-    </table>
+    <p style="font-size:13px; color:#666;">
+        📎 Tafadhali angalia PDF attachment kwa maelezo kamili ya kila siku.
+    </p>
     """
-    return send_email(to_email, subject, body)
+
+    # ✅ Generate PDF kwenye temp file
+    tmp_pdf = None
+    try:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        tmp_pdf = tmp.name
+        tmp.close()
+
+        generate_invoice_pdf(data, tmp_pdf)
+        print(f"PDF generated: {tmp_pdf}")
+
+        # ✅ Tuma email na PDF attachment
+        result = send_email(to_email, subject, body, attachment_path=tmp_pdf)
+        return result
+    except Exception as e:
+        print(f"❌ Invoice PDF error: {e}")
+        return False
+    finally:
+        # ✅ Futa temp file baada ya kutuma
+        if tmp_pdf and os.path.exists(tmp_pdf):
+            try:
+                os.unlink(tmp_pdf)
+            except Exception:
+                pass

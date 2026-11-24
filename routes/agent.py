@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from database import get_db
 import models
-from auth import get_current_user
+from auth import get_current_user, get_current_admin
 from datetime import datetime, timedelta, timezone
 from utils.email import send_invoice_email
+from utils.pdf import generate_invoice_pdf
+import tempfile
+import os
 
 router = APIRouter(prefix="/agent", tags=["Agent"])
 
@@ -66,12 +70,14 @@ def get_capital(current_user: models.User = Depends(get_current_user), db: Sessi
     if current_user.staff_type != "agent":
         raise HTTPException(status_code=403, detail="Only agents")
 
+    current_month = utcnow().strftime("%Y-%m")
     capital = db.query(models.AgentCapital).filter(
-        models.AgentCapital.staff_id == current_user.id
-    ).order_by(models.AgentCapital.id.desc()).first()
+        models.AgentCapital.staff_id == current_user.id,
+        models.AgentCapital.month == current_month,
+    ).first()
 
     if not capital:
-        return {"has_capital": False, "message": "No capital set"}
+        return {"has_capital": False, "message": "No capital set for this month"}
 
     return {
         "has_capital": True,
@@ -117,7 +123,7 @@ def add_agent_data(
     total_float = float_halotel + float_voda + float_airtel + float_tigo
     total_lipa = lipa_halotel + lipa_voda + lipa_airtel + lipa_tigo
     daily_total = cash + total_float + total_lipa
-    daily_profit = daily_total - capital.current_capital  # ✅ Fixed calculation
+    daily_profit = daily_total - capital.current_capital
 
     agent_data = models.AgentData(
         staff_id=current_user.id,
@@ -138,7 +144,6 @@ def add_agent_data(
     db.commit()
     db.refresh(agent_data)
 
-    # Update capital — recompute from all data for accuracy
     _recalc_capital(db, capital)
 
     return {
@@ -154,9 +159,10 @@ def add_agent_data(
 
 def _recalc_capital(db: Session, capital: models.AgentCapital):
     """Recalculate capital based on all agent data for the month"""
+    first_day = datetime.strptime(capital.month + "-01", "%Y-%m-%d").replace(tzinfo=timezone.utc)
     all_data = db.query(models.AgentData).filter(
         models.AgentData.staff_id == capital.staff_id,
-        models.AgentData.date >= datetime.strptime(capital.month + "-01", "%Y-%m-%d").replace(tzinfo=timezone.utc),
+        models.AgentData.date >= first_day,
     ).all()
 
     if all_data:
@@ -270,10 +276,7 @@ def get_my_data(current_user: models.User = Depends(get_current_user), db: Sessi
 
 
 @router.get("/all")
-def get_all_agent_data(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def get_all_agent_data(current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     data = db.query(models.AgentData).join(models.User).filter(
         models.User.staff_type == "agent"
     ).order_by(models.AgentData.date.asc()).all()
@@ -341,10 +344,7 @@ def get_all_agent_data(current_user: models.User = Depends(get_current_user), db
 
 
 @router.get("/shop_data")
-def get_shop_data(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def get_shop_data(current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     shops = db.query(models.User).filter(
         models.User.staff_type == "shop",
         models.User.is_active == 1,
@@ -378,10 +378,7 @@ def get_shop_data(current_user: models.User = Depends(get_current_user), db: Ses
 # ============ DELETE (admin) ============
 
 @router.delete("/delete/{data_id}")
-def delete_agent_data(data_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def delete_agent_data(data_id: int, current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     item = db.query(models.AgentData).filter(models.AgentData.id == data_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Not found")
@@ -405,13 +402,9 @@ def delete_agent_data(data_id: int, current_user: models.User = Depends(get_curr
 def delete_agent_data_by_date(
     staff_id: int,
     date: str,
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    """✅ NEW: delete all data for a staff on a specific date (single request)"""
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
     try:
         target = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     except ValueError:
@@ -444,10 +437,7 @@ def delete_agent_data_by_date(
 
 
 @router.delete("/delete_by_staff/{staff_id}")
-def delete_agent_data_by_staff(staff_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def delete_agent_data_by_staff(staff_id: int, current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     entries = db.query(models.AgentData).filter(models.AgentData.staff_id == staff_id).all()
     if not entries:
         raise HTTPException(status_code=404, detail="No data for this staff")
@@ -466,10 +456,7 @@ def delete_agent_data_by_staff(staff_id: int, current_user: models.User = Depend
 
 
 @router.delete("/delete_capital/{staff_id}")
-def delete_capital(staff_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def delete_capital(staff_id: int, current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     capital = db.query(models.AgentCapital).filter(models.AgentCapital.staff_id == staff_id).first()
     if not capital:
         raise HTTPException(status_code=404, detail="Capital not found")
@@ -485,10 +472,7 @@ def delete_capital(staff_id: int, current_user: models.User = Depends(get_curren
 # ============ INVOICE ============
 
 @router.get("/invoice/{staff_id}")
-def get_invoice(staff_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def get_invoice(staff_id: int, current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     agent = db.query(models.User).filter(models.User.id == staff_id, models.User.staff_type == "agent").first()
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
@@ -496,11 +480,46 @@ def get_invoice(staff_id: int, current_user: models.User = Depends(get_current_u
     return _build_invoice(db, agent)
 
 
-@router.post("/send_invoice/{staff_id}")
-def send_invoice(staff_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
+@router.get("/invoice/{staff_id}/pdf")
+def download_invoice_pdf(
+    staff_id: int,
+    current_user: models.User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """✅ Download invoice as PDF file."""
+    agent = db.query(models.User).filter(
+        models.User.id == staff_id,
+        models.User.staff_type == "agent",
+    ).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
 
+    data = _build_invoice(db, agent)
+    if not data["daily_data"]:
+        raise HTTPException(status_code=400, detail="No data for this month")
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    tmp_path = tmp.name
+    tmp.close()
+
+    try:
+        generate_invoice_pdf(data, tmp_path)
+        return FileResponse(
+            tmp_path,
+            media_type="application/pdf",
+            filename=f"invoice_{agent.name}_{data['month'].replace(' ', '_')}.pdf",
+        )
+    except Exception as e:
+        if os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {e}")
+
+
+@router.post("/send_invoice/{staff_id}")
+def send_invoice(staff_id: int, current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     agent = db.query(models.User).filter(
         models.User.id == staff_id,
         models.User.staff_type == "agent",
@@ -521,10 +540,7 @@ def send_invoice(staff_id: int, current_user: models.User = Depends(get_current_
 
 
 @router.post("/send_invoice_all")
-def send_invoice_all(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role.lower() != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
+def send_invoice_all(current_user: models.User = Depends(get_current_admin), db: Session = Depends(get_db)):
     agents = db.query(models.User).filter(
         models.User.staff_type == "agent",
         models.User.is_active == 1,
@@ -583,9 +599,8 @@ def _build_invoice(db: Session, agent: models.User) -> dict:
     first_day = today.replace(day=1)
     next_month = (first_day + timedelta(days=32)).replace(day=1)
 
-    from datetime import timezone as tz
-    first_dt = datetime.combine(first_day, datetime.min.time()).replace(tzinfo=tz.utc)
-    next_dt = datetime.combine(next_month, datetime.min.time()).replace(tzinfo=tz.utc)
+    first_dt = datetime.combine(first_day, datetime.min.time()).replace(tzinfo=timezone.utc)
+    next_dt = datetime.combine(next_month, datetime.min.time()).replace(tzinfo=timezone.utc)
 
     data = db.query(models.AgentData).filter(
         models.AgentData.staff_id == agent.id,

@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="shared.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background:#f0f2f5; display:flex; min-height:100vh; }
+        body { background:var(--bg-color); display:flex; min-height:100vh; color:var(--text-color); }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
@@ -17,18 +18,11 @@
             padding-top:20px; transform:translateX(-100%);
         }
         .sidebar.open { transform:translateX(0); }
-        .sidebar-brand {
-            display:flex; align-items:center; padding:0 20px 20px 20px;
-            border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:20px;
-        }
+        .sidebar-brand { display:flex; align-items:center; padding:0 20px 20px 20px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:20px; }
         .sidebar-brand h2 { font-size:20px; margin-left:10px; }
         .sidebar-nav { list-style:none; padding:0 10px; }
         .sidebar-nav li { margin-bottom:3px; }
-        .sidebar-nav li a {
-            display:flex; align-items:center; padding:12px 16px;
-            color:rgba(255,255,255,0.6); text-decoration:none; border-radius:8px;
-            transition:all 0.3s; font-size:14px; gap:12px; cursor:pointer;
-        }
+        .sidebar-nav li a { display:flex; align-items:center; padding:12px 16px; color:rgba(255,255,255,0.6); text-decoration:none; border-radius:8px; transition:all 0.3s; font-size:14px; gap:12px; cursor:pointer; }
         .sidebar-nav li a:hover { background:rgba(255,255,255,0.08); color:white; }
         .sidebar-nav li a.active { background:rgba(255,255,255,0.12); color:white; }
         .sidebar-nav li a .icon { font-size:18px; width:28px; text-align:center; }
@@ -36,37 +30,21 @@
         .sidebar-nav .logout-link a { color:#ff8a80; }
         .sidebar-nav .logout-link a:hover { background:#d32f2f; color:white; }
 
-        .hamburger {
-            display:block; background:white; border:none; color:#0f1a3a;
-            font-size:26px; cursor:pointer; padding:10px; position:fixed;
-            top:15px; left:15px; z-index:1100; border-radius:8px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.1);
-        }
+        .hamburger { display:block; background:white; border:none; color:#0f1a3a; font-size:26px; cursor:pointer; padding:10px; position:fixed; top:15px; left:15px; z-index:1100; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
         .hamburger:hover { background:#f0f2f5; }
         .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:999; }
         .overlay.active { display:block; }
 
-        .main-content {
-            margin-left:0; flex:1; padding:20px 25px; padding-top:70px;
-            min-height:100vh; transition:margin-left 0.3s ease;
-        }
+        .main-content { margin-left:0; flex:1; padding:20px 25px; padding-top:70px; min-height:100vh; transition:margin-left 0.3s ease; }
         .sidebar.open ~ .main-content { margin-left:270px; }
 
-        .top-header {
-            display:flex; justify-content:space-between; align-items:center;
-            margin-bottom:25px; flex-wrap:wrap; gap:10px;
-            background:linear-gradient(135deg,#1a237e,#0d47a1);
-            padding:15px 25px; border-radius:12px; color:white;
-        }
+        .top-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:10px; background:linear-gradient(135deg,#1a237e,#0d47a1); padding:15px 25px; border-radius:12px; color:white; }
         .top-header .header-left h1 { font-size:24px; margin:0; }
         .top-header .user-info span { font-weight:500; color:rgba(255,255,255,0.9); }
 
         /* ===== STATS ===== */
         .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:30px; }
-        .stat-card {
-            background:white; padding:20px 24px; border-radius:14px;
-            box-shadow:0 2px 10px rgba(0,0,0,0.05); transition:transform 0.2s;
-        }
+        .stat-card { background:var(--card-bg); padding:20px 24px; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05); transition:transform 0.2s; }
         .stat-card:hover { transform:translateY(-2px); }
         .stat-card .stat-label { font-size:13px; color:#888; text-transform:uppercase; letter-spacing:0.5px; font-weight:500; }
         .stat-card .stat-value { font-size:28px; font-weight:700; color:#0f1a3a; margin-top:5px; }
@@ -76,40 +54,29 @@
         /* ===== CHARTS ===== */
         .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:20px; }
         .charts-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
-        .chart-box { background:white; padding:20px; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+        .chart-box { background:var(--card-bg); padding:20px; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
         .chart-box .chart-title { font-size:15px; font-weight:600; color:#0f1a3a; margin-bottom:15px; }
         .chart-box canvas { width:100% !important; height:220px !important; max-height:220px; }
 
         /* ===== CONTAINERS ===== */
-        .agent-container, .shop-container, .users-container {
-            background:white; padding:20px; border-radius:12px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.1);
-        }
+        .agent-container, .shop-container, .users-container { background:var(--card-bg); padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
         .users-container { overflow-x:auto; }
         .agent-container h2, .shop-container h2 { color:#1a237e; font-size:20px; margin-bottom:20px; }
         .users-container h2 { color:#1a237e; font-size:18px; margin-bottom:15px; }
 
         /* ===== ACTIVATE FORM ===== */
-        .activate-form {
-            background:#e8eaf6; padding:20px; border-radius:12px; margin-bottom:20px;
-            display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-        }
+        .activate-form { background:#e8eaf6; padding:20px; border-radius:12px; margin-bottom:20px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
         .activate-form h3 { width:100%; color:#1a237e; font-size:16px; }
         .activate-form p { width:100%; font-size:13px; color:#555; }
         .activate-form input { flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; min-width:200px; }
         .activate-form button { padding:10px 25px; background:#2e7d32; color:white; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; }
         .activate-form button:hover { background:#1b5e20; }
 
-        .msg { width:100%; padding:10px; border-radius:6px; font-weight:bold; display:none; font-size:14px; }
-        .msg.success { display:block; background:#c8e6c9; color:#1b5e20; }
-        .msg.error { display:block; background:#ffcdd2; color:#b71c1c; }
-        .msg.info { display:block; background:#bbdefb; color:#0d47a1; }
-
         /* ===== TABLE ===== */
         table { width:100%; border-collapse:collapse; font-size:12px; min-width:800px; }
         th { background:#1a237e; color:white; padding:8px 10px; text-align:left; white-space:nowrap; font-size:11px; }
-        td { padding:6px 10px; border-bottom:1px solid #eee; font-size:12px; }
-        tr:hover { background:#f5f5f5; }
+        td { padding:6px 10px; border-bottom:1px solid var(--border-color); font-size:12px; }
+        tr:hover { background:rgba(26,35,126,0.05); }
 
         .user-status { padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold; white-space:nowrap; }
         .user-status.active { background:#4caf50; color:white; }
@@ -124,28 +91,16 @@
         .action-btn.delete:hover { background:#b71c1c; }
 
         /* ===== AGENT ITEM ===== */
-        .agent-item {
-            background:#f8f9fa; padding:15px; border-radius:10px;
-            margin-bottom:15px; border-left:4px solid #1a237e;
-        }
-        .agent-item .agent-header {
-            display:flex; justify-content:space-between; align-items:center;
-            flex-wrap:wrap; gap:10px; margin-bottom:10px;
-        }
+        .agent-item { background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; border-left:4px solid #1a237e; }
+        .agent-item .agent-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
         .agent-item .agent-header h4 { color:#1a237e; }
-        .agent-item .agent-stats-row {
-            display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-            gap:10px; margin-bottom:10px;
-        }
+        .agent-item .agent-stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:10px; }
         .agent-item .agent-stats-row div { color:#333; font-size:13px; }
         .agent-item .agent-stats-row .profit { color:#2e7d32; font-weight:bold; }
         .agent-item .agent-stats-row .loss { color:#d32f2f; font-weight:bold; }
 
         /* ===== SHOP ITEM ===== */
-        .shop-item {
-            background:#f8f9fa; padding:15px; border-radius:10px;
-            margin-bottom:15px; border-left:4px solid #2e7d32;
-        }
+        .shop-item { background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; border-left:4px solid #2e7d32; }
         .shop-item .shop-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
         .shop-item .shop-header h4 { color:#2e7d32; }
         .shop-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:15px; margin-bottom:25px; }
@@ -198,6 +153,7 @@
             <li><a href="#" onclick="showPage('sales'); return false;"><span class="icon">📋</span> Mauzo Yote</a></li>
             <li><a href="#" onclick="showPage('agent'); return false;"><span class="icon">🤖</span> Agent System</a></li>
             <li><a href="#" onclick="showPage('shop'); return false;"><span class="icon">🏪</span> Shop System</a></li>
+            <li><a href="#" onclick="showPage('reports'); return false;"><span class="icon">📊</span> Ripoti</a></li>
             <li class="logout-link"><a href="#" onclick="logout(); return false;"><span class="icon">🚪</span> Toka</a></li>
         </ul>
     </nav>
@@ -205,53 +161,29 @@
     <div class="main-content">
         <div class="top-header">
             <div class="header-left"><h1 id="pageTitle">ADMIN DASHBOARD</h1></div>
-            <div class="user-info"><span id="adminName">Admin</span></div>
+            <div class="user-info">
+                <span id="adminName">Admin</span>
+                <button onclick="toggleTheme()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:6px 12px; border-radius:6px; cursor:pointer; margin-left:10px;" id="themeBtn">🌙</button>
+            </div>
         </div>
 
         <!-- ===== PAGE: DASHBOARD ===== -->
         <div id="page-dashboard" class="page-content">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Jumla ya Mauzo</div>
-                    <div class="stat-value" id="totalSales">0 TSh</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Bidhaa Zilizouzwa</div>
-                    <div class="stat-value" id="totalProducts">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Idadi ya Mauzo</div>
-                    <div class="stat-value" id="totalSalesCount">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Jumla ya Faida (Agent)</div>
-                    <div class="stat-value" id="totalAgentProfit">0 TSh</div>
-                </div>
+                <div class="stat-card"><div class="stat-label">Jumla ya Mauzo</div><div class="stat-value" id="totalSales">0 TSh</div></div>
+                <div class="stat-card"><div class="stat-label">Bidhaa Zilizouzwa</div><div class="stat-value" id="totalProducts">0</div></div>
+                <div class="stat-card"><div class="stat-label">Idadi ya Mauzo</div><div class="stat-value" id="totalSalesCount">0</div></div>
+                <div class="stat-card"><div class="stat-label">Jumla ya Faida (Agent)</div><div class="stat-value" id="totalAgentProfit">0 TSh</div></div>
             </div>
 
             <div class="charts-grid">
-                <div class="chart-box">
-                    <div class="chart-title">Sales Trend</div>
-                    <canvas id="salesTrendChart"></canvas>
-                </div>
-                <div class="chart-box">
-                    <div class="chart-title">Sales by Staff</div>
-                    <canvas id="salesLocationChart"></canvas>
-                </div>
+                <div class="chart-box"><div class="chart-title">Sales Trend</div><canvas id="salesTrendChart"></canvas></div>
+                <div class="chart-box"><div class="chart-title">Sales by Staff</div><canvas id="salesLocationChart"></canvas></div>
             </div>
 
             <div class="charts-grid-2">
-                <div class="chart-box">
-                    <div class="chart-title">🧩 Sales By Category</div>
-                    <canvas id="salesCategoryChart"></canvas>
-                </div>
-                <div class="chart-box" style="display:flex; align-items:center; justify-content:center; min-height:200px;">
-                    <div style="text-align:center; color:#888;">
-                        <span style="font-size:48px;">📈</span>
-                        <p style="margin-top:10px; font-size:14px;">Ripoti za ziada</p>
-                        <p style="font-size:12px; color:#aaa;">Mauzo kwa wiki, mwezi, mwaka</p>
-                    </div>
-                </div>
+                <div class="chart-box"><div class="chart-title">🧩 Sales By Category</div><canvas id="salesCategoryChart"></canvas></div>
+                <div class="chart-box"><div class="chart-title">📊 Mauzo ya Mwezi</div><canvas id="monthlyChart"></canvas></div>
             </div>
         </div>
 
@@ -263,7 +195,6 @@
                     <p>Weka email ya staff unayetaka ku-activate</p>
                     <input type="email" id="activateEmail" placeholder="Ingiza email ya staff">
                     <button onclick="activateByEmail()">✅ ACTIVATE</button>
-                    <div id="activateMsg" class="msg"></div>
                 </div>
                 <h2>👥 Watumiaji Wote</h2>
                 <div id="usersList"><p style="text-align:center;padding:20px;">Loading...</p></div>
@@ -272,25 +203,22 @@
 
         <!-- ===== PAGE: SALES ===== -->
         <div id="page-sales" class="page-content" style="display:none;">
-            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow-x:auto;">
+            <div style="background:var(--card-bg); padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow-x:auto;">
                 <h2 style="color:#1a237e; font-size:18px; margin-bottom:15px;">Mauzo Yote</h2>
                 <div style="display:flex; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
                     <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">Jumla: <strong id="totalAll">0 TSh</strong></div>
                     <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">Bidhaa: <strong id="totalProductsAll">0</strong></div>
                     <div style="background:#f4f7fc; padding:10px 20px; border-radius:8px;">Mauzo: <strong id="totalSalesAll">0</strong></div>
                 </div>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                    <input type="text" id="salesSearch" class="search-input" placeholder="🔍 Tafuta bidhaa, staff..." oninput="filterTable('salesSearch', 'salesTable')">
+                    <button class="export-btn" onclick="exportTableToCSV('salesTable', 'sales_export')">📥 Export CSV</button>
+                </div>
                 <div id="allSalesTableWrapper">
-                    <table>
+                    <table id="salesTable">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Bidhaa</th>
-                                <th>Idadi</th>
-                                <th>Bei</th>
-                                <th>Jumla</th>
-                                <th>Staff</th>
-                                <th>Tarehe</th>
-                                <th>Kitendo</th>
+                                <th>#</th><th>Bidhaa</th><th>Idadi</th><th>Bei</th><th>Jumla</th><th>Staff</th><th>Tarehe</th><th>Kitendo</th>
                             </tr>
                         </thead>
                         <tbody id="salesTableBody">
@@ -311,9 +239,7 @@
                         📧 Tuma Invoice kwa Wote
                     </button>
                 </div>
-                <div id="agentStaffList">
-                    <p style="text-align:center;color:#999;">Loading...</p>
-                </div>
+                <div id="agentStaffList"><p style="text-align:center;color:#999;">Loading...</p></div>
             </div>
         </div>
 
@@ -329,8 +255,17 @@
                 <div id="shopStaffList"><p style="text-align:center;color:#999;">Loading...</p></div>
             </div>
         </div>
+
+        <!-- ===== PAGE: REPORTS ===== -->
+        <div id="page-reports" class="page-content" style="display:none;">
+            <div style="background:var(--card-bg); padding:20px; border-radius:12px;">
+                <h2 style="color:#1a237e; font-size:18px; margin-bottom:15px;">📊 Ripoti ya Mwezi</h2>
+                <div id="reportContent">Loading...</div>
+            </div>
+        </div>
     </div>
 
+    <script src="shared.js"></script>
     <script>
         const API_URL = window.location.origin;
         const token = localStorage.getItem('token');
@@ -338,35 +273,7 @@
         if (!token) window.location.href = 'login.html';
 
         // =========================================================
-        // HELPERS
-        // =========================================================
-        function escapeHtml(s) {
-            if (s === null || s === undefined) return '';
-            return String(s).replace(/[&<>"']/g, c => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            }[c]));
-        }
-
-        function fmt(n) {
-            return (n || 0).toLocaleString('sw-TZ');
-        }
-
-        async function apiFetch(path, options = {}) {
-            const res = await fetch(`${API_URL}${path}`, {
-                ...options,
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    ...(options.headers || {})
-                }
-            });
-            if (res.status === 401 || res.status === 403) {
-                if (res.status === 401) { logout(); return null; }
-            }
-            return res;
-        }
-
-        // =========================================================
-        // SIDEBAR
+        // PAGE NAVIGATION
         // =========================================================
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -377,16 +284,13 @@
             document.querySelector('.overlay').classList.remove('active');
         }
 
-        // =========================================================
-        // PAGE NAVIGATION
-        // =========================================================
         function showPage(page) {
             document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
             const target = document.getElementById('page-' + page);
             if (target) target.style.display = 'block';
 
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-            const pageMap = { 'dashboard': 0, 'users': 1, 'sales': 2, 'agent': 3, 'shop': 4 };
+            const pageMap = { 'dashboard': 0, 'users': 1, 'sales': 2, 'agent': 3, 'shop': 4, 'reports': 5 };
             const navLinks = document.querySelectorAll('.sidebar-nav a');
             if (pageMap[page] !== undefined && navLinks[pageMap[page]]) {
                 navLinks[pageMap[page]].classList.add('active');
@@ -398,7 +302,8 @@
                 'users': 'Watumiaji',
                 'sales': 'Mauzo Yote',
                 'agent': 'Agent System',
-                'shop': 'Shop System'
+                'shop': 'Shop System',
+                'reports': 'Ripoti'
             };
             document.getElementById('pageTitle').textContent = titles[page] || page;
 
@@ -407,17 +312,7 @@
             if (page === 'sales') loadAllSalesFull();
             if (page === 'agent') loadAgentData();
             if (page === 'shop') loadShopData();
-        }
-
-        // =========================================================
-        // LOGOUT
-        // =========================================================
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('staffType');
-            window.location.href = 'login.html';
+            if (page === 'reports') loadMonthlyReport();
         }
 
         // =========================================================
@@ -427,7 +322,8 @@
             try {
                 const res = await apiFetch('/sales/');
                 if (!res || !res.ok) return [];
-                return await res.json();
+                const data = await res.json();
+                return data.data || data;
             } catch (e) { return []; }
         }
 
@@ -441,13 +337,13 @@
                 if (!res) return;
                 const data = await res.json();
                 if (res.ok) {
-                    alert('✅ Mauzo yamefutwa!');
+                    showToast('✅ Mauzo yamefutwa!', 'success');
                     if (document.getElementById('page-dashboard').style.display !== 'none') loadDashboardData();
                     if (document.getElementById('page-sales').style.display !== 'none') loadAllSalesFull();
                 } else {
-                    alert('❌ ' + (data.detail || 'Failed to delete'));
+                    showToast('❌ ' + (data.detail || 'Failed to delete'), 'error');
                 }
-            } catch (e) { alert('❌ Error: ' + e.message); }
+            } catch (e) { showToast('❌ Error: ' + e.message, 'error'); }
         }
 
         // =========================================================
@@ -461,7 +357,6 @@
             document.getElementById('totalProducts').textContent = totalQty;
             document.getElementById('totalSalesCount').textContent = sales.length;
 
-            // Agent total profit
             try {
                 const res = await apiFetch('/agent/all');
                 if (res && res.ok) {
@@ -474,7 +369,6 @@
                 }
             } catch (e) {}
 
-            // Admin name
             try {
                 const res = await apiFetch('/users/me');
                 if (res && res.ok) {
@@ -483,8 +377,8 @@
                 }
             } catch (e) {}
 
-            // Charts
             renderCharts(sales);
+            loadMonthlyChart();
         }
 
         function renderCharts(sales) {
@@ -508,34 +402,18 @@
                     datasets: [{
                         label: 'Mauzo (TSh)',
                         data: data.length ? data : [0],
-                        borderColor: '#1a237e',
-                        backgroundColor: gradient,
-                        borderWidth: 2.5,
-                        pointBackgroundColor: '#1a237e',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        fill: true,
-                        tension: 0.4
+                        borderColor: '#1a237e', backgroundColor: gradient, borderWidth: 2.5,
+                        pointBackgroundColor: '#1a237e', pointBorderColor: '#fff', pointBorderWidth: 2,
+                        pointRadius: 4, pointHoverRadius: 7, fill: true, tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(26,35,126,0.9)',
-                            titleColor: '#fff', bodyColor: '#fff',
-                            cornerRadius: 8, padding: 10,
-                            callbacks: { label: c => 'TSh ' + c.parsed.y.toLocaleString('sw-TZ') }
-                        }
+                        tooltip: { backgroundColor: 'rgba(26,35,126,0.9)', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => 'TSh ' + c.parsed.y.toLocaleString('sw-TZ') } }
                     },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { callback: v => v.toLocaleString('sw-TZ'), font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } }
-                    },
-                    animation: { duration: 1000 }
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('sw-TZ'), font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } } }
                 }
             });
 
@@ -551,33 +429,11 @@
             if (window.locationChart) window.locationChart.destroy();
             window.locationChart = new Chart(ctx2, {
                 type: 'bar',
-                data: {
-                    labels: staffLabels.length ? staffLabels : ['Hakuna'],
-                    datasets: [{
-                        label: 'Mauzo',
-                        data: staffData.length ? staffData : [0],
-                        backgroundColor: 'rgba(26, 35, 126, 0.6)',
-                        borderColor: '#1a237e',
-                        borderWidth: 1.5,
-                        borderRadius: 4,
-                        barPercentage: 0.6
-                    }]
-                },
+                data: { labels: staffLabels.length ? staffLabels : ['Hakuna'], datasets: [{ label: 'Mauzo', data: staffData.length ? staffData : [0], backgroundColor: 'rgba(26, 35, 126, 0.6)', borderColor: '#1a237e', borderWidth: 1.5, borderRadius: 4, barPercentage: 0.6 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(26,35,126,0.9)',
-                            titleColor: '#fff', bodyColor: '#fff',
-                            callbacks: { label: c => 'TSh ' + c.parsed.y.toLocaleString('sw-TZ') }
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { callback: v => v.toLocaleString('sw-TZ'), font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } }
-                    },
-                    animation: { duration: 1000 }
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(26,35,126,0.9)', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => 'TSh ' + c.parsed.y.toLocaleString('sw-TZ') } } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('sw-TZ'), font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 45 } } }
                 }
             });
 
@@ -594,33 +450,37 @@
             if (window.categoryChart) window.categoryChart.destroy();
             window.categoryChart = new Chart(ctx3, {
                 type: 'pie',
-                data: {
-                    labels: catLabels.length ? catLabels : ['Hakuna Data'],
-                    datasets: [{
-                        data: catData.length ? catData : [1],
-                        backgroundColor: colors.slice(0, catLabels.length || 1),
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-                },
+                data: { labels: catLabels.length ? catLabels : ['Hakuna Data'], datasets: [{ data: catData.length ? catData : [1], backgroundColor: colors.slice(0, catLabels.length || 1), borderColor: '#fff', borderWidth: 2 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 10, font: { size: 10 }, boxWidth: 12, boxHeight: 12 } },
-                        tooltip: {
-                            backgroundColor: 'rgba(26,35,126,0.9)',
-                            titleColor: '#fff', bodyColor: '#fff',
-                            callbacks: {
-                                label: c => {
-                                    const total = c.dataset.data.reduce((a, b) => a + b, 0);
-                                    const pct = ((c.parsed / total) * 100).toFixed(1);
-                                    return c.label + ': ' + c.parsed.toLocaleString('sw-TZ') + ' TSh (' + pct + '%)';
-                                }
-                            }
-                        }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { padding: 10, font: { size: 10 }, boxWidth: 12, boxHeight: 12 } }, tooltip: { callbacks: { label: c => { const total = c.dataset.data.reduce((a, b) => a + b, 0); const pct = ((c.parsed / total) * 100).toFixed(1); return c.label + ': ' + c.parsed.toLocaleString('sw-TZ') + ' TSh (' + pct + '%)'; } } } }
                 }
             });
+        }
+
+        async function loadMonthlyChart() {
+            try {
+                const res = await apiFetch('/reports/monthly');
+                if (!res || !res.ok) return;
+                const data = await res.json();
+                const ctx = document.getElementById('monthlyChart').getContext('2d');
+                if (window.monthlyChart) window.monthlyChart.destroy();
+                window.monthlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Mauzo', 'Agent Total', 'Agent Profit'],
+                        datasets: [{
+                            label: 'TSh',
+                            data: [data.sales.total_amount, data.agent.total, data.agent.profit],
+                            backgroundColor: ['#1a237e', '#2e7d32', '#ff9800'],
+                        }],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'TSh ' + c.parsed.y.toLocaleString('sw-TZ') } } }
+                    }
+                });
+            } catch (e) {}
         }
 
         // =========================================================
@@ -639,18 +499,14 @@
                     container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">Hakuna watumiaji</p>';
                     return;
                 }
-                let html = `<table>
-                    <thead><tr>
-                        <th>#</th><th>Jina</th><th>Email</th><th>Role</th><th>Aina</th><th>Status</th><th>Vitendo</th>
-                    </tr></thead><tbody>`;
+                let html = `<table><thead><tr><th>#</th><th>Jina</th><th>Email</th><th>Role</th><th>Aina</th><th>Status</th><th>Vitendo</th></tr></thead><tbody>`;
                 users.forEach((u, i) => {
                     const isActive = u.is_active === 1;
                     const isAdmin = u.role.toLowerCase() === 'admin';
-                    const emailEsc = escapeHtml(u.email);
                     html += `<tr>
                         <td>${i + 1}</td>
                         <td><strong>${escapeHtml(u.name)}</strong></td>
-                        <td>${emailEsc}</td>
+                        <td>${escapeHtml(u.email)}</td>
                         <td>${escapeHtml(u.role)}</td>
                         <td>${escapeHtml(u.staff_type || 'shop')}</td>
                         <td><span class="user-status ${isActive ? 'active' : 'inactive'}">${isActive ? '✅ Active' : '❌ Inactive'}</span></td>
@@ -668,29 +524,23 @@
             }
         }
 
-        function showMessage(el, text, type) {
-            el.textContent = text;
-            el.className = 'msg ' + type;
-        }
-
         async function activateByEmail() {
             const email = document.getElementById('activateEmail').value.trim();
-            const msg = document.getElementById('activateMsg');
-            if (!email) { showMessage(msg, 'Tafadhali ingiza email!', 'error'); return; }
-            showMessage(msg, '⏳ Ina-activate...', 'info');
+            if (!email) { showToast('Tafadhali ingiza email!', 'error'); return; }
+            showToast('Ina-activate...', 'info');
             try {
                 const res = await apiFetch(`/users/activate_by_email?email=${encodeURIComponent(email)}`, { method: 'POST' });
                 if (!res) return;
                 const data = await res.json();
                 if (res.ok) {
-                    showMessage(msg, '✅ ' + data.message, 'success');
+                    showToast('✅ ' + data.message, 'success');
                     document.getElementById('activateEmail').value = '';
                     loadUsers();
                 } else {
-                    showMessage(msg, '❌ ' + (data.detail || 'Activation failed'), 'error');
+                    showToast('❌ ' + (data.detail || 'Activation failed'), 'error');
                 }
             } catch (e) {
-                showMessage(msg, '❌ ' + e.message, 'error');
+                showToast('❌ ' + e.message, 'error');
             }
         }
 
@@ -700,9 +550,9 @@
                 const res = await apiFetch(`/users/activate_by_email?email=${encodeURIComponent(email)}`, { method: 'POST' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert('✅ ' + data.message); loadUsers(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast('✅ ' + data.message, 'success'); loadUsers(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         async function deactivateUser(id) {
@@ -711,9 +561,9 @@
                 const res = await apiFetch(`/users/deactivate/${id}`, { method: 'PUT' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert('✅ User deactivated'); loadUsers(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast('✅ User deactivated', 'success'); loadUsers(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         async function deleteUser(userId, userName) {
@@ -722,9 +572,9 @@
                 const res = await apiFetch(`/users/${userId}`, { method: 'DELETE' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert(`✅ User "${userName}" amefutwa`); loadUsers(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast(`✅ User "${userName}" amefutwa`, 'success'); loadUsers(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         // =========================================================
@@ -734,13 +584,14 @@
             try {
                 const res = await apiFetch('/sales/');
                 if (!res || !res.ok) throw new Error('Failed to fetch sales');
-                const sales = await res.json();
+                const payload = await res.json();
+                const sales = payload.data || payload;
                 const tbody = document.getElementById('salesTableBody');
                 let totalAmount = 0, totalQty = 0;
                 sales.forEach(s => { totalAmount += s.total_amount || 0; totalQty += s.quantity || 0; });
                 document.getElementById('totalAll').textContent = fmt(totalAmount) + ' TSh';
                 document.getElementById('totalProductsAll').textContent = totalQty;
-                document.getElementById('totalSalesAll').textContent = sales.length;
+                document.getElementById('totalSalesAll').textContent = payload.total || sales.length;
 
                 if (!sales || sales.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#999;">📭 Hakuna mauzo</td></tr>`;
@@ -748,7 +599,6 @@
                 }
                 let html = '';
                 sales.forEach((s, i) => {
-                    const date = s.date ? escapeHtml(s.date) : '-';
                     html += `<tr>
                         <td>${i + 1}</td>
                         <td><strong>${escapeHtml(s.product_name || '-')}</strong></td>
@@ -756,7 +606,7 @@
                         <td>${fmt(s.price)} TSh</td>
                         <td style="font-weight:bold; color:#2e7d32;">${fmt(s.total_amount)} TSh</td>
                         <td><span style="background:#e8eaf6; padding:2px 10px; border-radius:12px; color:#1a237e; font-size:11px;">👤 ${escapeHtml(s.user_name || ('Staff #' + s.user_id))}</span></td>
-                        <td style="font-size:12px;">${date}</td>
+                        <td style="font-size:12px;">${escapeHtml(s.date || '-')}</td>
                         <td><button onclick="deleteSale(${s.id})" style="background:#d32f2f; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️ Futa</button></td>
                     </tr>`;
                 });
@@ -770,6 +620,7 @@
         // AGENT DATA
         // =========================================================
         async function loadAgentData() {
+            showLoading('agentStaffList');
             try {
                 const res = await apiFetch('/agent/all');
                 if (!res || !res.ok) throw new Error('Failed to load agent data');
@@ -799,6 +650,10 @@
                                     <button onclick='sendInvoice(${agent.staff_id}, ${nameJson})'
                                             style="background:#1a237e; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px;">
                                         📧 Invoice
+                                    </button>
+                                    <button onclick='downloadInvoicePDF(${agent.staff_id}, ${nameJson})'
+                                            style="background:#2e7d32; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px;">
+                                        📥 PDF
                                     </button>
                                     <button onclick='deleteCapitalOnly(${agent.staff_id}, ${nameJson})'
                                             style="background:#ff9800; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px;">
@@ -988,6 +843,31 @@
         }
 
         // =========================================================
+        // REPORTS
+        // =========================================================
+        async function loadMonthlyReport() {
+            try {
+                const res = await apiFetch('/reports/monthly');
+                if (!res || !res.ok) {
+                    document.getElementById('reportContent').innerHTML = '<p style="color:red;">❌ Error loading report</p>';
+                    return;
+                }
+                const data = await res.json();
+                let html = `
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-label">Mauzo (Mwezi)</div><div class="stat-value">${fmt(data.sales.total_amount)} TSh</div></div>
+                        <div class="stat-card"><div class="stat-label">Bidhaa</div><div class="stat-value">${data.sales.total_quantity}</div></div>
+                        <div class="stat-card"><div class="stat-label">Idadi ya Mauzo</div><div class="stat-value">${data.sales.count}</div></div>
+                        <div class="stat-card"><div class="stat-label">Faida ya Agent</div><div class="stat-value ${data.agent.profit >= 0 ? 'profit' : 'loss'}">${fmt(data.agent.profit)} TSh</div></div>
+                    </div>
+                `;
+                document.getElementById('reportContent').innerHTML = html;
+            } catch (e) {
+                document.getElementById('reportContent').innerHTML = '<p style="color:red;">❌ Error: ' + e.message + '</p>';
+            }
+        }
+
+        // =========================================================
         // DELETE FUNCTIONS
         // =========================================================
         async function deleteSingleAgentData(dataId) {
@@ -996,9 +876,9 @@
                 const res = await apiFetch(`/agent/delete/${dataId}`, { method: 'DELETE' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert('✅ ' + data.message); loadAgentData(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast('✅ ' + data.message, 'success'); loadAgentData(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         async function deleteAllAgentData(staffId, staffName) {
@@ -1007,9 +887,9 @@
                 const res = await apiFetch(`/agent/delete_by_staff/${staffId}`, { method: 'DELETE' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert('✅ ' + data.message); loadAgentData(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast('✅ ' + data.message, 'success'); loadAgentData(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         async function deleteAgentDataByDate(staffId, dateKey) {
@@ -1018,9 +898,9 @@
                 const res = await apiFetch(`/agent/delete_by_staff_and_date/${staffId}?date=${dateKey}`, { method: 'DELETE' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert('✅ ' + data.message); loadAgentData(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast('✅ ' + data.message, 'success'); loadAgentData(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         async function deleteCapitalOnly(staffId, staffName) {
@@ -1029,9 +909,9 @@
                 const res = await apiFetch(`/agent/delete_capital/${staffId}`, { method: 'DELETE' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) { alert('✅ ' + data.message); loadAgentData(); }
-                else { alert('❌ ' + (data.detail || 'Failed')); }
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) { showToast('✅ ' + data.message, 'success'); loadAgentData(); }
+                else { showToast('❌ ' + (data.detail || 'Failed'), 'error'); }
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
         }
 
         // =========================================================
@@ -1043,9 +923,32 @@
                 const res = await apiFetch(`/agent/send_invoice/${staffId}`, { method: 'POST' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) alert('✅ ' + data.message);
-                else alert('❌ ' + (data.detail || 'Failed'));
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) showToast('✅ ' + data.message, 'success');
+                else showToast('❌ ' + (data.detail || 'Failed'), 'error');
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
+        }
+
+        async function downloadInvoicePDF(staffId, staffName) {
+            try {
+                const res = await fetch(`${API_URL}/agent/invoice/${staffId}/pdf`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) {
+                    const data = await res.json();
+                    showToast('❌ ' + (data.detail || 'Failed to generate PDF'), 'error');
+                    return;
+                }
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `invoice_${staffName.replace(/\s+/g, '_')}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showToast('✅ PDF downloaded!', 'success');
+            } catch (e) {
+                showToast('❌ Error: ' + e.message, 'error');
+            }
         }
 
         async function sendInvoiceToAll(ev) {
@@ -1057,9 +960,9 @@
                 const res = await apiFetch('/agent/send_invoice_all', { method: 'POST' });
                 if (!res) return;
                 const data = await res.json();
-                if (res.ok) alert('✅ ' + data.message);
-                else alert('❌ ' + (data.detail || 'Failed'));
-            } catch (e) { alert('❌ ' + e.message); }
+                if (res.ok) showToast('✅ ' + data.message, 'success');
+                else showToast('❌ ' + (data.detail || 'Failed'), 'error');
+            } catch (e) { showToast('❌ ' + e.message, 'error'); }
             finally {
                 if (btn) { btn.disabled = false; btn.textContent = original; }
             }
