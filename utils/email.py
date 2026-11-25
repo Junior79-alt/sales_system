@@ -1,7 +1,6 @@
 import os
 import tempfile
 from datetime import datetime, timezone
-from email.mime.application import MIMEApplication
 import sendgrid
 from sendgrid.helpers.mail import Mail, Email, To, Attachment, FileContent, FileName, FileType, Disposition
 from config import Config
@@ -154,50 +153,27 @@ def send_reset_password_email(email, name):
     return send_email(email, subject, body)
 
 
-# ============ INVOICE EMAIL (PDF ATTACHMENT) ============
+# ============ INVOICE EMAIL (PDF ATTACHMENT ONLY) ============
 
 def send_invoice_email(to_email, name, data):
     """
-    ✅ Tuma invoice kama PDF attachment.
+    ✅ Tuma invoice kama PDF attachment PEKEE.
+    Email body ni ufupi — PDF ina maelezo yote.
     """
     subject = f"📊 Monthly Invoice - {data['month']} - Sales System"
 
-    # Build email body (short HTML summary)
+    # ✅ Body FUPI — PDF ina maelezo yote
     body = f"""
     <h2 style="color:#1a237e;">📊 Monthly Invoice — {data['month']}</h2>
     <p>Habari <strong>{name}</strong>,</p>
     <p>Invoice yako ya mwezi <strong>{data['month']}</strong> imeambatishwa kama PDF.</p>
-
-    <table style="width:100%; margin:15px 0; background:#f8f9fa; padding:15px; border-radius:8px;">
-        <tr>
-            <td>💰 Total Cash</td><td style="text-align:right;"><strong>{data['total_cash']:,.0f} TSh</strong></td>
-        </tr>
-        <tr>
-            <td>📱 Total Float</td><td style="text-align:right;"><strong>{data['total_float']:,.0f} TSh</strong></td>
-        </tr>
-        <tr>
-            <td>💳 Total Lipa</td><td style="text-align:right;"><strong>{data['total_lipa']:,.0f} TSh</strong></td>
-        </tr>
-        <tr>
-            <td>📊 Grand Total</td><td style="text-align:right;"><strong>{data['total_all']:,.0f} TSh</strong></td>
-        </tr>
-        <tr>
-            <td>💼 Initial Capital</td><td style="text-align:right;"><strong>{data['initial_capital']:,.0f} TSh</strong></td>
-        </tr>
-        <tr style="background:#e8eaf6;">
-            <td><strong>📈 Monthly Profit</strong></td>
-            <td style="text-align:right; color:{'#2e7d32' if data['monthly_profit'] >= 0 else '#d32f2f'};">
-                <strong>{data['monthly_profit']:,.0f} TSh</strong>
-            </td>
-        </tr>
-    </table>
-
-    <p style="font-size:13px; color:#666;">
-        📎 Tafadhali angalia PDF attachment kwa maelezo kamili ya kila siku.
+    <p>Tafadhali fungua PDF attachment kuona maelezo kamili.</p>
+    <p style="font-size:13px; color:#666; margin-top:20px;">
+        📎 <strong>Attachment:</strong> invoice_{name.replace(' ', '_')}_{data['month'].replace(' ', '_')}.pdf
     </p>
     """
 
-    # ✅ Generate PDF kwenye temp file
+    # Generate PDF kwenye temp file
     tmp_pdf = None
     try:
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
@@ -205,16 +181,16 @@ def send_invoice_email(to_email, name, data):
         tmp.close()
 
         generate_invoice_pdf(data, tmp_pdf)
-        print(f"PDF generated: {tmp_pdf}")
+        print(f"✅ PDF generated: {tmp_pdf}")
 
-        # ✅ Tuma email na PDF attachment
+        # Tuma email na PDF attachment
         result = send_email(to_email, subject, body, attachment_path=tmp_pdf)
         return result
     except Exception as e:
         print(f"❌ Invoice PDF error: {e}")
         return False
     finally:
-        # ✅ Futa temp file baada ya kutuma
+        # Futa temp file baada ya kutuma
         if tmp_pdf and os.path.exists(tmp_pdf):
             try:
                 os.unlink(tmp_pdf)

@@ -17,7 +17,7 @@ from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 def generate_invoice_pdf(invoice_data: dict, output_path: str) -> str:
     """
     Generate PDF invoice for an agent.
-    
+
     Args:
         invoice_data: dict with keys:
             - staff_name, staff_email, month, days_worked
@@ -25,17 +25,17 @@ def generate_invoice_pdf(invoice_data: dict, output_path: str) -> str:
             - initial_capital, monthly_profit
             - daily_data: list of dicts
         output_path: where to save PDF
-    
+
     Returns:
         output_path
     """
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,
-        rightMargin=15 * mm,
-        leftMargin=15 * mm,
-        topMargin=15 * mm,
-        bottomMargin=15 * mm,
+        rightMargin=25 * mm,
+        leftMargin=25 * mm,
+        topMargin=25 * mm,
+        bottomMargin=25 * mm,
     )
 
     elements = []
