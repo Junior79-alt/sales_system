@@ -32,10 +32,10 @@ def generate_invoice_pdf(invoice_data: dict, output_path: str) -> str:
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,
-        rightMargin=25 * mm,
-        leftMargin=25 * mm,
-        topMargin=25 * mm,
-        bottomMargin=25 * mm,
+        rightMargin=15 * mm,
+        leftMargin=15 * mm,
+        topMargin=20 * mm,
+        bottomMargin=15 * mm,
     )
 
     elements = []
@@ -45,7 +45,7 @@ def generate_invoice_pdf(invoice_data: dict, output_path: str) -> str:
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=22,
+        fontSize=30,
         textColor=colors.HexColor('#1a237e'),
         alignment=TA_CENTER,
         spaceAfter=6,
@@ -68,7 +68,7 @@ def generate_invoice_pdf(invoice_data: dict, output_path: str) -> str:
     )
 
     # ============ HEADER ============
-    elements.append(Paragraph("📊 SALES SYSTEM", title_style))
+    elements.append(Paragraph("📊 MAHANGA CASH POINT", title_style))
     elements.append(Paragraph(
         f"Monthly Invoice — {invoice_data['month']}",
         subtitle_style

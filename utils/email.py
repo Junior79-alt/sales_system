@@ -166,8 +166,7 @@ def send_invoice_email(to_email, name, data):
     body = f"""
     <h2 style="color:#1a237e;">📊 Monthly Invoice — {data['month']}</h2>
     <p>Habari <strong>{name}</strong>,</p>
-    <p>Invoice yako ya mwezi <strong>{data['month']}</strong> imeambatishwa kama PDF.</p>
-    <p>Tafadhali fungua PDF attachment kuona maelezo kamili.</p>
+    <p>Invoice yako ya mwezi <strong>{data['month']}</strong> tafadhari pakuwa kuona taarifa kamili .</p>
     <p style="font-size:13px; color:#666; margin-top:20px;">
         📎 <strong>Attachment:</strong> invoice_{name.replace(' ', '_')}_{data['month'].replace(' ', '_')}.pdf
     </p>
