@@ -24,12 +24,10 @@ def monthly_report(
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    """✅ Ripoti ya mwezi — admin pekee."""
     now = utcnow()
     year = year or now.year
     month = month or now.month
 
-    # Sales
     sales = db.query(models.Sale).filter(
         extract('year', models.Sale.date) == year,
         extract('month', models.Sale.date) == month,
@@ -47,7 +45,6 @@ def monthly_report(
         staff_name = s.user.name if s.user else f"Staff #{s.user_id}"
         by_staff[staff_name] += s.total_amount
 
-    # Agent
     agent_data = db.query(models.AgentData).filter(
         extract('year', models.AgentData.date) == year,
         extract('month', models.AgentData.date) == month,
@@ -78,7 +75,6 @@ def export_sales_csv(
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    """✅ Export sales to CSV — admin pekee."""
     sales = db.query(models.Sale).order_by(models.Sale.date.desc()).all()
 
     output = StringIO()
@@ -87,11 +83,7 @@ def export_sales_csv(
 
     for s in sales:
         writer.writerow([
-            s.id,
-            s.product_name,
-            s.quantity,
-            s.price,
-            s.total_amount,
+            s.id, s.product_name, s.quantity, s.price, s.total_amount,
             s.user.name if s.user else "Unknown",
             s.date.strftime("%Y-%m-%d %H:%M"),
         ])
@@ -111,7 +103,6 @@ def get_audit_log(
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    """✅ Audit log — admin pekee."""
     logs = db.query(models.AuditLog).order_by(
         models.AuditLog.created_at.desc()
     ).offset(skip).limit(limit).all()
