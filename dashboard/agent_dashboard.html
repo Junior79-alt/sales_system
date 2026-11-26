@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent Dashboard</title>
+    <link rel="stylesheet" href="shared.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background:#f0f2f5; padding:15px; }
+        body { background:var(--bg-color); padding:15px; color:var(--text-color); }
         .container { max-width:1200px; margin:0 auto; }
 
         /* ===== HEADER ===== */
@@ -41,12 +42,6 @@
         }
         .capital-form button:hover { background:#bf360c; }
         .capital-form button:disabled { opacity:0.6; cursor:not-allowed; }
-        .msg {
-            margin-top:10px; padding:10px; border-radius:6px;
-            font-weight:bold; display:none; font-size:14px;
-        }
-        .msg.success { display:block; background:#c8e6c9; color:#1b5e20; }
-        .msg.error { display:block; background:#ffcdd2; color:#b71c1c; }
 
         /* ===== CAPITAL INFO ===== */
         .capital-info {
@@ -57,9 +52,9 @@
 
         /* ===== CARD ===== */
         .card {
-            background:white; border-radius:12px;
+            background:var(--card-bg); border-radius:12px;
             box-shadow:0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom:20px; overflow:hidden; border:1px solid #e0e0e0;
+            margin-bottom:20px; overflow:hidden; border:1px solid var(--border-color);
         }
         .card-header {
             color:white; padding:14px 20px; display:flex;
@@ -70,6 +65,8 @@
         .card-header.float:hover { background:linear-gradient(135deg,#1b5e20,#0d3d12); }
         .card-header.history { background:linear-gradient(135deg,#1a237e,#0d47a1); }
         .card-header.history:hover { background:linear-gradient(135deg,#0d47a1,#0a1a5e); }
+        .card-header.notes { background:linear-gradient(135deg,#9c27b0,#6a1b9a); }
+        .card-header.notes:hover { background:linear-gradient(135deg,#6a1b9a,#4a148c); }
         .card-header h3 { font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
         .card-header h3 span { font-size:20px; }
         .toggle-icon { font-size:22px; transition:transform 0.3s ease; }
@@ -114,12 +111,20 @@
         .btn-submit:active { transform:scale(0.98); }
         .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
 
-        /* ===== HISTORY TABLE ===== */
+        /* ===== TABLE ===== */
         table { width:100%; border-collapse:collapse; font-size:12px; min-width:700px; }
         th { background:#1a237e; color:white; padding:8px 10px; text-align:left; font-size:11px; white-space:nowrap; }
-        td { padding:6px 10px; border-bottom:1px solid #eee; font-size:12px; color:#333; }
-        tr:hover { background:#f5f5f5; }
+        td { padding:6px 10px; border-bottom:1px solid var(--border-color); font-size:12px; color:var(--text-color); }
+        tr:hover { background:rgba(26,35,126,0.05); }
         .no-data { text-align:center; padding:30px; color:#999; font-size:14px; }
+
+        /* ===== NOTES ===== */
+        .note-item {
+            background:#f3e5f5; padding:12px 16px; border-radius:8px;
+            margin-bottom:10px; border-left:4px solid #9c27b0;
+        }
+        .note-item p { margin:0 0 6px 0; color:var(--text-color); font-size:14px; }
+        .note-item small { color:#888; font-size:11px; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width:768px) {
@@ -163,7 +168,6 @@
                 <input type="number" id="capitalAmount" placeholder="Ingiza kiasi cha mtaji (TSh)" min="1">
                 <button id="capitalBtn" onclick="setCapital()">WEKA MTAJI</button>
             </div>
-            <div id="capitalMsg" class="msg"></div>
         </div>
 
         <!-- CAPITAL INFO -->
@@ -171,6 +175,17 @@
             💰 <strong>Mtaji Mwanzo:</strong> <span id="displayInitialCapital">0</span> TSh &nbsp;|&nbsp;
             📊 <strong>Mtaji Sasa:</strong> <span id="displayCurrentCapital">0</span> TSh &nbsp;|&nbsp;
             📈 <strong>Jumla Faida:</strong> <span id="displayProfit" style="color:#2e7d32; font-weight:bold;">0</span> TSh
+        </div>
+
+        <!-- ===== NOTES FROM ADMIN (#8) ===== -->
+        <div id="notesSection" class="card" style="display:none;">
+            <div class="card-header notes" onclick="toggleCard('notes')">
+                <h3><span>📝</span> Notes kutoka Admin</h3>
+                <span class="toggle-icon" id="notesIcon">▼</span>
+            </div>
+            <div class="card-body" id="notesBody">
+                <div id="notesList"><p class="no-data">Loading...</p></div>
+            </div>
         </div>
 
         <!-- FLOAT CARD -->
@@ -233,7 +248,6 @@
                 </div>
 
                 <button class="btn-submit" id="submitBtn" onclick="submitData()">💾 HIFADHI</button>
-                <div id="dataMsg" class="msg"></div>
             </div>
         </div>
 
@@ -249,6 +263,7 @@
         </div>
     </div>
 
+    <script src="shared.js"></script>
     <script>
         const API_URL = window.location.origin;
         const token = localStorage.getItem('token');
@@ -256,66 +271,34 @@
         if (!token) window.location.href = 'login.html';
 
         // ============ HELPERS ============
-        function escapeHtml(s) {
-            if (s === null || s === undefined) return '';
-            return String(s).replace(/[&<>"']/g, c => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            }[c]));
-        }
+        // escapeHtml, fmt, showToast, apiFetch, toggleTheme, logout zipo kwenye shared.js
 
-        function fmt(n) {
-            return (n || 0).toLocaleString('sw-TZ');
-        }
-
-        function showMsg(el, text, type) {
-            el.textContent = text;
-            el.className = 'msg ' + type;
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('staffType');
-            window.location.href = 'login.html';
-        }
-
-        async function apiFetch(path, options = {}) {
-            const res = await fetch(`${API_URL}${path}`, {
-                ...options,
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    ...(options.headers || {})
-                }
-            });
-            if (res.status === 401) { logout(); return null; }
-            return res;
-        }
-
-        // ============ TOGGLE ============
+        // ============ TOGGLE CARDS ============
         function toggleCard(which) {
             if (which === 'float') {
                 document.getElementById('floatBody').classList.toggle('open');
                 document.getElementById('floatIcon').classList.toggle('open');
-            } else {
+            } else if (which === 'history') {
                 document.getElementById('historyBody').classList.toggle('open');
                 document.getElementById('historyIcon').classList.toggle('open');
+            } else if (which === 'notes') {
+                document.getElementById('notesBody').classList.toggle('open');
+                document.getElementById('notesIcon').classList.toggle('open');
             }
         }
 
         // ============ SET CAPITAL ============
         async function setCapital() {
             const amount = parseFloat(document.getElementById('capitalAmount').value);
-            const msg = document.getElementById('capitalMsg');
             const btn = document.getElementById('capitalBtn');
 
             if (!amount || amount <= 0) {
-                showMsg(msg, '❌ Tafadhali ingiza kiasi sahihi cha mtaji!', 'error');
+                showToast('❌ Tafadhali ingiza kiasi sahihi cha mtaji!', 'error');
                 return;
             }
 
             btn.disabled = true;
-            showMsg(msg, '⏳ Inaweka mtaji...', 'success');
+            showToast('⏳ Inaweka mtaji...', 'info');
 
             try {
                 const res = await apiFetch(`/agent/set_capital?capital_amount=${amount}`, { method: 'POST' });
@@ -323,14 +306,14 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showMsg(msg, '✅ ' + data.message, 'success');
+                    showToast('✅ ' + data.message, 'success');
                     document.getElementById('capitalAmount').value = '';
                     loadMyData();
                 } else {
-                    showMsg(msg, '❌ ' + (data.detail || 'Failed'), 'error');
+                    showToast('❌ ' + (data.detail || 'Failed'), 'error');
                 }
             } catch (e) {
-                showMsg(msg, '❌ Error: ' + e.message, 'error');
+                showToast('❌ Error: ' + e.message, 'error');
             } finally {
                 btn.disabled = false;
             }
@@ -351,16 +334,15 @@
             };
 
             const hasAny = Object.values(vals).some(v => v > 0);
-            const msg = document.getElementById('dataMsg');
             const btn = document.getElementById('submitBtn');
 
             if (!hasAny) {
-                showMsg(msg, '❌ Tafadhali jaza angalau sehemu moja!', 'error');
+                showToast('❌ Tafadhali jaza angalau sehemu moja!', 'error');
                 return;
             }
 
             btn.disabled = true;
-            showMsg(msg, '⏳ Inahifadhi...', 'success');
+            showToast('⏳ Inahifadhi...', 'info');
 
             try {
                 const params = new URLSearchParams(vals).toString();
@@ -369,27 +351,25 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showMsg(msg, '✅ ' + data.message, 'success');
-                    // Clear fields
+                    showToast('✅ ' + data.message, 'success');
                     ['cash','floatHalotel','floatVoda','floatAirtel','floatTigo',
                      'lipaHalotel','lipaVoda','lipaAirtel','lipaTigo'].forEach(id => {
                         document.getElementById(id).value = '';
                     });
-                    // Close card
                     document.getElementById('floatBody').classList.remove('open');
                     document.getElementById('floatIcon').classList.remove('open');
                     loadMyData();
                 } else {
-                    showMsg(msg, '❌ ' + (data.detail || 'Failed'), 'error');
+                    showToast('❌ ' + (data.detail || 'Failed'), 'error');
                 }
             } catch (e) {
-                showMsg(msg, '❌ Error: ' + e.message, 'error');
+                showToast('❌ Error: ' + e.message, 'error');
             } finally {
                 btn.disabled = false;
             }
         }
 
-        // ============ LOAD DATA ============
+        // ============ LOAD MY DATA ============
         async function loadMyData() {
             try {
                 const res = await apiFetch('/agent/my_data');
@@ -419,53 +399,88 @@
                 const container = document.getElementById('historyList');
                 if (!data.history || data.history.length === 0) {
                     container.innerHTML = '<p class="no-data">Hakuna historia bado</p>';
-                    return;
+                } else {
+                    let html = `<table>
+                        <thead>
+                            <tr>
+                                <th>#</th><th>Tarehe</th><th>Cash</th>
+                                <th>Hal F</th><th>Voda F</th><th>Airtel F</th><th>Tigo F</th><th>Jumla F</th>
+                                <th>Hal L</th><th>Voda L</th><th>Airtel L</th><th>Tigo L</th><th>Jumla L</th>
+                                <th>Jumla</th><th>Faida</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                    data.history.forEach((item, i) => {
+                        const totalFloat = (item.float_halotel || 0) + (item.float_voda || 0) + (item.float_airtel || 0) + (item.float_tigo || 0);
+                        const totalLipa = (item.lipa_halotel || 0) + (item.lipa_voda || 0) + (item.lipa_airtel || 0) + (item.lipa_tigo || 0);
+                        const profitColor = (item.daily_profit || 0) >= 0 ? '#2e7d32' : '#d32f2f';
+
+                        html += `<tr>
+                            <td>${i + 1}</td>
+                            <td>${escapeHtml(item.date)}</td>
+                            <td>${fmt(item.cash)}</td>
+                            <td>${fmt(item.float_halotel)}</td>
+                            <td>${fmt(item.float_voda)}</td>
+                            <td>${fmt(item.float_airtel)}</td>
+                            <td>${fmt(item.float_tigo)}</td>
+                            <td><strong>${fmt(totalFloat)}</strong></td>
+                            <td>${fmt(item.lipa_halotel)}</td>
+                            <td>${fmt(item.lipa_voda)}</td>
+                            <td>${fmt(item.lipa_airtel)}</td>
+                            <td>${fmt(item.lipa_tigo)}</td>
+                            <td><strong>${fmt(totalLipa)}</strong></td>
+                            <td><strong style="color:#1a237e;">${fmt(item.daily_total)}</strong></td>
+                            <td><strong style="color:${profitColor};">${fmt(item.daily_profit)}</strong></td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
                 }
 
-                let html = `<table>
-                    <thead>
-                        <tr>
-                            <th>#</th><th>Tarehe</th><th>Cash</th>
-                            <th>Hal F</th><th>Voda F</th><th>Airtel F</th><th>Tigo F</th><th>Jumla F</th>
-                            <th>Hal L</th><th>Voda L</th><th>Airtel L</th><th>Tigo L</th><th>Jumla L</th>
-                            <th>Jumla</th><th>Faida</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+                // ✅ Load notes
+                loadMyNotes();
 
-                data.history.forEach((item, i) => {
-                    const totalFloat = (item.float_halotel || 0) + (item.float_voda || 0) + (item.float_airtel || 0) + (item.float_tigo || 0);
-                    const totalLipa = (item.lipa_halotel || 0) + (item.lipa_voda || 0) + (item.lipa_airtel || 0) + (item.lipa_tigo || 0);
-                    const profitColor = (item.daily_profit || 0) >= 0 ? '#2e7d32' : '#d32f2f';
-
-                    html += `<tr>
-                        <td>${i + 1}</td>
-                        <td>${escapeHtml(item.date)}</td>
-                        <td>${fmt(item.cash)}</td>
-                        <td>${fmt(item.float_halotel)}</td>
-                        <td>${fmt(item.float_voda)}</td>
-                        <td>${fmt(item.float_airtel)}</td>
-                        <td>${fmt(item.float_tigo)}</td>
-                        <td><strong>${fmt(totalFloat)}</strong></td>
-                        <td>${fmt(item.lipa_halotel)}</td>
-                        <td>${fmt(item.lipa_voda)}</td>
-                        <td>${fmt(item.lipa_airtel)}</td>
-                        <td>${fmt(item.lipa_tigo)}</td>
-                        <td><strong>${fmt(totalLipa)}</strong></td>
-                        <td><strong style="color:#1a237e;">${fmt(item.daily_total)}</strong></td>
-                        <td><strong style="color:${profitColor};">${fmt(item.daily_profit)}</strong></td>
-                    </tr>`;
-                });
-
-                html += '</tbody></table>';
-                container.innerHTML = html;
             } catch (e) {
                 console.error(e);
                 document.getElementById('historyList').innerHTML = '<p class="no-data" style="color:red;">❌ Error loading data</p>';
             }
         }
 
-        // ============ CHECK STAFF TYPE ============
+        // ============ LOAD MY NOTES (#8) ============
+        async function loadMyNotes() {
+            try {
+                const userId = localStorage.getItem('userId');
+                if (!userId) return;
+                const res = await apiFetch('/agent/notes/' + userId);
+                if (!res || !res.ok) return;
+                const notes = await res.json();
+
+                const section = document.getElementById('notesSection');
+                const container = document.getElementById('notesList');
+
+                if (!notes || notes.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                let html = '';
+                notes.forEach(n => {
+                    html += `
+                        <div class="note-item">
+                            <p>${escapeHtml(n.note)}</p>
+                            <small>👤 ${escapeHtml(n.author)} • ${escapeHtml(n.created_at)}</small>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Load notes error:', e);
+            }
+        }
+
+        // ============ INIT ============
         async function init() {
             try {
                 const res = await apiFetch('/users/me');

@@ -4,757 +4,282 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sales System</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a237e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        html, body {
-            min-height: 100vh;
-            height: 100vh;
-            width: 100%;
-            overflow: hidden;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        html,body {
+            min-height:100vh; height:100vh; width:100%; overflow:hidden;
+            background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+            display:flex; justify-content:center; align-items:center;
+            position:fixed; top:0; left:0;
         }
 
-        /* ===== DECORATIVE CIRCLES ===== */
-        .circle {
-            position: fixed;
-            border-radius: 50%;
-            pointer-events: none;
-            opacity: 0.15;
-        }
-        .circle-1 {
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.5), transparent 70%);
-            top: -200px;
-            right: -100px;
-        }
-        .circle-2 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 107, 107, 0.3), transparent 70%);
-            bottom: -150px;
-            left: -100px;
-        }
-        .circle-3 {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(255, 217, 61, 0.2), transparent 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+        .circle { position:fixed; border-radius:50%; pointer-events:none; opacity:0.15; }
+        .circle-1 { width:500px; height:500px; background:radial-gradient(circle,rgba(108,92,231,0.5),transparent 70%); top:-200px; right:-100px; }
+        .circle-2 { width:400px; height:400px; background:radial-gradient(circle,rgba(255,107,107,0.3),transparent 70%); bottom:-150px; left:-100px; }
+        .circle-3 { width:200px; height:200px; background:radial-gradient(circle,rgba(255,217,61,0.2),transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); }
 
-        /* ===== GLASS CARD ===== */
         .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 45px 40px 35px 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            position: relative;
-            z-index: 10;
-            transition: none;
-            margin: 20px;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border-radius:24px;
+            padding:45px 40px 35px 40px;
+            width:100%;
+            max-width:420px;
+            box-shadow:0 8px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1);
+            border:1px solid rgba(255,255,255,0.08);
+            position:relative;
+            z-index:10;
+            margin:20px;
         }
 
-        /* ===== LOGO ===== */
-        .logo {
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        .logo span {
-            font-size: 52px;
-            display: block;
-        }
+        .logo { text-align:center; margin-bottom:5px; }
+        .logo span { font-size:52px; display:block; }
 
         .glass-card h1 {
-            text-align: center;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 3px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            letter-spacing: 0.5px;
+            text-align:center;
+            color:#ffffff;
+            font-size:28px;
+            font-weight:700;
+            margin-bottom:3px;
+            text-shadow:0 2px 10px rgba(0,0,0,0.2);
+            letter-spacing:0.5px;
         }
         .glass-card .subtitle {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-            margin-bottom: 28px;
-            font-weight: 300;
-            letter-spacing: 0.5px;
+            text-align:center;
+            color:rgba(255,255,255,0.6);
+            font-size:14px;
+            margin-bottom:28px;
+            font-weight:300;
+            letter-spacing:0.5px;
         }
 
-        /* ===== INPUT FIELDS - BACKGROUND DARK ===== */
         .glass-card input {
-            width: 100%;
-            padding: 14px 18px;
-            margin: 6px 0;
-            background: rgba(0, 0, 0, 0.4) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            font-size: 16px;
-            color: #ffffff !important;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            outline: none;
+            width:100%;
+            padding:14px 18px;
+            margin:6px 0;
+            background:rgba(0,0,0,0.4) !important;
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:12px;
+            font-size:16px;
+            color:#ffffff !important;
+            box-sizing:border-box;
+            transition:all 0.3s ease;
+            outline:none;
         }
-
-        .glass-card input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-            font-weight: 300;
-        }
-
+        .glass-card input::placeholder { color:rgba(255,255,255,0.5); font-weight:300; }
         .glass-card input:focus {
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(0, 0, 0, 0.5) !important;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+            border-color:rgba(255,255,255,0.4);
+            background:rgba(0,0,0,0.5) !important;
+            box-shadow:0 0 20px rgba(255,255,255,0.03);
         }
-
         .glass-card input:-webkit-autofill {
-            -webkit-box-shadow: 0 0 0 30px rgba(0, 0, 0, 0.5) inset !important;
-            -webkit-text-fill-color: #ffffff !important;
-            border-color: rgba(255, 255, 255, 0.2);
+            -webkit-box-shadow:0 0 0 30px rgba(0,0,0,0.5) inset !important;
+            -webkit-text-fill-color:#ffffff !important;
+            border-color:rgba(255,255,255,0.2);
         }
 
-        /* ===== FORGOT LINK ===== */
-        .forgot-link {
-            text-align: right;
-            margin-top: 2px;
-            margin-bottom: 18px;
-        }
+        .forgot-link { text-align:right; margin-top:2px; margin-bottom:18px; }
         .forgot-link a {
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-size: 13px;
-            transition: color 0.3s ease;
-            font-weight: 300;
+            color:rgba(255,255,255,0.5);
+            text-decoration:none;
+            font-size:13px;
+            transition:color 0.3s ease;
+            font-weight:300;
         }
-        .forgot-link a:hover {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: underline;
-        }
+        .forgot-link a:hover { color:rgba(255,255,255,0.9); text-decoration:underline; }
 
-        /* ===== LOGIN BUTTON ===== */
         .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-            color: #1a1a2e;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            letter-spacing: 0.5px;
+            width:100%;
+            padding:14px;
+            background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.7));
+            color:#1a1a2e;
+            border:none;
+            border-radius:12px;
+            font-size:18px;
+            font-weight:700;
+            cursor:pointer;
+            margin-top:5px;
+            transition:all 0.3s ease;
+            box-shadow:0 4px 20px rgba(0,0,0,0.15);
+            letter-spacing:0.5px;
         }
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-            background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.85));
-        }
-        .login-btn:active {
-            transform: translateY(0px);
-        }
+        .login-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.25); background:linear-gradient(135deg,#ffffff,rgba(255,255,255,0.85)); }
+        .login-btn:active { transform:translateY(0px); }
+        .login-btn:disabled { opacity:0.6; cursor:not-allowed; }
 
-        /* ===== MESSAGE ===== */
         .msg {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 14px;
-            min-height: 22px;
-            font-weight: 500;
-            padding: 10px 14px;
-            border-radius: 10px;
-            display: none;
+            text-align:center;
+            margin-top:12px;
+            font-size:14px;
+            min-height:22px;
+            font-weight:500;
+            padding:10px 14px;
+            border-radius:10px;
+            display:none;
         }
-        .msg.error {
-            display: block;
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.12);
-            border: 1px solid rgba(255, 107, 107, 0.15);
-        }
-        .msg.success {
-            display: block;
-            color: #51cf66;
-            background: rgba(81, 207, 102, 0.12);
-            border: 1px solid rgba(81, 207, 102, 0.15);
-        }
+        .msg.error { display:block; color:#ff6b6b; background:rgba(255,107,107,0.12); border:1px solid rgba(255,107,107,0.15); }
+        .msg.success { display:block; color:#51cf66; background:rgba(81,207,102,0.12); border:1px solid rgba(81,207,102,0.15); }
 
-        /* ===== DIVIDER ===== */
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 20px 0 16px 0;
-        }
-        .divider hr {
-            flex: 1;
-            border: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .divider span {
-            padding: 0 16px;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 13px;
-            font-weight: 300;
-        }
+        .divider { display:flex; align-items:center; margin:20px 0 16px 0; }
+        .divider hr { flex:1; border:none; border-top:1px solid rgba(255,255,255,0.08); }
+        .divider span { padding:0 16px; color:rgba(255,255,255,0.3); font-size:13px; font-weight:300; }
 
-        /* ===== REGISTER LINK ===== */
-        .register-link {
-            text-align: center;
-            margin-top: 14px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .register-link a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .register-link a:hover {
-            text-decoration: underline;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-        }
+        .register-link { text-align:center; margin-top:14px; font-size:14px; color:rgba(255,255,255,0.5); }
+        .register-link a { color:#ffffff; text-decoration:none; }
+        .register-link a:hover { text-decoration:underline; }
 
-        /* ===== FORGOT FORM ===== */
-        .forgot-form {
-            display: none;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        /* 2FA */
+        #twoFA { display:none; }
+        #totpCode {
+            text-align:center;
+            font-size:24px;
+            letter-spacing:8px;
+            padding:16px;
         }
-        .forgot-form.active {
-            display: block;
-        }
-        .forgot-form h3 {
-            color: #ffffff;
-            text-align: center;
-            margin-bottom: 4px;
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .forgot-form p {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 13px;
-            margin-bottom: 15px;
-        }
-        .forgot-form input {
-            width: 100%;
-            padding: 14px 18px;
-            margin: 6px 0;
-            background: rgba(0, 0, 0, 0.4) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            font-size: 16px;
-            color: #ffffff !important;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        .forgot-form input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .forgot-form input:focus {
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(0, 0, 0, 0.5) !important;
-        }
-        .forgot-form button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ffd93d, #f6b93b);
-            color: #1a1a2e;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: all 0.3s ease;
-        }
-        .forgot-form button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 217, 61, 0.25);
-        }
-        .forgot-form .back-link {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 13px;
-        }
-        .forgot-form .back-link a {
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-        }
-        .forgot-form .back-link a:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-        .forgot-form .msg {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 14px;
-            min-height: 20px;
-            font-weight: 500;
-            padding: 10px 14px;
-            border-radius: 10px;
-            display: none;
-        }
-        .forgot-form .msg.error {
-            display: block;
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.12);
-            border: 1px solid rgba(255, 107, 107, 0.15);
-        }
-        .forgot-form .msg.success {
-            display: block;
-            color: #51cf66;
-            background: rgba(81, 207, 102, 0.12);
-            border: 1px solid rgba(81, 207, 102, 0.15);
-        }
-
-        /* ===== RESET FORM ===== */
-        .reset-form {
-            display: none;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .reset-form.active {
-            display: block;
-        }
-        .reset-form h3 {
-            color: #ffffff;
-            text-align: center;
-            margin-bottom: 4px;
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .reset-form p {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 13px;
-            margin-bottom: 15px;
-        }
-        .reset-form input {
-            width: 100%;
-            padding: 14px 18px;
-            margin: 6px 0;
-            background: rgba(0, 0, 0, 0.4) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            font-size: 16px;
-            color: #ffffff !important;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        .reset-form input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .reset-form input:focus {
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(0, 0, 0, 0.5) !important;
-        }
-        .reset-form button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: all 0.3s ease;
-        }
-        .reset-form button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.3);
-        }
-        .reset-form .back-link {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 13px;
-        }
-        .reset-form .back-link a {
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-        }
-        .reset-form .back-link a:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-        .reset-form .msg {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 14px;
-            min-height: 20px;
-            font-weight: 500;
-            padding: 10px 14px;
-            border-radius: 10px;
-            display: none;
-        }
-        .reset-form .msg.error {
-            display: block;
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.12);
-            border: 1px solid rgba(255, 107, 107, 0.15);
-        }
-        .reset-form .msg.success {
-            display: block;
-            color: #51cf66;
-            background: rgba(81, 207, 102, 0.12);
-            border: 1px solid rgba(81, 207, 102, 0.15);
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 600px) {
-            .glass-card {
-                padding: 30px 22px 25px 22px;
-                border-radius: 18px;
-                max-width: 100%;
-                margin: 15px;
-            }
-            .glass-card h1 { font-size: 24px; }
-            .logo span { font-size: 44px; }
-            .glass-card input { padding: 12px 15px; font-size: 15px; border-radius: 10px; }
-            .login-btn { font-size: 16px; padding: 12px; border-radius: 10px; }
-            .forgot-form input { padding: 12px 15px; font-size: 15px; border-radius: 10px; }
-            .forgot-form button { font-size: 15px; padding: 12px; border-radius: 10px; }
-            .reset-form input { padding: 12px 15px; font-size: 15px; border-radius: 10px; }
-            .reset-form button { font-size: 15px; padding: 12px; border-radius: 10px; }
-        }
-
-        @media (max-width: 400px) {
-            .glass-card {
-                padding: 22px 16px 18px 16px;
-                border-radius: 14px;
-            }
-            .glass-card h1 { font-size: 20px; }
-            .logo span { font-size: 36px; }
-            .glass-card .subtitle { font-size: 12px; margin-bottom: 20px; }
-            .glass-card input { padding: 10px 12px; font-size: 14px; border-radius: 8px; }
-            .login-btn { font-size: 14px; padding: 10px; border-radius: 8px; }
-        }
-
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
     </style>
 </head>
 <body>
-
-    <!-- DECORATIVE CIRCLES -->
     <div class="circle circle-1"></div>
     <div class="circle circle-2"></div>
     <div class="circle circle-3"></div>
 
-    <!-- GLASS CARD -->
     <div class="glass-card">
-        <div class="logo"><span>🔐</span></div>
-        <h1>Karibu</h1>
-        <p class="subtitle">Ingia kwenye mfumo wako</p>
+        <div class="logo"><span>📊</span></div>
+        <h1>Sales System</h1>
+        <p class="subtitle">Ingia kwenye akaunti yako</p>
 
         <!-- LOGIN FORM -->
         <div id="loginForm">
-            <form autocomplete="off" onsubmit="return false;">
-                <input type="email" id="email" placeholder="Email">
-                <input type="password" id="password" placeholder="Password">
-                
-                <div class="forgot-link">
-                    <a href="#" onclick="showForgotForm()">Nimesahau password?</a>
-                </div>
-
-                <button onclick="login()" class="login-btn" type="button">🚀 INGIA</button>
-
-                <div id="msg" class="msg"></div>
-
-                <div class="divider">
-                    <hr>
-                    <span>au</span>
-                    <hr>
-                </div>
-
-                <div class="register-link">
-                    Huna akaunti? <a href="register.html">Jisajili hapa</a>
-                </div>
-            </form>
+            <input type="email" id="email" placeholder="Email" autocomplete="username">
+            <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+            <div class="forgot-link">
+                <a href="#" onclick="forgot(); return false;">Umesahau password?</a>
+            </div>
+            <button id="loginBtn" class="login-btn" onclick="login()">INGIA</button>
+            <div id="msg" class="msg"></div>
         </div>
 
-        <!-- FORGOT PASSWORD FORM -->
-        <div id="forgotForm" class="forgot-form">
-            <h3>🔑 Reset Password</h3>
-            <p>Ingiza email yako, tutakutumia password ya kianzio</p>
-            <input type="email" id="forgotEmail" placeholder="Ingiza email yako">
-            <button onclick="forgotPassword()">Tuma</button>
-            <div id="forgotMsg" class="msg"></div>
-            <div class="back-link">
-                <a href="#" onclick="hideForgotForm()">← Rudi kwenye Login page</a>
-            </div>
+        <!-- 2FA FORM -->
+        <div id="twoFA">
+            <p style="color:white; text-align:center; margin-bottom:10px;">Ingiza 2FA code kutoka app yako</p>
+            <input type="text" id="totpCode" placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+            <button class="login-btn" onclick="verify2FA()" style="margin-top:10px;">THIBITISHA</button>
+            <div id="msg2fa" class="msg"></div>
         </div>
 
-        <!-- RESET PASSWORD FORM -->
-        <div id="resetForm" class="reset-form">
-            <h3>🔐 Weka Password Mpya</h3>
-            <p>Ingia kwa password ya kianzio, kisha weka password mpya</p>
-            <input type="email" id="resetEmail" placeholder="📧 Email yako">
-            <input type="password" id="resetOldPassword" placeholder="🔑 Password ya kianzio">
-            <input type="password" id="resetNewPassword" placeholder="🔑 Password mpya (min 6)">
-            <input type="password" id="resetConfirmPassword" placeholder="🔑 Rudia password mpya">
-            <button onclick="resetPassword()">💾 Badilisha Password</button>
-            <div id="resetMsg" class="msg"></div>
-            <div class="back-link">
-                <a href="#" onclick="hideResetForm()">← Rudi kwenye Login page</a>
-            </div>
+        <div class="divider"><hr><span>AU</span><hr></div>
+        <div class="register-link">
+            Huna akaunti? <a href="register.html">Jisajili hapa</a>
         </div>
     </div>
 
     <script>
         const API_URL = window.location.origin;
+        let pendingUserId = null;
 
-        // ===== LOGIN =====
+        function showMsg(text, type, elId = 'msg') {
+            const el = document.getElementById(elId);
+            el.textContent = text;
+            el.className = 'msg ' + type;
+        }
+
         async function login() {
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const msg = document.getElementById('msg');
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
 
             if (!email || !password) {
-                msg.textContent = 'Tafadhali jaza email na password!';
-                msg.className = 'msg error';
+                showMsg('Jaza email na password!', 'error');
                 return;
             }
 
-            msg.textContent = 'Login...';
-            msg.className = 'msg success';
+            btn.disabled = true;
+            btn.textContent = 'Inaingia...';
 
             try {
-                const response = await fetch(`${API_URL}/users/login`, {
+                const res = await fetch(`${API_URL}/users/login`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Basic ' + btoa(email + ':' + password)
-                    }
+                    headers: { 'Authorization': 'Basic ' + btoa(email + ':' + password) }
                 });
+                const data = await res.json();
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    msg.textContent = '❌ ' + (data.detail || 'Email au Password si sahihi!');
-                    msg.className = 'msg error';
+                if (!res.ok) {
+                    showMsg(data.detail || 'Login failed', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'INGIA';
                     return;
                 }
 
+                // 2FA check
+                if (data.requires_2fa) {
+                    pendingUserId = data.user_id;
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('twoFA').style.display = 'block';
+                    document.getElementById('totpCode').focus();
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Save to localStorage
                 localStorage.setItem('token', data.access_token);
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('userRole', data.role);
-                localStorage.setItem('staffType', data.staff_type || 'shop');
+                localStorage.setItem('staffType', data.staff_type);
+                localStorage.setItem('userId', data.user_id);  // ✅ MUHIMU kwa notes
 
-                const staffType = data.staff_type || 'shop';
-                const role = data.role || 'staff';
-
-                msg.textContent = 'Login...';
-                msg.className = 'msg success';
+                showMsg('Umeingia! Inaelekeza...', 'success');
 
                 setTimeout(() => {
-                    if (role.toLowerCase() === 'admin') {
-                        window.location.href = 'index.html';
-                    } else if (staffType === 'agent') {
-                        window.location.href = 'agent_dashboard.html';
-                    } else if (staffType === 'shop') {
-                        window.location.href = 'shop_dashboard.html';
-                    } else {
-                        window.location.href = 'shop_dashboard.html';
-                    }
+                    if (data.role === 'admin') window.location.href = 'index.html';
+                    else if (data.staff_type === 'agent') window.location.href = 'agent_dashboard.html';
+                    else window.location.href = 'shop_dashboard.html';
                 }, 500);
-
-            } catch (error) {
-                msg.textContent = '❌ Error: ' + error.message;
-                msg.className = 'msg error';
+            } catch (e) {
+                showMsg('Error: ' + e.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'INGIA';
             }
         }
 
-        // ===== FORGOT PASSWORD =====
-        async function forgotPassword() {
-            const email = document.getElementById('forgotEmail').value.trim();
-            const msg = document.getElementById('forgotMsg');
+        async function verify2FA() {
+            const code = document.getElementById('totpCode').value.trim();
+            if (!/^\d{6}$/.test(code)) {
+                showMsg('Ingiza code ya tarakimu 6', 'error', 'msg2fa');
+                return;
+            }
+            showMsg('2FA inahitaji setup kamili', 'info', 'msg2fa');
+        }
 
+        async function forgot() {
+            const email = document.getElementById('email').value.trim();
             if (!email) {
-                msg.textContent = 'Tafadhali ingiza email yako!';
-                msg.className = 'msg error';
+                showMsg('Ingiza email yako kwanza!', 'error');
                 return;
             }
-
-            msg.textContent = '⏳ Inatuma...';
-            msg.className = 'msg success';
-
             try {
-                const response = await fetch(
-                    `${API_URL}/users/forgot_password?email=${encodeURIComponent(email)}`,
-                    { method: 'POST' }
-                );
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    msg.textContent = '✅ ' + data.message;
-                    msg.className = 'msg success';
-                    
-                    setTimeout(() => {
-                        document.getElementById('forgotForm').classList.remove('active');
-                        document.getElementById('resetForm').classList.add('active');
-                        document.getElementById('resetEmail').value = email;
-                        document.getElementById('forgotMsg').textContent = '';
-                        document.getElementById('forgotMsg').className = 'msg';
-                    }, 1500);
-                } else {
-                    msg.textContent = '❌ ' + (data.detail || 'Email si sahihi!');
-                    msg.className = 'msg error';
-                }
-            } catch (error) {
-                msg.textContent = '❌ Error: ' + error.message;
-                msg.className = 'msg error';
+                const res = await fetch(`${API_URL}/users/forgot_password?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                const data = await res.json();
+                showMsg(res.ok ? data.message : data.detail, res.ok ? 'success' : 'error');
+            } catch (e) {
+                showMsg('Error: ' + e.message, 'error');
             }
         }
 
-        // ===== RESET PASSWORD =====
-        async function resetPassword() {
-            const email = document.getElementById('resetEmail').value.trim();
-            const oldPassword = document.getElementById('resetOldPassword').value.trim();
-            const newPassword = document.getElementById('resetNewPassword').value.trim();
-            const confirmPassword = document.getElementById('resetConfirmPassword').value.trim();
-            const msg = document.getElementById('resetMsg');
-
-            if (!email || !oldPassword || !newPassword || !confirmPassword) {
-                msg.textContent = 'Tafadhali jaza taarifa zote!';
-                msg.className = 'msg error';
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                msg.textContent = 'Password mpya hazifanani!';
-                msg.className = 'msg error';
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                msg.textContent = 'Password mpya iwe na angalau herufi 6!';
-                msg.className = 'msg error';
-                return;
-            }
-
-            msg.textContent = '⏳ Inabadilisha...';
-            msg.className = 'msg success';
-
-            try {
-                const params = new URLSearchParams();
-                params.append('email', email);
-                params.append('old_password', oldPassword);
-                params.append('new_password', newPassword);
-
-                const response = await fetch(`${API_URL}/users/reset_password?${params.toString()}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    msg.textContent = '✅ ' + data.message;
-                    msg.className = 'msg success';
-
-                    setTimeout(() => {
-                        hideResetForm();
-                        document.getElementById('email').value = email;
-                        document.getElementById('password').value = newPassword;
-                        document.getElementById('msg').textContent = '✅ Password imebadilishwa! Sasa ingia.';
-                        document.getElementById('msg').className = 'msg success';
-                    }, 1500);
-                } else {
-                    msg.textContent = '❌ ' + (data.detail || 'Failed to reset password!');
-                    msg.className = 'msg error';
-                }
-            } catch (error) {
-                console.error('Reset error:', error);
-                msg.textContent = '❌ Error: ' + error.message;
-                msg.className = 'msg error';
-            }
-        }
-
-        // ===== SHOW / HIDE FORMS =====
-        function showForgotForm() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('forgotForm').classList.add('active');
-            document.getElementById('resetForm').classList.remove('active');
-            document.getElementById('forgotMsg').textContent = '';
-            document.getElementById('forgotMsg').className = 'msg';
-            document.getElementById('resetMsg').textContent = '';
-            document.getElementById('resetMsg').className = 'msg';
-        }
-
-        function hideForgotForm() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('forgotForm').classList.remove('active');
-            document.getElementById('resetForm').classList.remove('active');
-            document.getElementById('forgotMsg').textContent = '';
-            document.getElementById('forgotMsg').className = 'msg';
-            document.getElementById('resetMsg').textContent = '';
-            document.getElementById('resetMsg').className = 'msg';
-        }
-
-        function hideResetForm() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('resetForm').classList.remove('active');
-            document.getElementById('resetMsg').textContent = '';
-            document.getElementById('resetMsg').className = 'msg';
-        }
-
-        // ===== ENTER KEY =====
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const loginForm = document.getElementById('loginForm');
-                if (loginForm.style.display !== 'none') {
-                    login();
-                } else if (document.getElementById('forgotForm').classList.contains('active')) {
-                    forgotPassword();
-                } else if (document.getElementById('resetForm').classList.contains('active')) {
-                    resetPassword();
-                }
-            }
+        // Enter key
+        document.getElementById('password').addEventListener('keydown', e => {
+            if (e.key === 'Enter') login();
+        });
+        document.getElementById('totpCode').addEventListener('keydown', e => {
+            if (e.key === 'Enter') verify2FA();
         });
 
-        // ===== AUTO REDIRECT =====
-        if (localStorage.getItem('token')) {
-            const role = localStorage.getItem('userRole');
-            const staffType = localStorage.getItem('staffType');
-            
-            if (role && role.toLowerCase() === 'admin') {
-                window.location.href = 'index.html';
-            } else if (staffType === 'agent') {
-                window.location.href = 'agent_dashboard.html';
-            } else if (staffType === 'shop') {
-                window.location.href = 'shop_dashboard.html';
-            } else {
-                window.location.href = 'shop_dashboard.html';
-            }
+        // Register service worker (PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/dashboard/service-worker.js').catch(() => {});
         }
     </script>
 </body>
