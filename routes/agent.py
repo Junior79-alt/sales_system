@@ -486,7 +486,6 @@ def download_invoice_pdf(
     current_user: models.User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    """✅ Download invoice as PDF file."""
     agent = db.query(models.User).filter(
         models.User.id == staff_id,
         models.User.staff_type == "agent",
@@ -573,7 +572,6 @@ def send_invoice_all(current_user: models.User = Depends(get_current_admin), db:
 
 
 def send_invoice_auto():
-    """Called by cron — returns count of sent invoices"""
     from database import SessionLocal
     db = SessionLocal()
     try:
@@ -641,4 +639,165 @@ def _build_invoice(db: Session, agent: models.User) -> dict:
             }
             for d in data
         ],
+    }
+
+
+# ============ QUICK NOTES (#8) ============
+
+@router.post("/note/{staff_id}")
+def add_note(
+    staff_id: int,
+    note: str,
+    current_user: models.User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin anaongeza note kwa agent."""
+    agent = db.query(models.User).filter(
+        models.User.id == staff_id,
+        models.User.staff_type == "agent",
+    ).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    if not note or len(note.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Note cannot be empty")
+    if len(note) > 500:
+        raise HTTPException(status_code=400, detail="Note too long (max 500 chars)")
+
+    new_note = models.AgentNote(
+        staff_id=staff_id,
+        note=note.strip(),
+        created_by=current_user.id,
+    )
+    db.add(new_note)
+    db.commit()
+    db.refresh(new_note)
+
+    return {
+        "message": "Note added successfully",
+        "note_id": new_note.id,
+        "note": new_note.note,
+        "created_at": new_note.created_at.strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+@router.get("/notes/{staff_id}")
+def get_notes(
+    staff_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Admin anaona notes zote za agent; agent anaona notes zake tu."""
+    if current_user.role.lower() != "admin" and current_user.id != staff_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    notes = db.query(models.AgentNote).filter(
+        models.AgentNote.staff_id == staff_id
+    ).order_by(models.AgentNote.created_at.desc()).all()
+
+    return [
+        {
+            "id": n.id,
+            "note": n.note,
+            "author": n.author.name if n.author else "Admin",
+            "created_at": n.created_at.strftime("%Y-%m-%d %H:%M"),
+        }
+        for n in notes
+    ]
+
+
+@router.delete("/note/{note_id}")
+def delete_note(
+    note_id: int,
+    current_user: models.User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin anafuta note."""
+    note = db.query(models.AgentNote).filter(models.AgentNote.id == note_id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    db.delete(note)
+    db.commit()
+    return {"message": "Note deleted", "note_id": note_id}
+
+
+# ============ CAPITAL REPORT PER MONTH (#2) ============
+
+@router.get("/capital_report")
+def capital_report(
+    month: str = None,
+    current_user: models.User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Ripoti ya capital kwa mwezi.
+    month format: "2026-11" (default: mwezi wa sasa)
+    """
+    if not month:
+        month = utcnow().strftime("%Y-%m")
+
+    try:
+        month_start = datetime.strptime(month + "-01", "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid month format. Use YYYY-MM")
+
+    next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+    agents = db.query(models.User).filter(
+        models.User.staff_type == "agent",
+        models.User.is_active == 1,
+    ).all()
+
+    result = []
+    for agent in agents:
+        capital = db.query(models.AgentCapital).filter(
+            models.AgentCapital.staff_id == agent.id,
+            models.AgentCapital.month == month,
+        ).first()
+
+        data = db.query(models.AgentData).filter(
+            models.AgentData.staff_id == agent.id,
+            models.AgentData.date >= month_start,
+            models.AgentData.date < next_month,
+        ).all()
+
+        days_worked = len(data)
+        total_cash = sum(d.cash for d in data)
+        total_float = sum(d.float_halotel + d.float_voda + d.float_airtel + d.float_tigo for d in data)
+        total_lipa = sum(d.lipa_halotel + d.lipa_voda + d.lipa_airtel + d.lipa_tigo for d in data)
+        total_all = total_cash + total_float + total_lipa
+
+        initial_capital = capital.initial_capital if capital else 0
+        current_capital = capital.current_capital if capital else 0
+        total_profit = capital.total_profit if capital else 0
+
+        result.append({
+            "staff_id": agent.id,
+            "staff_name": agent.name,
+            "staff_email": agent.email,
+            "has_capital": capital is not None,
+            "initial_capital": initial_capital,
+            "current_capital": current_capital,
+            "total_profit": total_profit,
+            "month_total": total_all,
+            "days_worked": days_worked,
+            "profit_margin": (total_profit / initial_capital * 100) if initial_capital > 0 else 0,
+            "profit_status": "profit" if total_profit >= 0 else "loss",
+        })
+
+    total_initial = sum(r["initial_capital"] for r in result)
+    total_profit = sum(r["total_profit"] for r in result)
+    total_month = sum(r["month_total"] for r in result)
+
+    return {
+        "month": month,
+        "summary": {
+            "total_agents": len(result),
+            "total_initial_capital": total_initial,
+            "total_profit": total_profit,
+            "total_month_sales": total_month,
+            "profit_status": "profit" if total_profit >= 0 else "loss",
+        },
+        "agents": result,
     }

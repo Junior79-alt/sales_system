@@ -96,8 +96,6 @@
         .agent-item .agent-header h4 { color:#1a237e; }
         .agent-item .agent-stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:10px; }
         .agent-item .agent-stats-row div { color:#333; font-size:13px; }
-        .agent-item .agent-stats-row .profit { color:#2e7d32; font-weight:bold; }
-        .agent-item .agent-stats-row .loss { color:#d32f2f; font-weight:bold; }
 
         /* ===== SHOP ITEM ===== */
         .shop-item { background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; border-left:4px solid #2e7d32; }
@@ -107,6 +105,25 @@
         .shop-stat-card { background:#f8f9fa; padding:15px 20px; border-radius:10px; border-left:4px solid #2e7d32; }
         .shop-stat-card .label { font-size:12px; color:#888; text-transform:uppercase; font-weight:600; }
         .shop-stat-card .value { font-size:20px; font-weight:700; color:#2e7d32; margin-top:5px; }
+
+        /* ===== CONFIRM MODAL ===== */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99999; justify-content:center; align-items:center; }
+        .modal-overlay.active { display:flex; }
+        .modal-box { background:var(--card-bg); border-radius:12px; padding:0; max-width:450px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.3); overflow:hidden; animation:modalFadeIn 0.2s ease; }
+        @keyframes modalFadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+        .modal-header { background:linear-gradient(135deg,#1a237e,#0d47a1); color:white; padding:18px 24px; display:flex; align-items:center; gap:12px; }
+        .modal-header h3 { margin:0; font-size:18px; font-weight:600; }
+        .modal-body { padding:24px; }
+        .modal-body p { margin:0 0 8px 0; font-size:15px; color:var(--text-color); line-height:1.5; }
+        .modal-body p.sub { margin:0; font-size:13px; color:#888; }
+        .modal-footer { padding:16px 24px; background:rgba(0,0,0,0.03); display:flex; justify-content:flex-end; gap:10px; }
+        .modal-btn { padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; }
+        .modal-btn.cancel { background:#e0e0e0; color:#555; }
+        .modal-btn.cancel:hover { background:#d0d0d0; }
+        .modal-btn.ok { background:#1a237e; color:white; }
+        .modal-btn.ok:hover { background:#0d47a1; }
+        .modal-btn.danger { background:#d32f2f; color:white; }
+        .modal-btn.danger:hover { background:#b71c1c; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width:1024px) {
@@ -154,6 +171,7 @@
             <li><a href="#" onclick="showPage('agent'); return false;"><span class="icon">🤖</span> Agent System</a></li>
             <li><a href="#" onclick="showPage('shop'); return false;"><span class="icon">🏪</span> Shop System</a></li>
             <li><a href="#" onclick="showPage('reports'); return false;"><span class="icon">📊</span> Ripoti</a></li>
+            <li><a href="#" onclick="showPage('capital'); return false;"><span class="icon">💰</span> Capital Report</a></li>
             <li class="logout-link"><a href="#" onclick="logout(); return false;"><span class="icon">🚪</span> Toka</a></li>
         </ul>
     </nav>
@@ -263,6 +281,42 @@
                 <div id="reportContent">Loading...</div>
             </div>
         </div>
+
+        <!-- ===== PAGE: CAPITAL REPORT ===== -->
+        <div id="page-capital" class="page-content" style="display:none;">
+            <div style="background:var(--card-bg); padding:20px; border-radius:12px;">
+                <h2 style="color:#1a237e; font-size:18px; margin-bottom:15px;">💰 Ripoti ya Capital kwa Mwezi</h2>
+                <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+                    <label style="font-weight:600; font-size:14px;">Chagua Mwezi:</label>
+                    <input type="month" id="capitalMonth"
+                           style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+                    <button onclick="loadCapitalReport()"
+                            style="background:#1a237e; color:white; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600;">
+                        🔍 Tafuta
+                    </button>
+                </div>
+                <div id="capitalSummary" style="margin-bottom:20px;"></div>
+                <div id="capitalReportTable"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONFIRM MODAL ===== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span style="font-size:24px;">📊</span>
+                <h3>SALES SYSTEM</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+                <p class="sub" id="confirmSubMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="confirmCancel" onclick="closeConfirm(false)">Ghairi</button>
+                <button class="modal-btn ok" id="confirmOk" onclick="closeConfirm(true)">Sawa</button>
+            </div>
+        </div>
     </div>
 
     <script src="shared.js"></script>
@@ -271,6 +325,42 @@
         const token = localStorage.getItem('token');
 
         if (!token) window.location.href = 'login.html';
+
+        // =========================================================
+        // CONFIRM MODAL
+        // =========================================================
+        let confirmResolve = null;
+
+        function showConfirm(message, subMessage = '', okText = 'Sawa', cancelText = 'Ghairi', isDanger = false) {
+            return new Promise((resolve) => {
+                confirmResolve = resolve;
+                document.getElementById('confirmMessage').textContent = message;
+                document.getElementById('confirmSubMessage').textContent = subMessage;
+                const okBtn = document.getElementById('confirmOk');
+                okBtn.textContent = okText;
+                okBtn.className = 'modal-btn ' + (isDanger ? 'danger' : 'ok');
+                document.getElementById('confirmCancel').textContent = cancelText;
+                document.getElementById('confirmModal').classList.add('active');
+            });
+        }
+
+        function closeConfirm(result) {
+            document.getElementById('confirmModal').classList.remove('active');
+            if (confirmResolve) {
+                confirmResolve(result);
+                confirmResolve = null;
+            }
+        }
+
+        document.getElementById('confirmModal').addEventListener('click', (e) => {
+            if (e.target.id === 'confirmModal') closeConfirm(false);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('confirmModal').classList.contains('active')) {
+                closeConfirm(false);
+            }
+        });
 
         // =========================================================
         // PAGE NAVIGATION
@@ -290,7 +380,7 @@
             if (target) target.style.display = 'block';
 
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-            const pageMap = { 'dashboard': 0, 'users': 1, 'sales': 2, 'agent': 3, 'shop': 4, 'reports': 5 };
+            const pageMap = { 'dashboard': 0, 'users': 1, 'sales': 2, 'agent': 3, 'shop': 4, 'reports': 5, 'capital': 6 };
             const navLinks = document.querySelectorAll('.sidebar-nav a');
             if (pageMap[page] !== undefined && navLinks[pageMap[page]]) {
                 navLinks[pageMap[page]].classList.add('active');
@@ -303,7 +393,8 @@
                 'sales': 'Mauzo Yote',
                 'agent': 'Agent System',
                 'shop': 'Shop System',
-                'reports': 'Ripoti'
+                'reports': 'Ripoti',
+                'capital': 'Capital Report'
             };
             document.getElementById('pageTitle').textContent = titles[page] || page;
 
@@ -313,6 +404,14 @@
             if (page === 'agent') loadAgentData();
             if (page === 'shop') loadShopData();
             if (page === 'reports') loadMonthlyReport();
+            if (page === 'capital') {
+                const monthInput = document.getElementById('capitalMonth');
+                if (monthInput && !monthInput.value) {
+                    const now = new Date();
+                    monthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                }
+                loadCapitalReport();
+            }
         }
 
         // =========================================================
@@ -331,7 +430,8 @@
         // DELETE SALE
         // =========================================================
         async function deleteSale(saleId) {
-            if (!confirm('Je, una uhakika unataka kufuta mauzo haya? Hatua hii haiwezi kurekebishwa!')) return;
+            const ok = await showConfirm('Futa mauzo haya?', 'Hatua hii haiwezi kurekebishwa!', 'Futa', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/sales/${saleId}`, { method: 'DELETE' });
                 if (!res) return;
@@ -382,7 +482,6 @@
         }
 
         function renderCharts(sales) {
-            // Trend
             const ctx1 = document.getElementById('salesTrendChart').getContext('2d');
             const byDate = {};
             sales.forEach(s => {
@@ -417,7 +516,6 @@
                 }
             });
 
-            // By Staff
             const ctx2 = document.getElementById('salesLocationChart').getContext('2d');
             const byStaff = {};
             sales.forEach(s => {
@@ -437,7 +535,6 @@
                 }
             });
 
-            // By Category
             const ctx3 = document.getElementById('salesCategoryChart').getContext('2d');
             const byCat = {};
             sales.forEach(s => {
@@ -545,7 +642,8 @@
         }
 
         async function activateUserByEmail(email) {
-            if (!confirm(`Activate ${email}?`)) return;
+            const ok = await showConfirm(`Activate ${email}?`, 'Staff huyu ataweza ku-login baada ya activation.', 'Activate', 'Ghairi');
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/users/activate_by_email?email=${encodeURIComponent(email)}`, { method: 'POST' });
                 if (!res) return;
@@ -556,7 +654,8 @@
         }
 
         async function deactivateUser(id) {
-            if (!confirm('Deactivate user huyu?')) return;
+            const ok = await showConfirm('Deactivate user huyu?', 'Hataweza ku-login mpaka um-activate tena.', 'Deactivate', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/users/deactivate/${id}`, { method: 'PUT' });
                 if (!res) return;
@@ -567,7 +666,8 @@
         }
 
         async function deleteUser(userId, userName) {
-            if (!confirm(`KUFUTA user "${userName}" kabisa?`)) return;
+            const ok = await showConfirm(`KUFUTA user "${userName}" kabisa?`, 'Data yote ya user huyu itafutwa. Haiwezi kurekebishwa!', 'Futa', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/users/${userId}`, { method: 'DELETE' });
                 if (!res) return;
@@ -634,7 +734,6 @@
                 let html = '';
                 agentData.forEach(agent => {
                     const nameEsc = escapeHtml(agent.staff_name);
-                    const profitClass = (agent.total_profit || 0) >= 0 ? 'profit' : 'loss';
                     const nameJson = JSON.stringify(agent.staff_name);
 
                     html += `
@@ -676,6 +775,20 @@
                                 <div><strong>Voda L:</strong> ${fmt(agent.total_lipa_voda)} TSh</div>
                                 <div><strong>Airtel L:</strong> ${fmt(agent.total_lipa_airtel)} TSh</div>
                                 <div><strong>Tigo L:</strong> ${fmt(agent.total_lipa_tigo)} TSh</div>
+                            </div>
+
+                            <!-- ✅ NOTES SECTION (#8) -->
+                            <div style="margin-top:12px; background:#f3e5f5; padding:10px 14px; border-radius:8px; border-left:4px solid #9c27b0;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <strong style="color:#6a1b9a; font-size:13px;">📝 Notes kwa Agent</strong>
+                                    <button onclick='showNoteModal(${agent.staff_id}, ${nameJson})'
+                                            style="background:#9c27b0; color:white; border:none; padding:3px 10px; border-radius:4px; cursor:pointer; font-size:10px;">
+                                        ➕ Ongeza
+                                    </button>
+                                </div>
+                                <div id="notes_${agent.staff_id}" style="font-size:12px; color:#555;">
+                                    <em style="color:#999;">Loading...</em>
+                                </div>
                             </div>
 
                             <details style="margin-top:10px;">
@@ -764,9 +877,95 @@
                 });
 
                 container.innerHTML = html;
+
+                // ✅ Load notes kwa kila agent
+                agentData.forEach(agent => {
+                    loadNotes(agent.staff_id);
+                });
             } catch (e) {
                 console.error(e);
                 document.getElementById('agentStaffList').innerHTML = '<p style="color:red;">❌ Error loading data</p>';
+            }
+        }
+
+        // =========================================================
+        // NOTES (#8)
+        // =========================================================
+        async function loadNotes(staffId) {
+            try {
+                const res = await apiFetch(`/agent/notes/${staffId}`);
+                if (!res || !res.ok) return;
+                const notes = await res.json();
+                const container = document.getElementById(`notes_${staffId}`);
+                if (!container) return;
+
+                if (!notes || notes.length === 0) {
+                    container.innerHTML = '<em style="color:#999;">Hakuna notes bado.</em>';
+                    return;
+                }
+
+                let html = '';
+                notes.forEach(n => {
+                    html += `
+                        <div style="background:white; padding:8px 10px; border-radius:6px; margin-bottom:6px; border-left:3px solid #9c27b0;">
+                            <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
+                                <div style="flex:1;">
+                                    <p style="margin:0 0 4px 0; color:#333;">${escapeHtml(n.note)}</p>
+                                    <small style="color:#888; font-size:10px;">👤 ${escapeHtml(n.author)} • ${escapeHtml(n.created_at)}</small>
+                                </div>
+                                <button onclick="deleteNote(${n.id}, ${staffId})"
+                                        style="background:#e57373; color:white; border:none; padding:2px 6px; border-radius:3px; cursor:pointer; font-size:9px; white-space:nowrap;">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Load notes error:', e);
+            }
+        }
+
+        async function showNoteModal(staffId, staffName) {
+            const note = prompt(`Andika note kwa ${staffName}:\n(max 500 chars)`);
+            if (!note || note.trim().length === 0) return;
+            if (note.length > 500) {
+                showToast('Note ni ndefu sana (max 500 chars)', 'error');
+                return;
+            }
+            try {
+                const res = await apiFetch(`/agent/note/${staffId}?note=${encodeURIComponent(note.trim())}`, {
+                    method: 'POST',
+                });
+                if (!res) return;
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('✅ Note imeongezwa!', 'success');
+                    loadNotes(staffId);
+                } else {
+                    showToast('❌ ' + (data.detail || 'Failed'), 'error');
+                }
+            } catch (e) {
+                showToast('❌ ' + e.message, 'error');
+            }
+        }
+
+        async function deleteNote(noteId, staffId) {
+            const ok = await showConfirm('Futa note hii?', 'Haiwezi kurekebishwa!', 'Futa', 'Ghairi', true);
+            if (!ok) return;
+            try {
+                const res = await apiFetch(`/agent/note/${noteId}`, { method: 'DELETE' });
+                if (!res) return;
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('✅ Note imefutwa!', 'success');
+                    loadNotes(staffId);
+                } else {
+                    showToast('❌ ' + (data.detail || 'Failed'), 'error');
+                }
+            } catch (e) {
+                showToast('❌ ' + e.message, 'error');
             }
         }
 
@@ -868,10 +1067,98 @@
         }
 
         // =========================================================
+        // CAPITAL REPORT (#2)
+        // =========================================================
+        async function loadCapitalReport() {
+            const monthInput = document.getElementById('capitalMonth');
+            let month = monthInput.value;
+
+            if (!month) {
+                const now = new Date();
+                month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                monthInput.value = month;
+            }
+
+            try {
+                const res = await apiFetch(`/agent/capital_report?month=${month}`);
+                if (!res || !res.ok) {
+                    document.getElementById('capitalReportTable').innerHTML = '<p style="color:red;">❌ Error loading report</p>';
+                    return;
+                }
+                const data = await res.json();
+
+                const s = data.summary;
+                document.getElementById('capitalSummary').innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Agents</div>
+                            <div class="stat-value">${s.total_agents}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Jumla Capital</div>
+                            <div class="stat-value">${fmt(s.total_initial_capital)} TSh</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Jumla Faida</div>
+                            <div class="stat-value ${s.profit_status === 'profit' ? 'profit' : 'loss'}">${fmt(s.total_profit)} TSh</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Jumla Mauzo (Mwezi)</div>
+                            <div class="stat-value">${fmt(s.total_month_sales)} TSh</div>
+                        </div>
+                    </div>
+                `;
+
+                if (!data.agents || data.agents.length === 0) {
+                    document.getElementById('capitalReportTable').innerHTML = '<p style="text-align:center;color:#999;">Hakuna agents active.</p>';
+                    return;
+                }
+
+                let html = `
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Agent</th>
+                                    <th>Capital Mwanzo</th>
+                                    <th>Capital Sasa</th>
+                                    <th>Faida</th>
+                                    <th>Mauzo (Mwezi)</th>
+                                    <th>Siku</th>
+                                    <th>Margin %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                data.agents.forEach((a, i) => {
+                    const profitColor = a.total_profit >= 0 ? '#2e7d32' : '#d32f2f';
+                    const marginColor = a.profit_margin >= 0 ? '#2e7d32' : '#d32f2f';
+                    html += `<tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${escapeHtml(a.staff_name)}</strong></td>
+                        <td>${fmt(a.initial_capital)} TSh</td>
+                        <td>${fmt(a.current_capital)} TSh</td>
+                        <td style="color:${profitColor}; font-weight:bold;">${fmt(a.total_profit)} TSh</td>
+                        <td>${fmt(a.month_total)} TSh</td>
+                        <td>${a.days_worked}</td>
+                        <td style="color:${marginColor}; font-weight:bold;">${a.profit_margin.toFixed(1)}%</td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+                document.getElementById('capitalReportTable').innerHTML = html;
+
+            } catch (e) {
+                document.getElementById('capitalReportTable').innerHTML = `<p style="color:red;">❌ Error: ${e.message}</p>`;
+            }
+        }
+
+        // =========================================================
         // DELETE FUNCTIONS
         // =========================================================
         async function deleteSingleAgentData(dataId) {
-            if (!confirm('Futa data hii? Haiwezi kurekebishwa!')) return;
+            const ok = await showConfirm('Futa data hii?', 'Haiwezi kurekebishwa!', 'Futa', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/agent/delete/${dataId}`, { method: 'DELETE' });
                 if (!res) return;
@@ -882,7 +1169,8 @@
         }
 
         async function deleteAllAgentData(staffId, staffName) {
-            if (!confirm(`FUTA data zote na mtaji wa ${staffName}? Haiwezi kurekebishwa!`)) return;
+            const ok = await showConfirm(`Futa data zote na mtaji wa ${staffName}?`, 'Haiwezi kurekebishwa!', 'Futa Zote', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/agent/delete_by_staff/${staffId}`, { method: 'DELETE' });
                 if (!res) return;
@@ -893,7 +1181,8 @@
         }
 
         async function deleteAgentDataByDate(staffId, dateKey) {
-            if (!confirm(`Futa data zote za ${dateKey}?`)) return;
+            const ok = await showConfirm(`Futa data zote za ${dateKey}?`, 'Haiwezi kurekebishwa!', 'Futa', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/agent/delete_by_staff_and_date/${staffId}?date=${dateKey}`, { method: 'DELETE' });
                 if (!res) return;
@@ -904,7 +1193,8 @@
         }
 
         async function deleteCapitalOnly(staffId, staffName) {
-            if (!confirm(`FUTA mtaji wa ${staffName}? Agent atalazimika kuweka mpya!`)) return;
+            const ok = await showConfirm(`Futa mtaji wa ${staffName}?`, 'Agent atalazimika kuweka mtaji mpya!', 'Futa Mtaji', 'Ghairi', true);
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/agent/delete_capital/${staffId}`, { method: 'DELETE' });
                 if (!res) return;
@@ -918,7 +1208,8 @@
         // INVOICE
         // =========================================================
         async function sendInvoice(staffId, staffName) {
-            if (!confirm(`Tuma invoice kwa ${staffName}?`)) return;
+            const ok = await showConfirm(`Tuma invoice kwa ${staffName}?`, 'PDF itatumwa kwa email ya agent.', 'Tuma', 'Ghairi');
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/agent/send_invoice/${staffId}`, { method: 'POST' });
                 if (!res) return;
@@ -952,7 +1243,8 @@
         }
 
         async function sendInvoiceToAll(ev) {
-            if (!confirm('Tuma invoice kwa agents wote active?')) return;
+            const ok = await showConfirm('Tuma invoice kwa agents wote?', 'PDF itatumwa kwa email za agents wote walio active.', 'Tuma kwa Wote', 'Ghairi');
+            if (!ok) return;
             const btn = ev ? ev.target : null;
             const original = btn ? btn.textContent : '';
             if (btn) { btn.disabled = true; btn.textContent = '⏳ Inatuma...'; }
