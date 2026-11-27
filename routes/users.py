@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from database import get_db
@@ -7,6 +8,8 @@ from auth import verify_password, create_access_token, get_current_user, hash_pa
 import models
 import secrets
 import string
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from utils.email import (
     send_registration_email,
     send_activation_email,
@@ -14,9 +17,13 @@ from utils.email import (
     send_forgot_password_email,
     send_reset_password_email,
 )
+from utils.security import validate_password_strength
+from utils.audit import log_action
+import pyotp
 
 router = APIRouter(prefix="/users", tags=["Users"])
 security = HTTPBasic()
+limiter = Limiter(key_func=get_remote_address)
 
 
 def generate_temp_password(length: int = 8) -> str:
@@ -24,8 +31,13 @@ def generate_temp_password(length: int = 8) -> str:
     return "".join(secrets.choice(chars) for _ in range(length))
 
 
+# =========================================================
+# REGISTER
+# =========================================================
 @router.post("/register")
+@limiter.limit("10/hour")
 def register(
+    request: Request,
     name: str,
     email: str,
     password: str,
@@ -34,13 +46,17 @@ def register(
 ):
     if staff_type not in ("shop", "agent"):
         raise HTTPException(status_code=400, detail="staff_type must be 'shop' or 'agent'")
-    if len(password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    # ✅ Password strength
+    validate_password_strength(password)
+
     if crud.get_user_by_email(db, email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user = crud.create_user(db, name, email, password, role="staff", is_active=0, staff_type=staff_type)
     send_registration_email(email, name, staff_type)
+    log_action(db, user.id, "register", f"New {staff_type}: {email}", request)
+
     return {
         "message": f"Registered as {staff_type}. Waiting for admin activation.",
         "user_id": user.id,
@@ -49,15 +65,35 @@ def register(
     }
 
 
+# =========================================================
+# LOGIN
+# =========================================================
 @router.post("/login")
-def login(credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
+@limiter.limit("5/minute")  # ✅ Brute force protection
+def login(
+    request: Request,
+    credentials: HTTPBasicCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
     user = crud.get_user_by_email(db, credentials.username)
     if not user or not verify_password(credentials.password, user.password):
+        log_action(db, None, "login_failed", f"Failed login: {credentials.username}", request)
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
     if user.is_active != 1:
         raise HTTPException(status_code=403, detail="Account not activated. Contact admin.")
 
+    # ✅ 2FA check
+    if user.totp_enabled:
+        return JSONResponse({
+            "requires_2fa": True,
+            "user_id": user.id,
+            "message": "2FA code required",
+        })
+
     token = create_access_token({"user_id": user.id, "role": user.role})
+    log_action(db, user.id, "login", f"Login: {user.email}", request)
+
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -68,6 +104,63 @@ def login(credentials: HTTPBasicCredentials = Depends(security), db: Session = D
     }
 
 
+# =========================================================
+# 2FA
+# =========================================================
+@router.post("/2fa/setup")
+def setup_2fa(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.totp_enabled:
+        raise HTTPException(400, "2FA already enabled")
+
+    secret = pyotp.random_base32()
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        name=current_user.email, issuer_name="Sales System"
+    )
+
+    current_user.totp_secret = secret
+    db.commit()
+
+    return {
+        "secret": secret,
+        "qr_uri": uri,
+        "message": "Scan QR code with Google Authenticator",
+    }
+
+
+@router.post("/2fa/verify")
+def verify_2fa(
+    code: str,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.totp_secret:
+        raise HTTPException(400, "2FA not set up")
+
+    if not pyotp.TOTP(current_user.totp_secret).verify(code):
+        raise HTTPException(400, "Invalid 2FA code")
+
+    current_user.totp_enabled = True
+    db.commit()
+    return {"message": "2FA enabled successfully"}
+
+
+@router.post("/2fa/disable")
+def disable_2fa(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    current_user.totp_enabled = False
+    current_user.totp_secret = None
+    db.commit()
+    return {"message": "2FA disabled"}
+
+
+# =========================================================
+# GET CURRENT USER
+# =========================================================
 @router.get("/me")
 def get_me(current_user: models.User = Depends(get_current_user)):
     return {
@@ -77,9 +170,13 @@ def get_me(current_user: models.User = Depends(get_current_user)):
         "role": current_user.role,
         "staff_type": current_user.staff_type,
         "is_active": current_user.is_active,
+        "totp_enabled": current_user.totp_enabled,
     }
 
 
+# =========================================================
+# GET ALL USERS (Admin)
+# =========================================================
 @router.get("/all")
 def get_all_users(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     if current_user.role.lower() != "admin":
@@ -98,10 +195,14 @@ def get_all_users(current_user: models.User = Depends(get_current_user), db: Ses
     ]
 
 
+# =========================================================
+# ACTIVATE USER
+# =========================================================
 @router.post("/activate_by_email")
 def activate_by_email(
+    request: Request,
     email: str,
-    current_user: models.User = Depends(get_current_user),  # ✅ SECURITY FIX
+    current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     if current_user.role.lower() != "admin":
@@ -119,6 +220,8 @@ def activate_by_email(
     db.commit()
     db.refresh(user)
     send_activation_email(user.email, user.name, user.staff_type)
+    log_action(db, current_user.id, "activate_user", f"Activated: {email}", request)
+
     return {
         "message": f"User {user.name} activated successfully",
         "email": user.email,
@@ -127,8 +230,12 @@ def activate_by_email(
     }
 
 
+# =========================================================
+# DEACTIVATE USER
+# =========================================================
 @router.put("/deactivate/{user_id}")
 def deactivate_user(
+    request: Request,
     user_id: int,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -145,13 +252,17 @@ def deactivate_user(
 
     user.is_active = 0
     db.commit()
-    db.refresh(user)
     send_deactivation_email(user.email, user.name)
+    log_action(db, current_user.id, "deactivate_user", f"Deactivated: {user.email}", request)
     return {"message": f"User {user.name} deactivated"}
 
 
+# =========================================================
+# DELETE USER
+# =========================================================
 @router.delete("/{user_id}")
 def delete_user(
+    request: Request,
     user_id: int,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -166,31 +277,56 @@ def delete_user(
     if user.role.lower() == "admin":
         raise HTTPException(status_code=400, detail="Cannot delete admin")
 
+    email = user.email
     db.delete(user)
     db.commit()
+    log_action(db, current_user.id, "delete_user", f"Deleted: {email}", request)
     return {"message": f"User {user.name} deleted"}
 
 
+# =========================================================
+# FORGOT PASSWORD — Tuma password ya kianzio kwa email
+# =========================================================
 @router.post("/forgot_password")
-def forgot_password(email: str, db: Session = Depends(get_db)):
-    # ✅ SECURITY: always return same message (no email enumeration)
+@limiter.limit("3/hour")
+def forgot_password(
+    request: Request,
+    email: str,
+    db: Session = Depends(get_db),
+):
+    """
+    ✅ Tuma password ya kianzio kwa email.
+    Kama email haipo, rudisha ujumbe ule ule (no enumeration).
+    """
     user = crud.get_user_by_email(db, email)
     if user and user.is_active == 1:
         temp_password = generate_temp_password(8)
         user.password = hash_password(temp_password)
         db.commit()
         send_forgot_password_email(user.email, user.name, temp_password)
+        log_action(db, user.id, "forgot_password", f"Password reset: {email}", request)
 
     return {"message": "Kama email ipo kwenye system, password ya kianzio imetumwa."}
 
 
+# =========================================================
+# RESET PASSWORD — Badilisha password kwa kutumia password ya kianzio
+# =========================================================
 @router.post("/reset_password")
 def reset_password(
+    request: Request,
     email: str,
     old_password: str,
     new_password: str,
     db: Session = Depends(get_db),
 ):
+    """
+    ✅ Badilisha password kwa kutumia password ya kianzio.
+    - Inathibitisha password ya kianzio ni sahihi
+    - Inathibitisha password mpya ina nguvu
+    - Inabadilisha password
+    - Inatuma email ya uthibitisho
+    """
     user = crud.get_user_by_email(db, email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -198,10 +334,17 @@ def reset_password(
         raise HTTPException(status_code=403, detail="Account not active")
     if not verify_password(old_password, user.password):
         raise HTTPException(status_code=401, detail="Old password incorrect")
-    if len(new_password) < 6:
-        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+
+    # ✅ Validate new password strength
+    validate_password_strength(new_password)
+
+    # ✅ Prevent same password
+    if old_password == new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from old")
 
     user.password = hash_password(new_password)
     db.commit()
     send_reset_password_email(user.email, user.name)
-    return {"message": "Password changed successfully", "email": user.email}
+    log_action(db, user.id, "reset_password", f"Password changed: {email}", request)
+
+    return {"message": "✅ Password yako imebadilishwa!", "email": user.email}
