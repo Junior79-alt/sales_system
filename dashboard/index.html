@@ -94,8 +94,6 @@
         .agent-item { background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; border-left:4px solid #1a237e; }
         .agent-item .agent-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
         .agent-item .agent-header h4 { color:#1a237e; }
-        .agent-item .agent-stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:10px; }
-        .agent-item .agent-stats-row div { color:#333; font-size:13px; }
 
         /* ===== SHOP ITEM ===== */
         .shop-item { background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; border-left:4px solid #2e7d32; }
@@ -142,7 +140,6 @@
             .activate-form button { width:100%; }
             table { font-size:11px; min-width:600px; }
             th, td { padding:5px 8px; }
-            .agent-item .agent-stats-row { grid-template-columns:repeat(2,1fr); }
         }
         @media (max-width:480px) {
             body { padding:0; }
@@ -153,7 +150,6 @@
             .chart-box canvas { height:160px !important; max-height:160px; }
             table { font-size:10px; min-width:500px; }
             th, td { padding:4px 6px; }
-            .agent-item .agent-stats-row { grid-template-columns:1fr; }
         }
     </style>
 </head>
@@ -251,7 +247,11 @@
         <div id="page-agent" class="page-content" style="display:none;">
             <div class="agent-container">
                 <h2>🤖 Agents System Data</h2>
-                <div style="margin-bottom:20px; text-align:right;">
+                <div style="margin-bottom:20px; text-align:right; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                    <button onclick="loadAgentData()"
+                            style="background:#2e7d32; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold;">
+                        🔄 Refresh
+                    </button>
                     <button onclick="sendInvoiceToAll(event)"
                             style="background:#1a237e; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold;">
                         📧 Tuma Invoice kwa Wote
@@ -731,8 +731,14 @@
                     return;
                 }
 
+                // ✅ Hifadhi aliyefungua dropdown (kama ipo)
+                const openDetails = [];
+                document.querySelectorAll('#agentStaffList details[open]').forEach((el, i) => {
+                    openDetails.push(i);
+                });
+
                 let html = '';
-                agentData.forEach(agent => {
+                agentData.forEach((agent, idx) => {
                     const nameEsc = escapeHtml(agent.staff_name);
                     const nameJson = JSON.stringify(agent.staff_name);
 
@@ -765,18 +771,6 @@
                                 </div>
                             </div>
 
-                            <div class="agent-stats-row">
-                                <div><strong>Cash:</strong> ${fmt(agent.total_cash)} TSh</div>
-                                <div><strong>Halotel F:</strong> ${fmt(agent.total_float_halotel)} TSh</div>
-                                <div><strong>Voda F:</strong> ${fmt(agent.total_float_voda)} TSh</div>
-                                <div><strong>Airtel F:</strong> ${fmt(agent.total_float_airtel)} TSh</div>
-                                <div><strong>Tigo F:</strong> ${fmt(agent.total_float_tigo)} TSh</div>
-                                <div><strong>Halotel L:</strong> ${fmt(agent.total_lipa_halotel)} TSh</div>
-                                <div><strong>Voda L:</strong> ${fmt(agent.total_lipa_voda)} TSh</div>
-                                <div><strong>Airtel L:</strong> ${fmt(agent.total_lipa_airtel)} TSh</div>
-                                <div><strong>Tigo L:</strong> ${fmt(agent.total_lipa_tigo)} TSh</div>
-                            </div>
-
                             <!-- ✅ NOTES SECTION (#8) -->
                             <div style="margin-top:12px; background:#f3e5f5; padding:10px 14px; border-radius:8px; border-left:4px solid #9c27b0;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -791,7 +785,7 @@
                                 </div>
                             </div>
 
-                            <details style="margin-top:10px;">
+                            <details style="margin-top:10px;" ${openDetails.includes(idx) ? 'open' : ''}>
                                 <summary style="cursor:pointer; color:#1a237e; font-weight:600; padding:8px 12px; background:#e8eaf6; border-radius:6px;">
                                     📋 Onyesha Historia (${agent.history ? agent.history.length : 0})
                                 </summary>
@@ -878,7 +872,7 @@
 
                 container.innerHTML = html;
 
-                // ✅ Load notes kwa kila agent
+                // Load notes kwa kila agent
                 agentData.forEach(agent => {
                     loadNotes(agent.staff_id);
                 });
@@ -1271,7 +1265,7 @@
         });
 
         // =========================================================
-        // INIT + AUTO REFRESH
+        // INIT + AUTO REFRESH (Agent System IMEONDOLEWA)
         // =========================================================
         showPage('dashboard');
 
@@ -1279,7 +1273,7 @@
             if (document.getElementById('page-dashboard').style.display !== 'none') loadDashboardData();
             if (document.getElementById('page-users').style.display !== 'none') loadUsers();
             if (document.getElementById('page-sales').style.display !== 'none') loadAllSalesFull();
-            if (document.getElementById('page-agent').style.display !== 'none') loadAgentData();
+            // ❌ HAKUNA loadAgentData() hapa — admin anafanya refresh mwenyewe kwa button
             if (document.getElementById('page-shop').style.display !== 'none') loadShopData();
         }, 30000);
         window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
