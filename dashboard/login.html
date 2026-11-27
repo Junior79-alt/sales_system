@@ -123,6 +123,7 @@
         }
         .msg.error { display:block; color:#ff6b6b; background:rgba(255,107,107,0.12); border:1px solid rgba(255,107,107,0.15); }
         .msg.success { display:block; color:#51cf66; background:rgba(81,207,102,0.12); border:1px solid rgba(81,207,102,0.15); }
+        .msg.info { display:block; color:#74c0fc; background:rgba(116,192,252,0.12); border:1px solid rgba(116,192,252,0.15); }
 
         .divider { display:flex; align-items:center; margin:20px 0 16px 0; }
         .divider hr { flex:1; border:none; border-top:1px solid rgba(255,255,255,0.08); }
@@ -134,12 +135,67 @@
 
         /* 2FA */
         #twoFA { display:none; }
-        #totpCode {
-            text-align:center;
-            font-size:24px;
-            letter-spacing:8px;
-            padding:16px;
+        #totpCode { text-align:center; font-size:24px; letter-spacing:8px; padding:16px; }
+
+        /* RESET PASSWORD MODAL */
+        .modal-overlay {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.7); z-index:99999;
+            justify-content:center; align-items:center;
+            padding:20px;
         }
+        .modal-overlay.active { display:flex; }
+        .modal-box {
+            background:linear-gradient(135deg,#1a1a2e,#16213e);
+            border-radius:16px; padding:0;
+            max-width:420px; width:100%;
+            box-shadow:0 10px 50px rgba(0,0,0,0.5);
+            overflow:hidden;
+            animation:modalFadeIn 0.2s ease;
+            border:1px solid rgba(255,255,255,0.1);
+        }
+        @keyframes modalFadeIn {
+            from { opacity:0; transform:scale(0.95); }
+            to { opacity:1; transform:scale(1); }
+        }
+        .modal-header {
+            background:linear-gradient(135deg,#1a237e,#0d47a1);
+            color:white; padding:18px 24px;
+            display:flex; align-items:center; gap:12px;
+        }
+        .modal-header h3 { margin:0; font-size:18px; font-weight:600; }
+        .modal-body { padding:24px; }
+        .modal-body p { margin:0 0 15px 0; font-size:14px; color:rgba(255,255,255,0.8); line-height:1.5; }
+        .modal-body label {
+            display:block; color:rgba(255,255,255,0.7);
+            font-size:12px; font-weight:600; margin-bottom:6px;
+            text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .modal-body input {
+            width:100%; padding:12px 16px;
+            background:rgba(0,0,0,0.4) !important;
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:10px; font-size:15px;
+            color:#ffffff !important;
+            outline:none; margin-bottom:12px;
+        }
+        .modal-body input:focus {
+            border-color:rgba(255,255,255,0.4);
+            background:rgba(0,0,0,0.5) !important;
+        }
+        .modal-footer {
+            padding:16px 24px; background:rgba(0,0,0,0.2);
+            display:flex; justify-content:flex-end; gap:10px;
+        }
+        .modal-btn {
+            padding:10px 20px; border:none; border-radius:8px;
+            cursor:pointer; font-size:14px; font-weight:600;
+        }
+        .modal-btn.cancel { background:rgba(255,255,255,0.15); color:white; }
+        .modal-btn.cancel:hover { background:rgba(255,255,255,0.25); }
+        .modal-btn.ok { background:#2e7d32; color:white; }
+        .modal-btn.ok:hover { background:#1b5e20; }
+        .modal-btn.ok:disabled { opacity:0.6; cursor:not-allowed; }
     </style>
 </head>
 <body>
@@ -148,9 +204,8 @@
     <div class="circle circle-3"></div>
 
     <div class="glass-card">
-        <div class="logo"><span>📊</span></div>
-        <h1>Sales System</h1>
-        <p class="subtitle">Ingia kwenye akaunti yako</p>
+        <h1>SALES SYSTEM</h1>
+        <p class="subtitle">KARIBU</p>
 
         <!-- LOGIN FORM -->
         <div id="loginForm">
@@ -177,6 +232,32 @@
         </div>
     </div>
 
+    <!-- ===== RESET PASSWORD MODAL ===== -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span style="font-size:24px;">🔑</span>
+                <h3>Badilisha Password</h3>
+            </div>
+            <div class="modal-body">
+                <p>Umepokea <strong>password ya kianzio</strong> kwa email. Sasa ingiza password hiyo na password mpya unayotaka.</p>
+                <label>Email Yako</label>
+                <input type="email" id="resetEmail" placeholder="Email yako" readonly style="opacity:0.6;">
+                <label>Password ya Kianzio</label>
+                <input type="text" id="resetOldPassword" placeholder="Password uliyopokea kwa email" autocomplete="off">
+                <label>Password Mpya</label>
+                <input type="password" id="resetNewPassword" placeholder="Password mpya (min 8 chars, A-Z, a-z, 0-9)" autocomplete="new-password">
+                <label>Rudia Password Mpya</label>
+                <input type="password" id="resetConfirmPassword" placeholder="Rudia password mpya" autocomplete="new-password">
+                <div id="resetMsg" class="msg" style="text-align:center;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeResetModal()">Ghairi</button>
+                <button class="modal-btn ok" id="resetSubmitBtn" onclick="submitResetPassword()">Badilisha</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = window.location.origin;
         let pendingUserId = null;
@@ -187,6 +268,9 @@
             el.className = 'msg ' + type;
         }
 
+        // =========================================================
+        // LOGIN
+        // =========================================================
         async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -214,7 +298,7 @@
                     return;
                 }
 
-                // 2FA check
+                // 2FA
                 if (data.requires_2fa) {
                     pendingUserId = data.user_id;
                     document.getElementById('loginForm').style.display = 'none';
@@ -224,12 +308,11 @@
                     return;
                 }
 
-                // Save to localStorage
                 localStorage.setItem('token', data.access_token);
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('userRole', data.role);
                 localStorage.setItem('staffType', data.staff_type);
-                localStorage.setItem('userId', data.user_id);  // ✅ MUHIMU kwa notes
+                localStorage.setItem('userId', data.user_id);
 
                 showMsg('Umeingia! Inaelekeza...', 'success');
 
@@ -245,6 +328,121 @@
             }
         }
 
+        // =========================================================
+        // FORGOT PASSWORD → Tuma password ya kianzio kwa email
+        // =========================================================
+        async function forgot() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showMsg('Ingiza email yako kwanza!', 'error');
+                return;
+            }
+            showMsg('⏳ Inatuma password ya kianzio...', 'info');
+            try {
+                const res = await fetch(`${API_URL}/users/forgot_password?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showMsg('✅ ' + data.message, 'success');
+                    // ✅ Fungua modal ya kubadilisha password
+                    openResetModal(email);
+                } else {
+                    showMsg('❌ ' + (data.detail || 'Failed'), 'error');
+                }
+            } catch (e) {
+                showMsg('❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        // =========================================================
+        // RESET PASSWORD MODAL
+        // =========================================================
+        function openResetModal(email) {
+            document.getElementById('resetEmail').value = email;
+            document.getElementById('resetOldPassword').value = '';
+            document.getElementById('resetNewPassword').value = '';
+            document.getElementById('resetConfirmPassword').value = '';
+            document.getElementById('resetMsg').className = 'msg';
+            document.getElementById('resetMsg').textContent = '';
+            document.getElementById('resetSubmitBtn').disabled = false;
+            document.getElementById('resetSubmitBtn').textContent = 'Badilisha';
+            document.getElementById('resetModal').classList.add('active');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.remove('active');
+        }
+
+        async function submitResetPassword() {
+            const email = document.getElementById('resetEmail').value;
+            const oldPassword = document.getElementById('resetOldPassword').value;
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const confirmPassword = document.getElementById('resetConfirmPassword').value;
+            const btn = document.getElementById('resetSubmitBtn');
+
+            if (!oldPassword) {
+                showMsg('❌ Ingiza password ya kianzio!', 'error', 'resetMsg');
+                return;
+            }
+            if (newPassword.length < 8) {
+                showMsg('❌ Password mpya iwe angalau herufi 8!', 'error', 'resetMsg');
+                return;
+            }
+            if (!/[A-Z]/.test(newPassword)) {
+                showMsg('❌ Password mpya iwe na herufi kubwa (A-Z)!', 'error', 'resetMsg');
+                return;
+            }
+            if (!/[a-z]/.test(newPassword)) {
+                showMsg('❌ Password mpya iwe na herufi ndogo (a-z)!', 'error', 'resetMsg');
+                return;
+            }
+            if (!/\d/.test(newPassword)) {
+                showMsg('❌ Password mpya iwe na nambari (0-9)!', 'error', 'resetMsg');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showMsg('❌ Password mpya hazifanani!', 'error', 'resetMsg');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Inabadilisha...';
+            showMsg('⏳ Inabadilisha password...', 'info', 'resetMsg');
+
+            try {
+                const params = new URLSearchParams({
+                    email: email,
+                    old_password: oldPassword,
+                    new_password: newPassword,
+                }).toString();
+
+                const res = await fetch(`${API_URL}/users/reset_password?${params}`, { method: 'POST' });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showMsg('✅ ' + data.message, 'success', 'resetMsg');
+                    // ✅ Jaza email + password mpya kwenye login form
+                    document.getElementById('email').value = email;
+                    document.getElementById('password').value = newPassword;
+                    // Funga modal baada ya sekunde 2
+                    setTimeout(() => {
+                        closeResetModal();
+                        showMsg('✅ Sasa unaweza kuingia na password mpya!', 'success');
+                    }, 1500);
+                } else {
+                    showMsg('❌ ' + (data.detail || 'Failed'), 'error', 'resetMsg');
+                    btn.disabled = false;
+                    btn.textContent = 'Badilisha';
+                }
+            } catch (e) {
+                showMsg('❌ Error: ' + e.message, 'error', 'resetMsg');
+                btn.disabled = false;
+                btn.textContent = 'Badilisha';
+            }
+        }
+
+        // =========================================================
+        // 2FA
+        // =========================================================
         async function verify2FA() {
             const code = document.getElementById('totpCode').value.trim();
             if (!/^\d{6}$/.test(code)) {
@@ -254,30 +452,31 @@
             showMsg('2FA inahitaji setup kamili', 'info', 'msg2fa');
         }
 
-        async function forgot() {
-            const email = document.getElementById('email').value.trim();
-            if (!email) {
-                showMsg('Ingiza email yako kwanza!', 'error');
-                return;
-            }
-            try {
-                const res = await fetch(`${API_URL}/users/forgot_password?email=${encodeURIComponent(email)}`, { method: 'POST' });
-                const data = await res.json();
-                showMsg(res.ok ? data.message : data.detail, res.ok ? 'success' : 'error');
-            } catch (e) {
-                showMsg('Error: ' + e.message, 'error');
-            }
-        }
-
-        // Enter key
+        // =========================================================
+        // ENTER KEY SUPPORT
+        // =========================================================
         document.getElementById('password').addEventListener('keydown', e => {
             if (e.key === 'Enter') login();
         });
         document.getElementById('totpCode').addEventListener('keydown', e => {
             if (e.key === 'Enter') verify2FA();
         });
+        document.getElementById('resetConfirmPassword').addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitResetPassword();
+        });
 
-        // Register service worker (PWA)
+        // Close modal on overlay click
+        document.getElementById('resetModal').addEventListener('click', (e) => {
+            if (e.target.id === 'resetModal') closeResetModal();
+        });
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('resetModal').classList.contains('active')) {
+                closeResetModal();
+            }
+        });
+
+        // PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/dashboard/service-worker.js').catch(() => {});
         }
